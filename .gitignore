@@ -1,0 +1,7 @@
+*.egg*/
+*.py[co]
+.coverage
+build/
+test*.txt
+dist/
+coverage.xml

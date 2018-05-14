@@ -1,0 +1,1 @@
+tests/demoproject/manage.py

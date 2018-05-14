@@ -1,0 +1,16 @@
+[run]
+branch = true
+source = unicef_locations
+omit =  */tests/*,
+        */migrations/*,
+
+[report]
+fail_under = 50
+ignore_errors = True
+exclude_lines =
+   pragma: no cover
+   pragma: no-cover
+
+[html]
+directory = build/coverage
+title = Coverage report

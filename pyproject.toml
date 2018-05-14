@@ -1,0 +1,4 @@
+[tool.towncrier]
+package = "unicef_commonlib"
+package_dir = "src"
+filename = "NEWS.rst"
