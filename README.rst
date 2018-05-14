@@ -1,5 +1,7 @@
-unicef_commonlib
+UNICEF Locations
 ================
+
+Django applications to manage geographical locations
 
 Links
 -----
