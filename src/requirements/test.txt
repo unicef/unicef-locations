@@ -1,0 +1,12 @@
+check-manifest
+django-webtest
+factory-boy==2.8
+flake8==3.5.0
+isort
+pytest
+pytest-cov
+pytest-django
+pytest-echo
+pytest-pythonpath
+towncrier
+yapf
