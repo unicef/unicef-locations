@@ -2,18 +2,15 @@ from django.conf.urls import url
 
 from . import views
 
-app_name = 'locations'
+app_name = "locations"
 
 urlpatterns = [
-    url(r'^cartodbtables/$',
-        views.CartoDBTablesView.as_view(),
-        name='cartodbtables'),
-    url(r'^autocomplete/$',
-        views.LocationQuerySetView.as_view(),
-        name='locations_autocomplete'),
-
+    url(r"^cartodbtables/$", views.CartoDBTablesView.as_view(), name="cartodbtables"),
+    url(r"^autocomplete/$", views.LocationQuerySetView.as_view(), name="locations_autocomplete"),
     # TODO: test performance
-    url(r'^autocomplete-light/$',
+    url(
+        r"^autocomplete-light/$",
         views.LocationAutocompleteView.as_view(),
-        name='locations-autocomplete-light')
+        name="locations-autocomplete-light",
+    ),
 ]

@@ -7,42 +7,36 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('locations', '0002_fix_null_values'),
-    ]
+    dependencies = [("locations", "0002_fix_null_values")]
 
     operations = [
         migrations.AlterField(
-            model_name='cartodbtable',
-            name='color',
+            model_name="cartodbtable",
+            name="color",
             field=models.CharField(
                 blank=True,
                 default=unicef_locations.models.get_random_color,
                 max_length=7,
-                verbose_name='Color'),
+                verbose_name="Color",
+            ),
         ),
         migrations.AlterField(
-            model_name='cartodbtable',
-            name='display_name',
+            model_name="cartodbtable",
+            name="display_name",
             field=models.CharField(
-                blank=True,
-                default='',
-                max_length=254,
-                verbose_name='Display Name'),
+                blank=True, default="", max_length=254, verbose_name="Display Name"
+            ),
         ),
         migrations.AlterField(
-            model_name='cartodbtable',
-            name='parent_code_col',
+            model_name="cartodbtable",
+            name="parent_code_col",
             field=models.CharField(
-                blank=True,
-                default='',
-                max_length=254,
-                verbose_name='Parent Code Column'),
+                blank=True, default="", max_length=254, verbose_name="Parent Code Column"
+            ),
         ),
         migrations.AlterField(
-            model_name='location',
-            name='p_code',
-            field=models.CharField(
-                blank=True, default='', max_length=32, verbose_name='P Code'),
+            model_name="location",
+            name="p_code",
+            field=models.CharField(blank=True, default="", max_length=32, verbose_name="P Code"),
         ),
     ]

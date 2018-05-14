@@ -16,12 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 def get_random_color():
-    return '#%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255),
-                              random.randint(0, 255))
+    return "#%02X%02X%02X" % (
+        random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+    )
 
 
 def get_cache_key():
-    schema_name = getattr(connection, 'schema_name', 'public')
+    schema_name = getattr(connection, "schema_name", "public")
     return f"{schema_name}-locations-etag"
 
 
@@ -30,13 +31,14 @@ class GatewayType(models.Model):
     Represents an Admin Type in location-related models.
     """
 
-    name = models.CharField(max_length=64, unique=True, verbose_name=_('Name'))
+    name = models.CharField(max_length=64, unique=True, verbose_name=_("Name"))
     admin_level = models.PositiveSmallIntegerField(
-        null=True, unique=True, verbose_name=_('Admin Level'))
+        null=True, unique=True, verbose_name=_("Admin Level")
+    )
 
     class Meta:
-        ordering = ['name']
-        verbose_name = 'Location Type'
+        ordering = ["name"]
+        verbose_name = "Location Type"
         # db_table = 'locations_gatewaytype'
 
     def __str__(self):
@@ -44,9 +46,9 @@ class GatewayType(models.Model):
 
 
 class LocationManager(models.Manager):
+
     def get_queryset(self):
-        return super(LocationManager,
-                     self).get_queryset().select_related('gateway')
+        return super(LocationManager, self).get_queryset().select_related("gateway")
 
 
 class Location(MPTTModel):
@@ -59,49 +61,36 @@ class Location(MPTTModel):
 
     name = models.CharField(verbose_name=_("Name"), max_length=254)
     gateway = models.ForeignKey(
-        GatewayType,
-        verbose_name=_('Location Type'),
-        on_delete=models.CASCADE,
+        GatewayType, verbose_name=_("Location Type"), on_delete=models.CASCADE
     )
-    latitude = models.FloatField(
-        verbose_name=_("Latitude"), null=True, blank=True)
-    longitude = models.FloatField(
-        verbose_name=_("Longitude"),
-        null=True,
-        blank=True,
-    )
-    p_code = models.CharField(
-        verbose_name=_("P Code"),
-        max_length=32,
-        blank=True,
-        default='',
-    )
+    latitude = models.FloatField(verbose_name=_("Latitude"), null=True, blank=True)
+    longitude = models.FloatField(verbose_name=_("Longitude"), null=True, blank=True)
+    p_code = models.CharField(verbose_name=_("P Code"), max_length=32, blank=True, default="")
 
     parent = TreeForeignKey(
-        'self',
+        "self",
         verbose_name=_("Parent"),
         null=True,
         blank=True,
-        related_name='children',
+        related_name="children",
         db_index=True,
-        on_delete=models.CASCADE)
-    geom = models.MultiPolygonField(
-        verbose_name=_("Geo Point"),
-        null=True,
-        blank=True,
+        on_delete=models.CASCADE,
     )
+    geom = models.MultiPolygonField(verbose_name=_("Geo Point"), null=True, blank=True)
     point = models.PointField(verbose_name=_("Point"), null=True, blank=True)
-    created = AutoCreatedField(_('created'))
-    modified = AutoLastModifiedField(_('modified'))
+    created = AutoCreatedField(_("created"))
+    modified = AutoLastModifiedField(_("modified"))
 
     objects = LocationManager()
 
     def __str__(self):
         # TODO: Make generic
-        return u'{} ({} {}: {})'.format(self.name, self.gateway.name, 'CERD'
-                                        if self.gateway.name == 'School' else
-                                        'PCode', self.p_code
-                                        if self.p_code else '')
+        return u"{} ({} {}: {})".format(
+            self.name,
+            self.gateway.name,
+            "CERD" if self.gateway.name == "School" else "PCode",
+            self.p_code if self.p_code else "",
+        )
 
     @property
     def geo_point(self):
@@ -112,8 +101,8 @@ class Location(MPTTModel):
         return "Lat: {}, Long: {}".format(self.point.y, self.point.x)
 
     class Meta:
-        unique_together = ('name', 'gateway', 'p_code')
-        ordering = ['name']
+        unique_together = ("name", "gateway", "p_code")
+        ordering = ["name"]
         # app_label = 'locations'
         # db_table = 'locations_location'
 
@@ -135,36 +124,32 @@ class CartoDBTable(MPTTModel):
     Relates to :model:`locations.GatewayType`
     """
 
-    domain = models.CharField(max_length=254, verbose_name=_('Domain'))
-    api_key = models.CharField(max_length=254, verbose_name=_('API Key'))
-    table_name = models.CharField(max_length=254, verbose_name=_('Table Name'))
+    domain = models.CharField(max_length=254, verbose_name=_("Domain"))
+    api_key = models.CharField(max_length=254, verbose_name=_("API Key"))
+    table_name = models.CharField(max_length=254, verbose_name=_("Table Name"))
     display_name = models.CharField(
-        max_length=254, default='', blank=True, verbose_name=_('Display Name'))
+        max_length=254, default="", blank=True, verbose_name=_("Display Name")
+    )
     location_type = models.ForeignKey(
-        GatewayType, verbose_name=_('Location Type'), on_delete=models.CASCADE)
-    name_col = models.CharField(
-        max_length=254, default='name', verbose_name=_('Name Column'))
-    pcode_col = models.CharField(
-        max_length=254, default='pcode', verbose_name=_('Pcode Column'))
+        GatewayType, verbose_name=_("Location Type"), on_delete=models.CASCADE
+    )
+    name_col = models.CharField(max_length=254, default="name", verbose_name=_("Name Column"))
+    pcode_col = models.CharField(max_length=254, default="pcode", verbose_name=_("Pcode Column"))
     parent_code_col = models.CharField(
-        max_length=254,
-        default='',
-        blank=True,
-        verbose_name=_('Parent Code Column'))
+        max_length=254, default="", blank=True, verbose_name=_("Parent Code Column")
+    )
     parent = TreeForeignKey(
-        'self',
+        "self",
         null=True,
         blank=True,
-        related_name='children',
+        related_name="children",
         db_index=True,
-        verbose_name=_('Parent'),
+        verbose_name=_("Parent"),
         on_delete=models.CASCADE,
     )
     color = models.CharField(
-        blank=True,
-        default=get_random_color,
-        max_length=7,
-        verbose_name=_('Color'))
+        blank=True, default=get_random_color, max_length=7, verbose_name=_("Color")
+    )
 
     def __str__(self):
         return self.table_name

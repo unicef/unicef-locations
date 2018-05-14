@@ -37,8 +37,7 @@ class TestCartoDBTableForm(TestCase):
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
-        self.assertEqual(errors["__all__"][0].message,
-                         "Couldn't connect to CartoDB table: test")
+        self.assertEqual(errors["__all__"][0].message, "Couldn't connect to CartoDB table: test")
 
     def test_no_name_col(self):
         """Check that validation fails when `name_col` is missing"""
@@ -52,8 +51,7 @@ class TestCartoDBTableForm(TestCase):
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
-        self.assertEqual(errors["__all__"][0].message,
-                         "The Name column (name) is not in table: test")
+        self.assertEqual(errors["__all__"][0].message, "The Name column (name) is not in table: test")
 
     def test_no_pcode_col(self):
         """Check that validation fails when `pcode_col` is missing"""
@@ -67,8 +65,7 @@ class TestCartoDBTableForm(TestCase):
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
-        self.assertEqual(errors["__all__"][0].message,
-                         "The PCode column (pcode) is not in table: test")
+        self.assertEqual(errors["__all__"][0].message, "The PCode column (pcode) is not in table: test")
 
     def test_no_parent_code_col(self):
         """Check that validation fails when `parent_code_col` is missing"""
@@ -82,9 +79,7 @@ class TestCartoDBTableForm(TestCase):
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
-        self.assertEqual(
-            errors["__all__"][0].message,
-            "The Parent Code column (parent) is not in table: test")
+        self.assertEqual(errors["__all__"][0].message, "The Parent Code column (parent) is not in table: test")
 
     def test_clean(self):
         """Check that validation passes"""

@@ -24,8 +24,7 @@ def test_admin_cartodbtable(django_app, admin_user, cartodbtable):
 
 
 def test_admin_cartodbtable_edit(django_app, admin_user, cartodbtable):
-    url = reverse(
-        'admin:locations_cartodbtable_change', args=[cartodbtable.id])
+    url = reverse('admin:locations_cartodbtable_change', args=[cartodbtable.id])
     response = django_app.get(url, user=admin_user)
     response = response.form.submit()
     assert response

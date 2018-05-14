@@ -109,10 +109,7 @@ class TestCreateLocations(TestCase):
             None,
             None,
             "test",
-            {
-                "the_geom":
-                "MultiPolygon(((10 10, 10 20, 20 20, 20 15, 10 10)), ((10 10, 10 20, 20 20, 20 15, 10 10)))"
-            },
+            {"the_geom": "MultiPolygon(((10 10, 10 20, 20 20, 20 15, 10 10)), ((10 10, 10 20, 20 20, 20 15, 10 10)))"},
             0,
             0,
             0,
@@ -191,10 +188,7 @@ class TestCreateLocations(TestCase):
             None,
             None,
             name,
-            {
-                "the_geom":
-                "MultiPolygon(((10 10, 10 20, 20 20, 20 15, 10 10)), ((10 10, 10 20, 20 20, 20 15, 10 10)))"
-            },
+            {"the_geom": "MultiPolygon(((10 10, 10 20, 20 20, 20 15, 10 10)), ((10 10, 10 20, 20 20, 20 15, 10 10)))"},
             0,
             0,
             0,
@@ -250,14 +244,13 @@ class TestUpdateSitesFromCartoDB(TestCase):
 
     def _assert_response(self, response, name, created, updated, not_added):
         self.assertEqual(
-            response,
-            "Table name {}: {} sites created, {} sites updated, {} sites skipped".
-            format(
+            response, "Table name {}: {} sites created, {} sites updated, {} sites skipped".format(
                 name,
                 created,
                 updated,
                 not_added,
-            ))
+            )
+        )
 
     def test_not_exist(self):
         """Test that when carto record does not exist, nothing happens"""
@@ -283,14 +276,10 @@ class TestUpdateSitesFromCartoDB(TestCase):
             }]
         }
         carto = CartoDBTableFactory()
-        self.assertFalse(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        self.assertFalse(Location.objects.filter(name="New Location", p_code="123").exists())
         response = self._run_update(carto.pk)
         self._assert_response(response, carto.table_name, 1, 0, 0)
-        self.assertTrue(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        self.assertTrue(Location.objects.filter(name="New Location", p_code="123").exists())
 
     def test_no_name(self):
         """Check that if name provided is just a space
@@ -304,14 +293,10 @@ class TestUpdateSitesFromCartoDB(TestCase):
             }]
         }
         carto = CartoDBTableFactory()
-        self.assertFalse(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        self.assertFalse(Location.objects.filter(name="New Location", p_code="123").exists())
         response = self._run_update(carto.pk)
         self._assert_response(response, carto.table_name, 0, 0, 1)
-        self.assertFalse(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        self.assertFalse(Location.objects.filter(name="New Location", p_code="123").exists())
 
     def test_add_with_parent(self):
         """Check that if parent is provided that record is created with parent
@@ -330,14 +315,10 @@ class TestUpdateSitesFromCartoDB(TestCase):
             parent=carto_parent,
             parent_code_col="parent",
         )
-        self.assertFalse(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        self.assertFalse(Location.objects.filter(name="New Location", p_code="123").exists())
         response = self._run_update(carto.pk)
         self._assert_response(response, carto.table_name, 1, 0, 0)
-        self.assertTrue(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        self.assertTrue(Location.objects.filter(name="New Location", p_code="123").exists())
         location = Location.objects.get(name="New Location", p_code="123")
         self.assertEqual(location.parent, parent)
 
@@ -360,14 +341,10 @@ class TestUpdateSitesFromCartoDB(TestCase):
             parent=carto_parent,
             parent_code_col="parent",
         )
-        self.assertFalse(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        self.assertFalse(Location.objects.filter(name="New Location", p_code="123").exists())
         response = self._run_update(carto.pk)
         self._assert_response(response, carto.table_name, 0, 0, 1)
-        self.assertFalse(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        self.assertFalse(Location.objects.filter(name="New Location", p_code="123").exists())
 
     def test_add_parent_invalid(self):
         """Check that if parent is provided but does not exist
@@ -383,13 +360,8 @@ class TestUpdateSitesFromCartoDB(TestCase):
                 "parent": "654"
             }]
         }
-        carto = CartoDBTableFactory(
-            parent=carto_parent, parent_code_col="parent")
-        self.assertFalse(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        carto = CartoDBTableFactory(parent=carto_parent, parent_code_col="parent")
+        self.assertFalse(Location.objects.filter(name="New Location", p_code="123").exists())
         response = self._run_update(carto.pk)
         self._assert_response(response, carto.table_name, 0, 0, 1)
-        self.assertFalse(
-            Location.objects.filter(name="New Location",
-                                    p_code="123").exists())
+        self.assertFalse(Location.objects.filter(name="New Location", p_code="123").exists())

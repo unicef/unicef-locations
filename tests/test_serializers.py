@@ -1,7 +1,8 @@
 import pytest
-from unicef_locations.serializers import (LocationExportSerializer, GatewayTypeSerializer,
-                                          CartoDBTableSerializer, LocationSerializer,
-                                          LocationLightSerializer, LocationExportFlatSerializer)
+from unicef_locations.serializers import (
+    LocationExportSerializer, GatewayTypeSerializer, CartoDBTableSerializer, LocationSerializer,
+    LocationLightSerializer, LocationExportFlatSerializer
+)
 
 pytestmark = pytest.mark.django_db
 

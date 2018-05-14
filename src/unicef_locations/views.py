@@ -1,4 +1,5 @@
 from dal.autocomplete import Select2QuerySetView
+
 # from dal_select2.views import Select2QuerySetView
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
@@ -7,7 +8,12 @@ from rest_framework.generics import ListAPIView
 from unicef_djangolib.etag import etag_cached
 
 from .models import CartoDBTable, GatewayType, Location
-from .serializers import CartoDBTableSerializer, GatewayTypeSerializer, LocationLightSerializer, LocationSerializer
+from .serializers import (
+    CartoDBTableSerializer,
+    GatewayTypeSerializer,
+    LocationLightSerializer,
+    LocationSerializer,
+)
 
 
 class CartoDBTablesView(ListAPIView):
@@ -16,36 +22,43 @@ class CartoDBTablesView(ListAPIView):
     """
     queryset = CartoDBTable.objects.all()
     serializer_class = CartoDBTableSerializer
-    permission_classes = (permissions.IsAdminUser, )
+    permission_classes = (permissions.IsAdminUser,)
 
 
-class LocationTypesViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin,
-                           mixins.CreateModelMixin, viewsets.GenericViewSet):
+class LocationTypesViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     Returns a list off all Location types
     """
     queryset = GatewayType.objects.all()
     serializer_class = GatewayTypeSerializer
-    permission_classes = (permissions.IsAdminUser, )
+    permission_classes = (permissions.IsAdminUser,)
 
 
-class LocationsViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin,
-                       mixins.CreateModelMixin, mixins.UpdateModelMixin,
-                       viewsets.GenericViewSet):
+class LocationsViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     CRUD for Locations
     """
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
-    @etag_cached('locations')
+    @etag_cached("locations")
     def list(self, request, *args, **kwargs):
         return super(LocationsViewSet, self).list(request, *args, **kwargs)
 
     def get_object(self):
         if "p_code" in self.kwargs:
-            obj = get_object_or_404(
-                self.get_queryset(), p_code=self.kwargs["p_code"])
+            obj = get_object_or_404(self.get_queryset(), p_code=self.kwargs["p_code"])
             self.check_object_permissions(self.request, obj)
             return obj
         else:
@@ -56,10 +69,7 @@ class LocationsViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin,
         if "values" in self.request.query_params.keys():
             # Used for ghost data - filter in all(), and return straight away.
             try:
-                ids = [
-                    int(x)
-                    for x in self.request.query_params.get("values").split(",")
-                ]
+                ids = [int(x) for x in self.request.query_params.get("values").split(",")]
             except ValueError:  # pragma: no-cover
                 raise ValidationError("ID values must be integers")
             else:
@@ -74,10 +84,9 @@ class LocationsLightViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationLightSerializer
 
-    @etag_cached('locations')
+    @etag_cached("locations")
     def list(self, request, *args, **kwargs):
-        return super(LocationsLightViewSet, self).list(request, *args,
-                                                       **kwargs)
+        return super(LocationsLightViewSet, self).list(request, *args, **kwargs)
 
 
 class LocationQuerySetView(ListAPIView):
@@ -85,7 +94,7 @@ class LocationQuerySetView(ListAPIView):
     serializer_class = LocationLightSerializer
 
     def get_queryset(self):
-        q = self.request.query_params.get('q')
+        q = self.request.query_params.get("q")
         qs = self.model.objects
 
         if q:
@@ -96,6 +105,7 @@ class LocationQuerySetView(ListAPIView):
 
 
 class LocationAutocompleteView(Select2QuerySetView):
+
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
         if not self.request.user.is_authenticated:
