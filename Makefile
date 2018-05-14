@@ -26,7 +26,7 @@ rundemo:
 
 
 lint:
-	black -l 100 src
+#	black -l 100 src
 	flake8 src/ tests
 	isort -rc src/ --check-only
 	PYTHONPATH=${PYTHONPATH}:${DEMOPATH} django-admin.py check --settings ${DJANGO_SETTINGS_MODULE}
@@ -40,3 +40,7 @@ clean:
 fullclean:
 	rm -fr .tox .cache .env .pytest_cache
 	$(MAKE) clean
+
+
+travis:
+	docker run -it -u travis quay.io/travisci/travis-python /bin/bash

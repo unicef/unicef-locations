@@ -1,5 +1,4 @@
 from dal.autocomplete import Select2QuerySetView
-
 # from dal_select2.views import Select2QuerySetView
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
@@ -8,12 +7,8 @@ from rest_framework.generics import ListAPIView
 from unicef_djangolib.etag import etag_cached
 
 from .models import CartoDBTable, GatewayType, Location
-from .serializers import (
-    CartoDBTableSerializer,
-    GatewayTypeSerializer,
-    LocationLightSerializer,
-    LocationSerializer,
-)
+from .serializers import (CartoDBTableSerializer, GatewayTypeSerializer,
+                          LocationLightSerializer, LocationSerializer,)
 
 
 class CartoDBTablesView(ListAPIView):
