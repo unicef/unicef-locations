@@ -1,0 +1,10 @@
+*.egg*/
+*.py[co]
+.coverage
+build/
+dist/
+coverage.xml
+__pycache__/
+*.sqlite
+.pytest_cache
+.benchmarks

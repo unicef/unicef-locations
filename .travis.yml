@@ -1,0 +1,36 @@
+language: python
+sudo: true
+python:
+  - 3.6
+
+services:
+  - postgresql
+
+
+addons:
+  postgresql: "9.6"
+  apt:
+    packages:
+      - postgresql-9.6-postgis-2.3
+
+env:
+  - DJANGO=1.10
+  - DJANGO=1.11
+  - DJANGO=2.0
+
+
+install:
+  - pip install tox codecov
+
+script:
+  - tox -e "d${DJANGO//.}-py${TRAVIS_PYTHON_VERSION//.}"
+
+before_success:
+  - coverage erase
+
+after_success:
+  - coverage combine
+  - codecov
+
+allow_failures:
+    - env: DJANGO=2.0

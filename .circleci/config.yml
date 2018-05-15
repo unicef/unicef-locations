@@ -1,0 +1,62 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/code
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      - run:
+          name: run tests
+          command: |
+            pip install tox
+            tox -r
+  package:
+    working_directory: ~/code
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+#      - run:
+#          name: create main virtualenv, install requirements
+#          command: |
+#            python3 -m venv env1
+#            . env1/bin/activate
+#            pip install -r requirements/dev.txt
+      - run:
+          name: verify git tag vs version
+          command: |
+#            . env1/bin/activate
+            env1/bin/python3 setup.py verify
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[distutils]" >> ~/.pypirc
+            echo -e "index-servers =" >> ~/.pypirc
+            echo -e "    pypi" >> ~/.pypirc
+            echo -e "" >> ~/.pypirc
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username: $PYPI_USERNAME" >> ~/.pypirc
+            echo -e "password: $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: create and upload package
+          command: |
+#            . env1/bin/activate
+            env1/bin/python setup.py sdist upload
+
+workflows:
+  version: 2
+  build_and_package:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - package:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
