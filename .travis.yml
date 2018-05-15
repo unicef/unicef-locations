@@ -6,12 +6,10 @@ python:
 services:
   - postgresql
 
-addons:
-  postgresql: "10"
 
 before_script:
-  - sudo apt-get install postgresql-10-postgis-2.4 postgis -y -q
-  - psql -U postgres -c "create extension postgis"
+  - psql -c 'CREATE EXTENSION postgis;' -U postgres
+  - psql -c 'CREATE EXTENSION postgis_topology;' -U postgres
 
 env:
   - DJANGO=1.10

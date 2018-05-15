@@ -43,4 +43,4 @@ fullclean:
 
 
 travis:
-	docker run -it -u travis quay.io/travisci/travis-python /bin/bash
+	docker run --privileged -it --rm --name travis-debug -u travis quay.io/travisci/travis-python /bin/bash -l
