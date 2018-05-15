@@ -1,2 +1,9 @@
-djangorestframework
+carto
+celery
 django-autocomplete-light>=3.2.1
+django-leaflet
+django-model-utils
+django-mptt
+djangorestframework
+psycopg2-binary
+unicef-djangolib
