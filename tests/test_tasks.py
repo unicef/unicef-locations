@@ -1,13 +1,12 @@
-from unittest import TestCase
-
-import pytest
 from carto.exceptions import CartoException
 from mock import Mock, patch
-
 # from etools.applications.EquiTrack.tests.cases import BaseTenantTestCase
 from unicef_locations import tasks
 from unicef_locations.models import CartoDBTable, Location
 from unicef_locations.tests.factories import CartoDBTableFactory, LocationFactory
+
+import pytest
+from unittest import TestCase
 
 pytestmark = pytest.mark.django_db
 

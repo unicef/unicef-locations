@@ -1,12 +1,12 @@
-from django.test import TestCase
-#
-import pytest
 from carto.exceptions import CartoException
+from django.test import TestCase
 from mock import Mock, patch
-
 # from etools.applications.EquiTrack.tests.cases import BaseTenantTestCase
 from unicef_locations import forms
 from unicef_locations.tests.factories import GatewayTypeFactory
+
+#
+import pytest
 
 pytestmark = pytest.mark.django_db
 

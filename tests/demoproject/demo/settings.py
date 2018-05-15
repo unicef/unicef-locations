@@ -129,3 +129,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = '/tmp/'
+CELERY_ALWAYS_EAGER = True

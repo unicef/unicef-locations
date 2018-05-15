@@ -1,21 +1,27 @@
-import pytest
 from django.core.cache import cache
-from django.core.urlresolvers import reverse
-
 from rest_framework import status
-from unicef_locations.models import Location, get_cache_key
+from unicef_locations.models import get_cache_key, Location
 from unicef_locations.tests.factories import LocationFactory
+
+import pytest
+
+try:
+    from django.urls import reverse
+except ImportError:
+    # TODO: remove when django<2.0 will be unsupported
+    from django.core.urlresolvers import reverse
+
 
 pytestmark = pytest.mark.django_db
 
 
-def assert_heavy_detail_view_fundamentals(response):
-    '''Utility function that collects common assertions for heavy detail tests'''
-
-    assert sorted(response.json.keys()), [
-        'geo_point', 'id', 'location_type', 'location_type_admin_level', 'name', 'p_code', 'parent'
-    ]
-    assert "Location" in response.json["name"]
+# def assert_heavy_detail_view_fundamentals(response):
+#     '''Utility function that collects common assertions for heavy detail tests'''
+#
+#     assert sorted(response.json.keys()), ['geo_point', 'id', 'location_type',
+#                                           'location_type_admin_level', 'name',
+#                                           'p_code', 'parent']
+#     assert "Location" in response.json["name"]
 
 
 def test_api_locationtypes_list(django_app, admin_user):
@@ -50,14 +56,20 @@ def test_api_location_heavy_detail(django_app, admin_user, locations3):
     l1, l2, l3 = locations3
     url = reverse('locations-detail', args=[l1.id])
     response = django_app.get(url, user=admin_user)
-    assert_heavy_detail_view_fundamentals(response)
+    assert sorted(response.json.keys()), ['geo_point', 'id', 'location_type',
+                                          'location_type_admin_level', 'name',
+                                          'p_code', 'parent']
+    assert "Location" in response.json["name"]
 
 
 def test_api_location_heavy_detail_pcode(django_app, admin_user, locations3):
     l1, l2, l3 = locations3
     url = reverse('locations_detail_pcode', args=[l1.p_code])
     response = django_app.get(url, user=admin_user)
-    assert_heavy_detail_view_fundamentals(response)
+    assert sorted(response.json.keys()), ['geo_point', 'id', 'location_type',
+                                          'location_type_admin_level', 'name',
+                                          'p_code', 'parent']
+    assert "Location" in response.json["name"]
 
 
 def test_api_location_list_cached(django_app, admin_user, locations3):

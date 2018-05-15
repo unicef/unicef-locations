@@ -1,5 +1,12 @@
+import mock
+
 import pytest
-from django.core.urlresolvers import reverse
+
+try:
+    from django.urls import reverse
+except ImportError:
+    # TODO: remove when django<2.0 will be unsupported
+    from django.core.urlresolvers import reverse
 
 pytestmark = pytest.mark.django_db
 
@@ -21,6 +28,17 @@ def test_admin_cartodbtable(django_app, admin_user, cartodbtable):
     url = reverse('admin:locations_cartodbtable_changelist')
     response = django_app.get(url, user=admin_user)
     assert response
+
+
+def test_admin_cartodbtable_action(django_app, admin_user, cartodbtable):
+    url = reverse('admin:locations_cartodbtable_changelist')
+
+    with mock.patch('unicef_locations.admin.update_sites_from_cartodb'):
+        res = django_app.get(url, user=admin_user)
+        res.form['action'] = 'import_sites'
+        res.form['_selected_action'].checked = True
+        res = res.form.submit().follow()
+        assert res
 
 
 def test_admin_cartodbtable_edit(django_app, admin_user, cartodbtable):

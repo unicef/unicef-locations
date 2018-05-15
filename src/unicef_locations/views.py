@@ -1,5 +1,4 @@
 from dal.autocomplete import Select2QuerySetView
-# from dal_select2.views import Select2QuerySetView
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, permissions, viewsets
@@ -20,12 +19,8 @@ class CartoDBTablesView(ListAPIView):
     permission_classes = (permissions.IsAdminUser,)
 
 
-class LocationTypesViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet,
-):
+class LocationTypesViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin,
+                           mixins.CreateModelMixin, viewsets.GenericViewSet, ):
     """
     Returns a list off all Location types
     """
@@ -34,13 +29,9 @@ class LocationTypesViewSet(
     permission_classes = (permissions.IsAdminUser,)
 
 
-class LocationsViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.UpdateModelMixin,
-    viewsets.GenericViewSet,
-):
+class LocationsViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin,
+                       mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                       viewsets.GenericViewSet):
     """
     CRUD for Locations
     """

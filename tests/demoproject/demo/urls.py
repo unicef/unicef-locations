@@ -1,8 +1,7 @@
-from django.conf.urls import url, include
+from django.conf.urls import include, url
 from django.contrib import admin
 from rest_framework import routers
-
-from unicef_locations.views import LocationsViewSet, LocationsLightViewSet, LocationTypesViewSet
+from unicef_locations.views import LocationsLightViewSet, LocationsViewSet, LocationTypesViewSet
 
 api = routers.SimpleRouter()
 
