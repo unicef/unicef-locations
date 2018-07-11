@@ -26,6 +26,7 @@ factory-boy = "*"
 mock = "*"
 drf-api-checker = "*"
 django-webtest = "*"
+pdbpp = "*"
 
 [requires]
 python_version = "3.6"
