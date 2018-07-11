@@ -1,24 +1,11 @@
+# from django.core.cache import cache
 from django.core.cache import cache
+from django.urls import reverse
 from rest_framework import status
 
 from unicef_locations.libs import make_cache_key
 from unicef_locations.models import Location
 from unicef_locations.tests.factories import LocationFactory
-
-import pytest
-
-from django.urls import reverse
-
-pytestmark = pytest.mark.django_db
-
-
-# def assert_heavy_detail_view_invalidate_locations_etagfundamentals(response):
-#     '''Utility function that collects common assertions for heavy detail tests'''
-#
-#     assert sorted(response.json.keys()), ['geo_point', 'id', 'location_type',
-#                                           'location_type_admin_level', 'name',
-#                                           'p_code', 'parent']
-#     assert "Location" in response.json["name"]
 
 
 def test_api_locationtypes_list(django_app, admin_user):
@@ -133,6 +120,19 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
 
 
 #
+
+
+# from django.core.urlresolvers import reverse
+# from django.db import connection
+# from django.test import TestCase
+#
+# from rest_framework import status
+#
+# # from etools.applications.EquiTrack.tests.cases import BaseTenantTestCase
+# from unicef_locations.models import Location
+# from unicef_locations.tests.factories import LocationFactory
+#
+#
 # class TestLocationViews(TestCase):
 #     @classmethod
 #     def setUpTestData(cls):
@@ -236,61 +236,3 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
 #         self.assertEqual(len(response.data), 5)
 #         self.assertEqual(sorted(response.data[0].keys()), ["id", "name", "p_code"])
 #         self.assertIn("Loc", response.data[0]["name"])
-#
-#
-# class TestLocationAutocompleteView(TestCase):
-#     def setUp(self):
-#         super(TestLocationAutocompleteView, self).setUp()
-#         self.unicef_staff = UserFactory(is_staff=True, username='TestLocationAutocompleteView')
-#         self.client = TenantClient(self.tenant)
-#
-#     def test_non_auth(self):
-#         LocationFactory()
-#         response = self.client.get(reverse("locations:locations-autocomplete-light"))
-#         self.assertEqual(response.status_code, status.HTTP_302_FOUND)
-#
-#     def test_get(self):
-#         LocationFactory()
-#         self.client.force_login(self.unicef_staff)
-#         response = self.client.get(reverse("locations:locations-autocomplete-light"))
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         data = response.json()
-#         self.assertEqual(len(data["results"]), 1)
-#
-#     def test_get_filter(self):
-#         LocationFactory(name="Test")
-#         LocationFactory(name="Other")
-#         self.client.force_login(self.unicef_staff)
-#         response = self.client.get("{}?q=te".format(
-#             reverse("locations:locations-autocomplete-light")
-#         ))
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         data = response.json()
-#         self.assertEqual(len(data["results"]), 1)
-
-# def test_non_auth(django_app):
-#     url = reverse("locations:locations-autocomplete-light")
-#     response = django_app.get(url)
-#     assert response.status_code == status.HTTP_302_FOUND
-#
-
-#
-# def test_get(django_app, admin_user, location):
-#     url = reverse("locations:locations-autocomplete-light")
-#     response = django_app.get(url, user=admin_user)
-#     assert response.status_code == status.HTTP_200_OK
-#     assert len(response.json["results"]) == 1
-#
-#
-# def test_get_filter(django_app, admin_user, locations3):
-#     l1, l2, l3 = locations3
-#     url = reverse("locations:locations-autocomplete-light")
-#     response = django_app.get(f"{url}?q={l1.name}", user=admin_user)
-#     assert len(response.json["results"]) == 1, response.json
-#
-#
-# def test_get_filter_empty(django_app, locations3):
-#     l1, l2, l3 = locations3
-#     url = reverse("locations:locations-autocomplete-light")
-#     response = django_app.get(url)
-#     assert response

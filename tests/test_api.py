@@ -10,7 +10,7 @@ from tests.demoproject.demo.factories import UserFactory
 class MyRecorder(Recorder):
     @property
     def client(self):
-        user = UserFactory(is_superuser=True)
+        user = UserFactory(is_superuser=True, is_staff=True)
         client = APIClient()
         client.force_authenticate(user)
         return client
