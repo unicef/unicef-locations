@@ -3,6 +3,14 @@ UNICEF Locations
 
 Django applications to manage geographical locations
 
+
+Contributing
+------------
+
+    - checkout code
+    - pipenv install -d
+    - pipenv run test
+
 Links
 -----
 
