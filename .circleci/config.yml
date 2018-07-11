@@ -9,7 +9,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            pip install tox tox-pipenv
+            pip install tox-pipenv
             tox -r
   package:
     working_directory: ~/code
