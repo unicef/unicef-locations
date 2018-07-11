@@ -3,7 +3,16 @@ jobs:
   test:
     working_directory: ~/code
     docker:
-      - image: circleci/python:3.6
+      - image: unicef/etools:test-base-p3
+        environment:
+          PGHOST: 127.0.0.1
+          DATABASE_URL: "postgis://postgres:postgres@localhost:5432/circle_test"
+      - image: circleci/postgres:9.5-alpine-postgis
+        environment:
+          POSTGRES_USER: postgres
+          PGUSER: postgres
+          POSTGRES_DB: circle_test
+          POSTGRES_PASSWORD: postgres
     steps:
       - checkout
       - run:
