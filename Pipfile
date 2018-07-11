@@ -1,0 +1,34 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django-autocomplete-light = "*"
+django-mptt = "*"
+django-model-utils = "*"
+django-leaflet = "*"
+carto = "*"
+celery = "*"
+
+[dev-packages]
+django = "*"
+pytest = "*"
+pytest-echo = "*"
+pytest-coverage = "*"
+tox-pipenv = "*"
+tox = "==3"
+pytest-django = "*"
+pytest-pythonpath = "*"
+djangorestframework = "*"
+"psycopg2" = "*"
+factory-boy = "*"
+mock = "*"
+drf-api-checker = "*"
+django-webtest = "*"
+
+[requires]
+python_version = "3.6"
+
+[scripts]
+test = "tox -e d20"
