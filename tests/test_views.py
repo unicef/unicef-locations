@@ -1,21 +1,18 @@
 from django.core.cache import cache
 from rest_framework import status
-from unicef_locations.models import get_cache_key, Location
+
+from unicef_locations.libs import make_cache_key
+from unicef_locations.models import Location
 from unicef_locations.tests.factories import LocationFactory
 
 import pytest
 
-try:
-    from django.urls import reverse
-except ImportError:
-    # TODO: remove when django<2.0 will be unsupported
-    from django.core.urlresolvers import reverse
-
+from django.urls import reverse
 
 pytestmark = pytest.mark.django_db
 
 
-# def assert_heavy_detail_view_fundamentals(response):
+# def assert_heavy_detail_view_invalidate_locations_etagfundamentals(response):
 #     '''Utility function that collects common assertions for heavy detail tests'''
 #
 #     assert sorted(response.json.keys()), ['geo_point', 'id', 'location_type',
@@ -107,11 +104,11 @@ def test_location_delete_etag(django_app, admin_user, locations3):
     #         assert etag_before != etag_after
     url = reverse('locations-list')
     django_app.get(url, user=admin_user)
-    etag_before = cache.get(get_cache_key())
+    etag_before = cache.get(make_cache_key())
     Location.objects.all().delete()
 
     django_app.get(url, user=admin_user)
-    etag_after = cache.get(get_cache_key())
+    etag_after = cache.get(make_cache_key())
     assert etag_before != etag_after
 
 
@@ -277,23 +274,23 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
 #     assert response.status_code == status.HTTP_302_FOUND
 #
 
-
-def test_get(django_app, admin_user, location):
-    url = reverse("locations:locations-autocomplete-light")
-    response = django_app.get(url, user=admin_user)
-    assert response.status_code == status.HTTP_200_OK
-    assert len(response.json["results"]) == 1
-
-
-def test_get_filter(django_app, admin_user, locations3):
-    l1, l2, l3 = locations3
-    url = reverse("locations:locations-autocomplete-light")
-    response = django_app.get(f"{url}?q={l1.name}", user=admin_user)
-    assert len(response.json["results"]) == 1, response.json
-
-
-def test_get_filter_empty(django_app, locations3):
-    l1, l2, l3 = locations3
-    url = reverse("locations:locations-autocomplete-light")
-    response = django_app.get(url)
-    assert response
+#
+# def test_get(django_app, admin_user, location):
+#     url = reverse("locations:locations-autocomplete-light")
+#     response = django_app.get(url, user=admin_user)
+#     assert response.status_code == status.HTTP_200_OK
+#     assert len(response.json["results"]) == 1
+#
+#
+# def test_get_filter(django_app, admin_user, locations3):
+#     l1, l2, l3 = locations3
+#     url = reverse("locations:locations-autocomplete-light")
+#     response = django_app.get(f"{url}?q={l1.name}", user=admin_user)
+#     assert len(response.json["results"]) == 1, response.json
+#
+#
+# def test_get_filter_empty(django_app, locations3):
+#     l1, l2, l3 = locations3
+#     url = reverse("locations:locations-autocomplete-light")
+#     response = django_app.get(url)
+#     assert response
