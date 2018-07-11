@@ -20,7 +20,7 @@ env:
 
 
 install:
-  - pip install tox tox-pipenv
+  - pip install tox-pipenv
 
 script:
   - tox -e "d${DJANGO//.}-py${TRAVIS_PYTHON_VERSION//.}"
