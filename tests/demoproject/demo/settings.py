@@ -86,6 +86,7 @@ CACHES = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        # "ENGINE": "django.db.backends.postgresql",
         'NAME': 'demo',
         'HOST': '127.0.0.1',
         'USER': 'postgres',
@@ -130,3 +131,5 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = '/tmp/'
 CELERY_ALWAYS_EAGER = True
+
+UNICEF_LOCATIONS_GET_CACHE_KEY = 'unicef_locations.cache.get_cache_key'

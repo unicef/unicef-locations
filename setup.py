@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import ast
 import os
@@ -56,8 +57,6 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-tests_requires = read("src/requirements/test.txt")
-
 setup(
     name=NAME,
     version=VERSION,
@@ -82,11 +81,6 @@ setup(
     package_dir={'': 'src'},
     packages=find_packages('src'),
     include_package_data=True,
-    install_requires=read("src/requirements/install.txt"),
-    tests_requires=tests_requires,
-    extras_require={
-        'dev': tests_requires,
-    },
     cmdclass={"verify": VerifyTagVersion,
               'test': PyTest,
               }

@@ -1,10 +1,9 @@
-from dal.autocomplete import Select2QuerySetView
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, permissions, viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.generics import ListAPIView
-from unicef_djangolib.etag import etag_cached
 
+from .cache import etag_cached
 from .models import CartoDBTable, GatewayType, Location
 from .serializers import (CartoDBTableSerializer, GatewayTypeSerializer,
                           LocationLightSerializer, LocationSerializer,)
@@ -16,21 +15,23 @@ class CartoDBTablesView(ListAPIView):
     """
     queryset = CartoDBTable.objects.all()
     serializer_class = CartoDBTableSerializer
-    permission_classes = (permissions.IsAdminUser,)
 
 
-class LocationTypesViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin,
-                           mixins.CreateModelMixin, viewsets.GenericViewSet, ):
+class LocationTypesViewSet(mixins.RetrieveModelMixin,
+                           mixins.ListModelMixin,
+                           mixins.CreateModelMixin,
+                           viewsets.GenericViewSet):
     """
     Returns a list off all Location types
     """
     queryset = GatewayType.objects.all()
     serializer_class = GatewayTypeSerializer
-    permission_classes = (permissions.IsAdminUser,)
 
 
-class LocationsViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin,
-                       mixins.CreateModelMixin, mixins.UpdateModelMixin,
+class LocationsViewSet(mixins.RetrieveModelMixin,
+                       mixins.ListModelMixin,
+                       mixins.CreateModelMixin,
+                       mixins.UpdateModelMixin,
                        viewsets.GenericViewSet):
     """
     CRUD for Locations
@@ -38,7 +39,7 @@ class LocationsViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin,
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
-    @etag_cached("locations")
+    @etag_cached('locations')
     def list(self, request, *args, **kwargs):
         return super(LocationsViewSet, self).list(request, *args, **kwargs)
 
@@ -70,7 +71,7 @@ class LocationsLightViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationLightSerializer
 
-    @etag_cached("locations")
+    @etag_cached('locations')
     def list(self, request, *args, **kwargs):
         return super(LocationsLightViewSet, self).list(request, *args, **kwargs)
 
@@ -80,7 +81,7 @@ class LocationQuerySetView(ListAPIView):
     serializer_class = LocationLightSerializer
 
     def get_queryset(self):
-        q = self.request.query_params.get("q")
+        q = self.request.query_params.get('q')
         qs = self.model.objects
 
         if q:
@@ -88,18 +89,3 @@ class LocationQuerySetView(ListAPIView):
 
         # return maximum 7 records
         return qs.all()[:7]
-
-
-class LocationAutocompleteView(Select2QuerySetView):
-
-    def get_queryset(self):
-        # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated:
-            return Location.objects.none()
-
-        qs = Location.objects.all()
-
-        if self.q:
-            qs = qs.filter(name__istartswith=self.q)
-
-        return qs

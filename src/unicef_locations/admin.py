@@ -1,4 +1,6 @@
+from django import forms
 from django.contrib.gis import admin
+from django.forms import Textarea
 from leaflet.admin import LeafletGeoAdmin
 from mptt.admin import MPTTModelAdmin
 
@@ -7,17 +9,41 @@ from .models import CartoDBTable, GatewayType, Location
 from .tasks import update_sites_from_cartodb
 
 
+class AutoSizeTextForm(forms.ModelForm):
+    """
+    Use textarea for name and description fields
+    """
+
+    class Meta:
+        widgets = {
+            'name': Textarea(),
+            'description': Textarea(),
+        }
+
+
 class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
     save_as = True
-    fields = ["name", "gateway", "p_code", "geom", "point"]
-    list_display = ("name", "gateway", "p_code")
-    list_filter = ("gateway", "parent")
-    search_fields = ("name", "p_code")
+    form = AutoSizeTextForm
+    fields = [
+        'name',
+        'gateway',
+        'p_code',
+        'geom',
+        'point',
+    ]
+    list_display = (
+        'name',
+        'gateway',
+        'p_code',
+    )
+    list_filter = (
+        'gateway',
+        'parent',
+    )
+    search_fields = ('name', 'p_code',)
 
     def get_form(self, request, obj=None, **kwargs):
-        self.readonly_fields = [] if request.user.is_superuser else [
-            "p_code", "geom", "point", "gateway"
-        ]
+        self.readonly_fields = [] if request.user.is_superuser else ['p_code', 'geom', 'point', 'gateway']
 
         return super(LocationAdmin, self).get_form(request, obj, **kwargs)
 
@@ -25,8 +51,15 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
 class CartoDBTableAdmin(admin.ModelAdmin):
     form = CartoDBTableForm
     save_as = True
-    list_display = ("table_name", "location_type", "name_col", "pcode_col", "parent_code_col")
-    actions = ("import_sites",)
+    list_display = (
+        'table_name',
+        'location_type',
+        'name_col',
+        'pcode_col',
+        'parent_code_col',
+    )
+
+    actions = ('import_sites',)
 
     def import_sites(self, request, queryset):
         for table in queryset:

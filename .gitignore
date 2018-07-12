@@ -8,3 +8,5 @@ __pycache__/
 *.sqlite
 .pytest_cache
 .benchmarks
+Pipfile.lock
+.venv

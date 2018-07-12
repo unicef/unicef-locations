@@ -1,52 +1,37 @@
 # -*- coding: utf-8 -*-
-from unicef_locations.serializers import GatewayTypeSerializer, LocationLightSerializer, LocationSerializer
-
-import pytest
-
-from demo.recorder import Recorder
-
 try:
     from django.urls import reverse
 except ImportError:
     # TODO: remove when django<2.0 will be unsupported
     from django.core.urlresolvers import reverse
+from drf_api_checker.pytest import contract, frozenfixture
 
-recorder = Recorder.new(__file__)
 
-
-@pytest.fixture()
-@recorder.freeze()
+@frozenfixture
 def gateway():
     from unicef_locations.tests.factories import GatewayTypeFactory
     return GatewayTypeFactory()
 
 
-@pytest.fixture()
-@recorder.freeze2()
+@frozenfixture
 def location():
     from unicef_locations.tests.factories import LocationFactory
     return LocationFactory(parent=None)
 
 
+@contract()
 def test_api_locationtypes_list(django_app, admin_user, gateway):
-    url = reverse('locationtypes-list')
-    with recorder('locationtypes-list', GatewayTypeSerializer, django_app) as tape:
-        res = django_app.get(url, user=admin_user)
-        assert tape.assert_response(res)
+    return reverse('locations:locationtypes-list')
 
 
+@contract()
 def test_api_location_light_list(django_app, admin_user, location):
-    url = reverse('locations-light-list')
-    with recorder('locations-light-list', LocationLightSerializer, django_app) as tape:
-        res = django_app.get(url, user=admin_user)
-        assert tape.assert_response(res)
+    return reverse('locations:locations-light-list')
 
 
+@contract()
 def test_api_location_list(django_app, admin_user, location):
-    url = reverse('locations-list')
-    with recorder('locations-list', LocationSerializer, django_app) as tape:
-        res = django_app.get(url, user=admin_user)
-        assert tape.assert_response(res)
+    return reverse('locations:locations-list')
 
     #
     # url = reverse('locations-light-list')

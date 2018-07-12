@@ -1,14 +1,10 @@
+
 from carto.exceptions import CartoException
 from django.test import TestCase
 from mock import Mock, patch
-# from etools.applications.EquiTrack.tests.cases import BaseTenantTestCase
+
 from unicef_locations import forms
 from unicef_locations.tests.factories import GatewayTypeFactory
-
-#
-import pytest
-
-pytestmark = pytest.mark.django_db
 
 
 class TestCartoDBTableForm(TestCase):
@@ -37,59 +33,63 @@ class TestCartoDBTableForm(TestCase):
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
-        self.assertEqual(errors["__all__"][0].message, "Couldn't connect to CartoDB table: test")
+        self.assertEqual(
+            errors["__all__"][0].message,
+            "Couldn't connect to CartoDB table: test"
+        )
 
     def test_no_name_col(self):
         """Check that validation fails when `name_col` is missing"""
-        self.mock_sql.return_value = {
-            "rows": [{
-                "pcode": "",
-                "parent": "",
-            }]
-        }
+        self.mock_sql.return_value = {"rows": [{
+            "pcode": "",
+            "parent": "",
+        }]}
         form = forms.CartoDBTableForm(self.data)
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
-        self.assertEqual(errors["__all__"][0].message, "The Name column (name) is not in table: test")
+        self.assertEqual(
+            errors["__all__"][0].message,
+            "The Name column (name) is not in table: test"
+        )
 
     def test_no_pcode_col(self):
         """Check that validation fails when `pcode_col` is missing"""
-        self.mock_sql.return_value = {
-            "rows": [{
-                "name": "",
-                "parent": "",
-            }]
-        }
+        self.mock_sql.return_value = {"rows": [{
+            "name": "",
+            "parent": "",
+        }]}
         form = forms.CartoDBTableForm(self.data)
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
-        self.assertEqual(errors["__all__"][0].message, "The PCode column (pcode) is not in table: test")
+        self.assertEqual(
+            errors["__all__"][0].message,
+            "The PCode column (pcode) is not in table: test"
+        )
 
     def test_no_parent_code_col(self):
         """Check that validation fails when `parent_code_col` is missing"""
-        self.mock_sql.return_value = {
-            "rows": [{
-                "name": "",
-                "pcode": "",
-            }]
-        }
+        self.mock_sql.return_value = {"rows": [{
+            "name": "",
+            "pcode": "",
+        }]}
         form = forms.CartoDBTableForm(self.data)
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
-        self.assertEqual(errors["__all__"][0].message, "The Parent Code column (parent) is not in table: test")
+        self.assertEqual(
+            errors["__all__"][0].message,
+            "The Parent Code column (parent) is not in table: test"
+        )
 
     def test_clean(self):
         """Check that validation passes"""
-        self.mock_sql.return_value = {
-            "rows": [{
-                "name": "",
-                "pcode": "",
-                "parent": "",
-            }]
-        }
+        self.mock_sql.return_value = {"rows": [{
+            "name": "",
+            "pcode": "",
+            "parent": "",
+        }]}
         form = forms.CartoDBTableForm(self.data)
         self.assertTrue(self._test_clean(form))
         self.assertEqual(form.errors.as_data(), {})
