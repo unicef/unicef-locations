@@ -1,0 +1,41 @@
+{
+    "status_code": 200,
+    "headers": {
+        "content-type": [
+            "Content-Type",
+            "application/json"
+        ],
+        "etag": [
+            "ETag",
+            "\"717b0f10c276491b99c627a4bc384616\""
+        ],
+        "cache-control": [
+            "Cache-Control",
+            "private, must-revalidate"
+        ],
+        "vary": [
+            "Vary",
+            "Accept, Cookie"
+        ],
+        "allow": [
+            "Allow",
+            "GET, HEAD, OPTIONS"
+        ],
+        "x-frame-options": [
+            "X-Frame-Options",
+            "SAMEORIGIN"
+        ],
+        "content-length": [
+            "Content-Length",
+            "77"
+        ]
+    },
+    "data": [
+        {
+            "id": "124",
+            "name": "Location 4 [GatewayType 7 - PCODE4]",
+            "p_code": "PCODE4"
+        }
+    ],
+    "content_type": null
+}
