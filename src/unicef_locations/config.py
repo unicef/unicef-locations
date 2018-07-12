@@ -32,14 +32,17 @@ class AppSettings(object):
     def _set_attr(self, prefix_name, value):
         name = prefix_name[len(self.prefix) + 1:]
         if name in ('GET_CACHE_KEY', 'GET_CACHE_VERSION'):
-            if isinstance(value, str):
-                func = get_callable(value)
-            elif callable(value):
-                func = value
-            else:
+            try:
+                if isinstance(value, str):
+                    func = get_callable(value)
+                elif callable(value):
+                    func = value
+                else:
+                    raise ValueError(name)
+            except Exception as e:
                 raise ImproperlyConfigured(
                     f"{value} is not a valid value for `{name}`. "
-                    "It must be a callable or a fullpath to callable. ")  # pragma: no-cover
+                    "It must be a callable or a fullpath to callable. ")
             setattr(self, name, func)
             return func
         else:
@@ -53,7 +56,11 @@ class AppSettings(object):
         @see :ref:`django:setting-changed`_
         """
         if setting.startswith(self.prefix):
-            self._set_attr(setting, value)
+            name = setting[len(self.prefix) + 1:]
+            try:
+                delattr(self, name)
+            except AttributeError:
+                pass
 
 
 conf = AppSettings('UNICEF_LOCATIONS')

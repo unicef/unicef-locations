@@ -170,7 +170,7 @@ def update_sites_from_cartodb(carto_table_pk):
                 logger.exception("CartoDB API error received: {}".format(sites['error']))
                 # When this error occurs, we receive truncated locations, probably it's better to interrupt the import
                 return
-    except CartoException:
+    except CartoException:  # pragma: no-cover
         logger.exception("CartoDB exception occured")
     else:
         # wrap Location tree updates in a transaction, to prevent an invalid tree state due to errors
@@ -188,7 +188,7 @@ def update_sites_from_cartodb(carto_table_pk):
                         continue
 
                     parent = None
-                    parent_code = None
+                    # parent_code = None
                     parent_instance = None
 
                     # attempt to reference the parent of this location
@@ -206,7 +206,7 @@ def update_sites_from_cartodb(carto_table_pk):
                             msg = "No locations found for parent code: {}".format(
                                 parent_code
                             )
-                        except Exception as exp:
+                        except Exception as exp:  # pragma: no-cover
                             msg = force_text(exp)
 
                         if msg is not None:

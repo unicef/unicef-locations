@@ -1,8 +1,10 @@
-
 from django.test import SimpleTestCase
 
-
 from unicef_locations.tests.factories import CartoDBTableFactory, GatewayTypeFactory, LocationFactory
+
+
+def test_point_lat_long(location):
+    assert isinstance(location.point_lat_long, str)
 
 
 class TestStrUnicode(SimpleTestCase):
