@@ -7,8 +7,8 @@ from django.utils.cache import patch_cache_control
 from django.utils.text import slugify
 from rest_framework import status
 from rest_framework.request import Request
-
 from rest_framework.response import Response
+
 from .config import conf
 
 
@@ -39,8 +39,6 @@ def etag_cached(cache_key: str, public_cache=False):
     """
 
     def decorator(func):
-        key = None
-
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             key = get_cache_key(self.request)

@@ -9,8 +9,8 @@ from model_utils.fields import AutoCreatedField, AutoLastModifiedField
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel, TreeForeignKey
 
-from .libs import get_random_color
 from .cache import invalidate_cache
+from .libs import get_random_color
 
 logger = logging.getLogger(__name__)
 

@@ -2,11 +2,11 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, viewsets
 from rest_framework.generics import ListAPIView
-from .cache import etag_cached
 
+from .cache import etag_cached
 from .models import CartoDBTable, GatewayType, Location
 from .serializers import (CartoDBTableSerializer, GatewayTypeSerializer,
-                          LocationLightSerializer, LocationSerializer, )
+                          LocationLightSerializer, LocationSerializer,)
 
 
 class CartoDBTablesView(ListAPIView):

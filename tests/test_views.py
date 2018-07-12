@@ -1,9 +1,6 @@
 # from django.core.cache import cache
 from django.core.cache import cache
-from django.http import HttpRequest
-from django.test import RequestFactory
 from django.urls import reverse
-from mock import Mock, MagicMock
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory

@@ -7,7 +7,7 @@ from django.urls import get_callable
 class AppSettings(object):
     defaults = {
         'GET_CACHE_KEY': 'unicef_locations.cache.get_cache_key',
-        'CACHE_VERSION_KEY' : 'locations-etag-version',
+        'CACHE_VERSION_KEY': 'locations-etag-version',
     }
 
     def __init__(self, prefix):
@@ -38,11 +38,11 @@ class AppSettings(object):
                 elif callable(value):
                     func = value
                 else:
-                    raise ValueError(name)
+                    raise ImproperlyConfigured(
+                        f"{value} is not a valid value for `{name}`. "
+                        "It must be a callable or a fullpath to callable. ")
             except Exception as e:
-                raise ImproperlyConfigured(
-                    f"{value} is not a valid value for `{name}`. "
-                    "It must be a callable or a fullpath to callable. ")
+                raise ImproperlyConfigured(e)
             setattr(self, name, func)
             return func
         else:
