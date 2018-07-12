@@ -2,16 +2,15 @@
 import logging
 
 from django.contrib.gis.db import models
-from django.core.cache import cache
-from django.db import connection
 from django.db.models.signals import post_delete, post_save
 from django.dispatch.dispatcher import receiver
 from django.utils.translation import ugettext as _
-
 from model_utils.fields import AutoCreatedField, AutoLastModifiedField
-from mptt.models import MPTTModel, TreeForeignKey
 from mptt.managers import TreeManager
+from mptt.models import MPTTModel, TreeForeignKey
+
 from .libs import get_random_color
+from .cache import invalidate_cache
 
 logger = logging.getLogger(__name__)
 
@@ -120,8 +119,7 @@ def invalidate_locations_etag(sender, instance, **kwargs):
     """
     Invalidate the locations etag in the cache on every change.
     """
-    schema_name = connection.schema_name
-    cache.delete("{}-locations-etag".format(schema_name))
+    invalidate_cache()
 
 
 class CartoDBTable(MPTTModel):
@@ -154,4 +152,3 @@ class CartoDBTable(MPTTModel):
 
     class Meta:
         app_label = 'locations'
-

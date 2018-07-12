@@ -1,11 +1,17 @@
 # from django.core.cache import cache
 from django.core.cache import cache
+from django.http import HttpRequest
+from django.test import RequestFactory
 from django.urls import reverse
+from mock import Mock, MagicMock
 from rest_framework import status
+from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory
 
-from unicef_locations.libs import make_cache_key
+from unicef_locations.config import conf
 from unicef_locations.models import Location
 from unicef_locations.tests.factories import LocationFactory
+from unicef_locations.views import LocationsViewSet
 
 
 def test_api_locationtypes_list(django_app, admin_user):
@@ -75,32 +81,35 @@ def test_api_location_list_modified(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user)
     assert len(response.json) == len(locations3)
     etag = response["ETag"]
-
     LocationFactory()
 
     response = django_app.get(url, user=admin_user, headers=dict(IF_NONE_MATCH=etag))
     assert len(response.json) == len(locations3) + 1
 
 
-def test_location_delete_etag(django_app, admin_user, locations3):
-    #         self.forced_auth_req('get', reverse('locations-list'), user=self.unicef_staff)
-    #         schema_name = connection.schema_name
-    #         etag_before = cache.get("{}-locations-etag".format(schema_name))
-    #         Location.objects.all().delete()
-    #         etag_after = cache.get("{}-locations-etag".format(schema_name))
-    #         assert etag_before != etag_after
+def test_location_assert_etag(django_app, admin_user, locations3):
     url = reverse('locations-list')
-    django_app.get(url, user=admin_user)
-    etag_before = cache.get(make_cache_key())
+    factory = APIRequestFactory()
+    request = factory.get(url)
+    LocationsViewSet.as_view({'get': 'list'})(request)
+    assert cache.get(conf.GET_CACHE_KEY(Request(request)))
+
+
+def test_location_delete_etag(django_app, admin_user, locations3):
+    url = reverse('locations-list')
+    factory = APIRequestFactory()
+    request = factory.get(url)
+    LocationsViewSet.as_view({'get': 'list'})(request)
+    etag_before = cache.get(conf.GET_CACHE_KEY(Request(request)))
     Location.objects.all().delete()
 
-    django_app.get(url, user=admin_user)
-    etag_after = cache.get(make_cache_key())
+    LocationsViewSet.as_view({'get': 'list'})(request)
+    etag_after = cache.get(conf.GET_CACHE_KEY(Request(request)))
     assert etag_before != etag_after
 
 
 def test_api_location_autocomplete(django_app, admin_user, locations3):
-    url = reverse('locations:locations_autocomplete')
+    url = reverse('locations_autocomplete')
 
     response = django_app.get(url, user=admin_user, params={"q": "Loc"})
 
@@ -110,14 +119,13 @@ def test_api_location_autocomplete(django_app, admin_user, locations3):
 
 
 def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
-    url = reverse('locations:locations_autocomplete')
+    url = reverse('locations_autocomplete')
 
     response = django_app.get(url, user=admin_user)
 
     assert len(response.json) == len(locations3)
     assert sorted(response.json[0].keys()) == ["id", "name", "p_code"]
     assert "Loc" in response.json[0]["name"]
-
 
 #
 

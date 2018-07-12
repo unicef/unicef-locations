@@ -10,6 +10,7 @@ django-model-utils = "*"
 django-leaflet = "*"
 carto = "*"
 celery = "*"
+unicef-djangolib = "*"
 
 [dev-packages]
 django = "*"

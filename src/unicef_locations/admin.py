@@ -1,14 +1,12 @@
+from django import forms
 from django.contrib.gis import admin
-
+from django.forms import Textarea
 from leaflet.admin import LeafletGeoAdmin
 from mptt.admin import MPTTModelAdmin
 
 from .forms import CartoDBTableForm
 from .models import CartoDBTable, GatewayType, Location
 from .tasks import update_sites_from_cartodb
-
-from django import forms
-from django.forms import Textarea
 
 
 class AutoSizeTextForm(forms.ModelForm):

@@ -3,12 +3,6 @@
 import pytest
 
 
-@pytest.fixture(autouse=True)
-def set(monkeypatch):
-    monkeypatch.setattr('django.db.backends.base.base.BaseDatabaseWrapper.schema_name',
-                        'public', raising=False)
-
-
 @pytest.fixture()
 def location():
     from unicef_locations.tests.factories import LocationFactory

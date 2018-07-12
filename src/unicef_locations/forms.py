@@ -1,11 +1,10 @@
 
 import logging
 
-from django import forms
-from django.core.exceptions import ValidationError
-
 from carto.exceptions import CartoException
 from carto.sql import SQLClient
+from django import forms
+from django.core.exceptions import ValidationError
 
 from .auth import EtoolsCartoNoAuthClient
 from .models import CartoDBTable

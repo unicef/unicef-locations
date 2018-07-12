@@ -1,19 +1,10 @@
 # -*- coding: utf-8 -*-
-from django.urls import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    # TODO: remove when django<2.0 will be unsupported
+    from django.core.urlresolvers import reverse
 from drf_api_checker.pytest import contract, frozenfixture
-from drf_api_checker.recorder import Recorder
-from rest_framework.test import APIClient
-
-from tests.demoproject.demo.factories import UserFactory
-
-
-class MyRecorder(Recorder):
-    @property
-    def client(self):
-        user = UserFactory(is_superuser=True, is_staff=True)
-        client = APIClient()
-        client.force_authenticate(user)
-        return client
 
 
 @frozenfixture
@@ -28,12 +19,12 @@ def location():
     return LocationFactory(parent=None)
 
 
-@contract(recorder_class=MyRecorder)
+@contract()
 def test_api_locationtypes_list(django_app, admin_user, gateway):
     return reverse('locationtypes-list')
 
 
-@contract(recorder_class=MyRecorder)
+@contract()
 def test_api_location_light_list(django_app, admin_user, location):
     return reverse('locations-light-list')
 

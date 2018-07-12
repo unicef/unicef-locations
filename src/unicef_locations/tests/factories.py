@@ -1,8 +1,7 @@
 from django.contrib.gis.geos import GEOSGeometry
+from unicef_locations import models
 
 import factory
-
-from unicef_locations import models
 
 
 class GatewayTypeFactory(factory.django.DjangoModelFactory):

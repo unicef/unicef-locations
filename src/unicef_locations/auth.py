@@ -1,6 +1,6 @@
-from pyrestcli.auth import BaseAuthClient
 from carto.auth import _BaseUrlChecker
 from carto.exceptions import CartoException
+from pyrestcli.auth import BaseAuthClient
 
 
 class EtoolsCartoNoAuthClient(_BaseUrlChecker, BaseAuthClient):

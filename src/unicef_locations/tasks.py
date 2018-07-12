@@ -1,14 +1,15 @@
 import time
 
-from django.db import IntegrityError, transaction
-from django.utils.encoding import force_text
-
+import celery
 from carto.exceptions import CartoException
 from carto.sql import SQLClient
 from celery.utils.log import get_task_logger
+from django.db import IntegrityError, transaction
+from django.utils.encoding import force_text
 
 from .auth import EtoolsCartoNoAuthClient
 from .models import CartoDBTable, Location
+
 # from etools.config.celery import app
 
 logger = get_task_logger(__name__)
@@ -92,6 +93,7 @@ def create_location(pcode, carto_table, parent, parent_instance,
         return True, sites_not_added, sites_created, sites_updated
 
 
+@celery.current_app.task
 def update_sites_from_cartodb(carto_table_pk):
 
     try:

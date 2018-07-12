@@ -131,3 +131,5 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = '/tmp/'
 CELERY_ALWAYS_EAGER = True
+
+UNICEF_LOCATIONS_GET_CACHE_KEY = 'unicef_locations.cache.get_cache_key'
