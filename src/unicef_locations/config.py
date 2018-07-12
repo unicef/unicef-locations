@@ -5,9 +5,9 @@ from django.urls import get_callable
 
 
 class AppSettings(object):
-    # GET_CACHE_KEY = lambda : 'locations-etag'
     defaults = {
         'GET_CACHE_KEY': 'unicef_locations.cache.get_cache_key',
+        'CACHE_VERSION_KEY' : 'locations-etag-version',
     }
 
     def __init__(self, prefix):
@@ -16,16 +16,18 @@ class AppSettings(object):
         that are omitted.
         """
         self.prefix = prefix
-        from django.conf import settings
-
-        for name, default in self.defaults.items():
-            prefix_name = (self.prefix + '_' + name).upper()
-            value = getattr(settings, prefix_name, default)
-            self._set_attr(prefix_name, value)
-            setattr(settings, prefix_name, value)
-            setting_changed.send(self.__class__, setting=prefix_name, value=value, enter=True)
-
         setting_changed.connect(self._handler)
+
+    def __getattr__(self, name):
+        if name in self.defaults.keys():
+            from django.conf import settings
+            name_with_prefix = (self.prefix + '_' + name).upper()
+            raw_value = getattr(settings, name_with_prefix, self.defaults[name])
+            value = self._set_attr(name_with_prefix, raw_value)
+            setattr(settings, name_with_prefix, raw_value)
+            setting_changed.send(self.__class__, setting=name_with_prefix, value=raw_value, enter=True)
+            return value
+        return super(AppSettings, self).__getattr__(name)
 
     def _set_attr(self, prefix_name, value):
         name = prefix_name[len(self.prefix) + 1:]
@@ -36,11 +38,13 @@ class AppSettings(object):
                 func = value
             else:
                 raise ImproperlyConfigured(
-                    "{} is not a valid value for `GET_CACHE_KEY`. It must be a callable or a fullpath to callable. ".format(
-                        value))
+                    f"{value} is not a valid value for `{name}`. "
+                    "It must be a callable or a fullpath to callable. ")  # pragma: no-cover
             setattr(self, name, func)
+            return func
         else:
             setattr(self, name, value)
+            return value
 
     def _handler(self, sender, setting, value, **kwargs):
         """

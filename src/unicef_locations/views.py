@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, permissions, viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.generics import ListAPIView
 from .cache import etag_cached
 
@@ -57,7 +57,7 @@ class LocationsViewSet(mixins.RetrieveModelMixin,
             # Used for ghost data - filter in all(), and return straight away.
             try:
                 ids = [int(x) for x in self.request.query_params.get("values").split(",")]
-            except ValueError:
+            except ValueError:  # pragma: no-cover
                 raise ValidationError("ID values must be integers")
             else:
                 queryset = queryset.filter(id__in=ids)

@@ -9,12 +9,11 @@ from rest_framework import status
 from rest_framework.request import Request
 
 from rest_framework.response import Response
-
-CACHE_VERSION_KEY = 'locations-etag-version'
+from .config import conf
 
 
 def get_cache_version():
-    return cache.get(CACHE_VERSION_KEY) or 0
+    return cache.get(conf.CACHE_VERSION_KEY) or 0
 
 
 def invalidate_cache():
@@ -22,9 +21,9 @@ def invalidate_cache():
     Invalidate the locations etag in the cache on every change.
     """
     try:
-        cache.incr(CACHE_VERSION_KEY)
+        cache.incr(conf.CACHE_VERSION_KEY)
     except ValueError:
-        cache.set(CACHE_VERSION_KEY, 1)
+        cache.set(conf.CACHE_VERSION_KEY, 1)
 
 
 def get_cache_key(request: Request):
@@ -63,10 +62,9 @@ def etag_cached(cache_key: str, public_cache=False):
             patch_cache_control(response, private=True, must_revalidate=True)
             return response
 
-        def invalidate():
-            cache.delete(key)
-
-        wrapper.invalidate = invalidate
+        # def invalidate():
+        #     cache.delete(key)
+        # wrapper.invalidate = invalidate
         return wrapper
 
     return decorator

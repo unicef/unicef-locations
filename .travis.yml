@@ -31,6 +31,3 @@ before_success:
 after_success:
   - coverage combine
   - codecov
-
-allow_failures:
-    - env: DJANGO=2.0

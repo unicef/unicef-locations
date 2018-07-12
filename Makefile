@@ -1,4 +1,4 @@
-BUILDDIR?=build
+BUILDDIR?=~build
 DJANGO_SETTINGS_MODULE?="demo.settings"
 DEMOPATH=tests/demoproject
 
@@ -38,7 +38,7 @@ clean:
 
 
 fullclean:
-	rm -fr .tox .cache .env .pytest_cache
+	rm -fr .tox .cache .pytest_cache .venv
 	$(MAKE) clean
 
 

@@ -18,5 +18,5 @@ class EtoolsCartoNoAuthClient(_BaseUrlChecker, BaseAuthClient):
                 http_method.lower(),
                 **requests_args
             )
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             raise CartoException(e)

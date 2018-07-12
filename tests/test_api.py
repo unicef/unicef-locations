@@ -21,17 +21,17 @@ def location():
 
 @contract()
 def test_api_locationtypes_list(django_app, admin_user, gateway):
-    return reverse('locationtypes-list')
+    return reverse('locations:locationtypes-list')
 
 
 @contract()
 def test_api_location_light_list(django_app, admin_user, location):
-    return reverse('locations-light-list')
+    return reverse('locations:locations-light-list')
 
 
 @contract()
 def test_api_location_list(django_app, admin_user, location):
-    return reverse('locations-list')
+    return reverse('locations:locations-list')
 
     #
     # url = reverse('locations-light-list')

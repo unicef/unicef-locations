@@ -49,14 +49,14 @@ def create_location(pcode, carto_table, parent, parent_instance,
         sites_created += 1
         try:
             location = Location.objects.create(**create_args)
-        except IntegrityError:
+        except IntegrityError:  # pragma: no-cover
             logger.exception('Error while creating location: %s', site_name)
-
-        logger.info('{}: {} ({})'.format(
-            'Added',
-            location.name,
-            carto_table.location_type.name
-        ))
+        else:
+            logger.info('{}: {} ({})'.format(
+                'Added',
+                location.name,
+                carto_table.location_type.name
+            ))
         return True, sites_not_added, sites_created, sites_updated
 
     else:
@@ -79,7 +79,7 @@ def create_location(pcode, carto_table, parent, parent_instance,
 
         try:
             location.save()
-        except IntegrityError:
+        except IntegrityError:  # pragma: no-cover
             logger.exception('Error while saving location: %s', site_name)
             return False, sites_not_added, sites_created, sites_updated
 
@@ -107,7 +107,6 @@ def update_sites_from_cartodb(carto_table_pk):
     sites_created = sites_updated = sites_not_added = 0
 
     # query for cartodb
-    qry = ''
     rows = []
     cartodb_id_col = 'cartodb_id'
 

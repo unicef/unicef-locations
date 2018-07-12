@@ -12,5 +12,5 @@ exclude_lines =
    pragma: no-cover
 
 [html]
-directory = build/coverage
+directory = ~build/coverage
 title = Coverage report
