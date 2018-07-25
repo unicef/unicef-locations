@@ -2,6 +2,7 @@
 *.py[co]
 .coverage
 build/
+~build/
 dist/
 coverage.xml
 __pycache__/
@@ -10,3 +11,5 @@ __pycache__/
 .benchmarks
 Pipfile.lock
 .venv
+.idea
+.tox
