@@ -1,3 +1,7 @@
+1.2
+===
+* defer 'geom' field for LocationsLightViewSet and LocationQuerySetView
+
 1.1
 ===
 * allow customization of etag cache key function
