@@ -20,7 +20,7 @@ def test_api_locationtypes_list(django_app, admin_user):
 def test_api_location_light_list(django_app, admin_user, locations3):
     url = reverse('locations:locations-light-list')
     res = django_app.get(url, user=admin_user)
-    assert sorted(res.json[0].keys()) == ["id", "name", "p_code"]
+    assert sorted(res.json[0].keys()) == ['id', 'location_type', 'location_type_admin_level', 'name', 'p_code']
 
 
 def test_api_location_heavy_list(django_app, admin_user, location):
@@ -111,7 +111,7 @@ def test_api_location_autocomplete(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user, params={"q": "Loc"})
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ["id", "name", "p_code"]
+    assert sorted(response.json[0].keys()) == ['id', 'location_type', 'location_type_admin_level', 'name', 'p_code']
     assert "Loc" in response.json[0]["name"]
 
 
@@ -121,5 +121,5 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user)
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ["id", "name", "p_code"]
+    assert sorted(response.json[0].keys()) == ['id', 'location_type', 'location_type_admin_level', 'name', 'p_code']
     assert "Loc" in response.json[0]["name"]

@@ -1,4 +1,12 @@
+1.2
+===
+* defer 'geom' field for LocationsLightViewSet and LocationQuerySetView
+
+1.1
+===
+* allow customization of etag cache key function
+* celery uses `default_app`
+
 1.0
 ===
-
 * initial release
