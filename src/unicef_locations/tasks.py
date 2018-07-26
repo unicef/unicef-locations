@@ -7,7 +7,7 @@ from celery.utils.log import get_task_logger
 from django.db import IntegrityError, transaction
 from django.utils.encoding import force_text
 
-from .auth import EtoolsCartoNoAuthClient
+from .auth import LocationsCartoNoAuthClient
 from .models import CartoDBTable, Location
 
 # from etools.config.celery import app
@@ -102,7 +102,7 @@ def update_sites_from_cartodb(carto_table_pk):
         logger.exception('Cannot retrieve CartoDBTable with pk: %s', carto_table_pk)
         return
 
-    auth_client = EtoolsCartoNoAuthClient(base_url="https://{}.carto.com/".format(carto_table.domain))
+    auth_client = LocationsCartoNoAuthClient(base_url="https://{}.carto.com/".format(carto_table.domain))
     sql_client = SQLClient(auth_client)
     sites_created = sites_updated = sites_not_added = 0
 
