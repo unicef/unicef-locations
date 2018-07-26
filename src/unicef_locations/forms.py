@@ -6,7 +6,7 @@ from carto.sql import SQLClient
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .auth import EtoolsCartoNoAuthClient
+from .auth import LocationsCartoNoAuthClient
 from .models import CartoDBTable
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ class CartoDBTableForm(forms.ModelForm):
         name_col = self.cleaned_data['name_col']
         pcode_col = self.cleaned_data['pcode_col']
         parent_code_col = self.cleaned_data['parent_code_col']
-        auth_client = EtoolsCartoNoAuthClient(base_url="https://{}.carto.com/".format(str(domain)))
+        auth_client = LocationsCartoNoAuthClient(base_url="https://{}.carto.com/".format(str(domain)))
 
         sql_client = SQLClient(auth_client)
         try:

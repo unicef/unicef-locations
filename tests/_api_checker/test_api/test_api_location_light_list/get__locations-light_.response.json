@@ -7,7 +7,7 @@
         ],
         "etag": [
             "ETag",
-            "\"717b0f10c276491b99c627a4bc384616\""
+            "\"94326b4b491349908d6905295e43b554\""
         ],
         "cache-control": [
             "Cache-Control",
@@ -27,14 +27,19 @@
         ],
         "content-length": [
             "Content-Length",
-            "77"
+            "137"
         ]
     },
     "data": [
         {
             "id": "124",
             "name": "Location 4 [GatewayType 7 - PCODE4]",
-            "p_code": "PCODE4"
+            "p_code": "PCODE4",
+            "gateway": {
+                "id": 221,
+                "name": "GatewayType 7",
+                "admin_level": 7
+            }
         }
     ],
     "content_type": null
