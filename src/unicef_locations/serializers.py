@@ -1,4 +1,3 @@
-
 from rest_framework import serializers
 
 from .models import CartoDBTable, GatewayType, Location
@@ -34,10 +33,10 @@ class LocationLightSerializer(serializers.ModelSerializer):
 
     id = serializers.CharField(read_only=True)
     name = serializers.SerializerMethodField()
-    location_type = serializers.CharField(source='gateway.name')
-    location_type_admin_level = serializers.IntegerField(source='gateway.admin_level')
+    gateway = GatewayTypeSerializer()
 
-    def get_name(self, obj):
+    @staticmethod
+    def get_name(obj):
         return '{} [{} - {}]'.format(obj.name, obj.gateway.name, obj.p_code)
 
     class Meta:
@@ -46,8 +45,7 @@ class LocationLightSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'p_code',
-            'location_type',
-            'location_type_admin_level',
+            'gateway',
         )
 
 
@@ -57,37 +55,23 @@ class LocationSerializer(LocationLightSerializer):
 
     class Meta(LocationLightSerializer.Meta):
         model = Location
-        fields = (
-            'id',
-            'name',
-            'p_code',
-            'location_type',
-            'location_type_admin_level',
-            'parent',
-            'geo_point',
-        )
+        fields = LocationLightSerializer.Meta.fields + ('geo_point', 'parent')
 
 
 class LocationExportSerializer(serializers.ModelSerializer):
     location_type = serializers.CharField(source='gateway.name')
-    geo_point = serializers.SerializerMethodField()
-    point = serializers.SerializerMethodField()
+    geo_point = serializers.StringRelatedField()
+    point = serializers.StringRelatedField()
 
     class Meta:
         model = Location
         fields = "__all__"
 
-    def get_point(self, obj):
-        return "{}".format(obj.point)
-
-    def get_geo_point(self, obj):
-        return "{}".format(obj.geo_point)
-
 
 class LocationExportFlatSerializer(serializers.ModelSerializer):
     location_type = serializers.CharField(source='gateway.name')
     geom = serializers.SerializerMethodField()
-    point = serializers.SerializerMethodField()
+    point = serializers.StringRelatedField()
 
     class Meta:
         model = Location
@@ -95,6 +79,3 @@ class LocationExportFlatSerializer(serializers.ModelSerializer):
 
     def get_geom(self, obj):
         return obj.geom.point_on_surface if obj.geom else ""
-
-    def get_point(self, obj):
-        return "{}".format(obj.point)

@@ -7,7 +7,7 @@
         ],
         "etag": [
             "ETag",
-            "\"897aac48bb114b10ac3cdb083001742f\""
+            "\"fdf4c7a6bd4e4a4cbd561b2c5e281577\""
         ],
         "cache-control": [
             "Cache-Control",
@@ -27,7 +27,7 @@
         ],
         "content-length": [
             "Content-Length",
-            "191"
+            "189"
         ]
     },
     "data": [
@@ -35,10 +35,13 @@
             "id": "124",
             "name": "Location 4 [GatewayType 7 - PCODE4]",
             "p_code": "PCODE4",
-            "location_type": "GatewayType 7",
-            "location_type_admin_level": 7,
-            "parent": null,
-            "geo_point": "SRID=4326;POINT (20 20)"
+            "gateway": {
+                "id": 221,
+                "name": "GatewayType 7",
+                "admin_level": 7
+            },
+            "geo_point": "SRID=4326;POINT (20 20)",
+            "parent": null
         }
     ],
     "content_type": null
