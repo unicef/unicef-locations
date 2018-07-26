@@ -30,16 +30,12 @@ class GatewayTypeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LocationSerializer(serializers.ModelSerializer):
+class LocationLightSerializer(serializers.ModelSerializer):
 
     id = serializers.CharField(read_only=True)
+    name = serializers.SerializerMethodField()
     location_type = serializers.CharField(source='gateway.name')
     location_type_admin_level = serializers.IntegerField(source='gateway.admin_level')
-    geo_point = serializers.SerializerMethodField()
-    name = serializers.SerializerMethodField()
-
-    def get_geo_point(self, obj):
-        return "{}".format(obj.geo_point)
 
     def get_name(self, obj):
         return '{} [{} - {}]'.format(obj.name, obj.gateway.name, obj.p_code)
@@ -52,25 +48,23 @@ class LocationSerializer(serializers.ModelSerializer):
             'p_code',
             'location_type',
             'location_type_admin_level',
-            'parent',
-            'geo_point',
         )
 
 
-class LocationLightSerializer(serializers.ModelSerializer):
+class LocationSerializer(LocationLightSerializer):
 
-    id = serializers.CharField(read_only=True)
-    name = serializers.SerializerMethodField()
+    geo_point = serializers.StringRelatedField()
 
-    def get_name(self, obj):
-        return '{} [{} - {}]'.format(obj.name, obj.gateway.name, obj.p_code)
-
-    class Meta:
+    class Meta(LocationLightSerializer.Meta):
         model = Location
         fields = (
             'id',
             'name',
             'p_code',
+            'location_type',
+            'location_type_admin_level',
+            'parent',
+            'geo_point',
         )
 
 
