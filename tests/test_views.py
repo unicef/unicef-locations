@@ -1,10 +1,12 @@
 # from django.core.cache import cache
+import mock
 from django.core.cache import cache
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
+from unicef_locations.cache import etag_cached
 from unicef_locations.config import conf
 from unicef_locations.models import Location
 from unicef_locations.tests.factories import LocationFactory
@@ -123,3 +125,16 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
     assert len(response.json) == len(locations3)
     assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
     assert "Loc" in response.json[0]["name"]
+
+
+def test_cache_key_confoiguration():
+    func = mock.Mock()
+    conf.GET_CACHE_KEY = func
+    # with mock.patch('test_views.test_cache_key') as cache_key:
+    class Dummy:
+        request = mock.Mock()
+        @etag_cached('prefix')
+        def test(self):
+            return {}
+    Dummy().test()
+    assert func.call_count == 1
