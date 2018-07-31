@@ -127,7 +127,7 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
     assert "Loc" in response.json[0]["name"]
 
 
-def test_cache_key_confoiguration():
+def test_cache_key_configuration():
     func = mock.Mock()
     conf.GET_CACHE_KEY = func
     # with mock.patch('test_views.test_cache_key') as cache_key:
