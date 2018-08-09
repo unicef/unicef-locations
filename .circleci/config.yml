@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test:
+  build:
     working_directory: ~/code
     docker:
       - image: unicef/etools:test-base-p3
@@ -19,6 +19,7 @@ jobs:
       - run:
           name: run tests
           command: |
+            export PATH=$PATH:/home/circleci/.local/bin
             pip install tox-pipenv
             tox -r
 
