@@ -13,7 +13,6 @@ celery = "*"
 unicef-djangolib = "*"
 
 [dev-packages]
-django = "*"
 pytest = "*"
 pytest-echo = "*"
 pytest-coverage = "*"
