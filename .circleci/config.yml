@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/code
     docker:
-      - image: circleci/python:3.6
+      - image: unicef/etools:test-base-p3
         environment:
           PGHOST: 127.0.0.1
           DATABASE_URL: "postgis://postgres:postgres@localhost:5432/circle_test"
@@ -19,8 +19,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            export PATH=$PATH:/home/circleci/.local/bin
-            pip install tox --user
+            pip install tox
             tox -r
 
       - store_test_results:
