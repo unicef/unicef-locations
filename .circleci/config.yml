@@ -20,7 +20,7 @@ jobs:
           name: run tests
           command: |
             export PATH=$PATH:/home/circleci/.local/bin
-            pip install tox-pipenv
+            pip install tox --user
             tox -r
 
       - store_test_results:
