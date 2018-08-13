@@ -5,8 +5,7 @@ from rest_framework.generics import ListAPIView
 
 from .cache import etag_cached
 from .models import CartoDBTable, GatewayType, Location
-from .serializers import (CartoDBTableSerializer, GatewayTypeSerializer,
-                          LocationLightSerializer, LocationSerializer,)
+from .serializers import CartoDBTableSerializer, GatewayTypeSerializer, LocationLightSerializer, LocationSerializer
 
 
 class CartoDBTablesView(ListAPIView):
