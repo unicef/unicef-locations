@@ -27,7 +27,6 @@ mock = "*"
 drf-api-checker = "*"
 django-webtest = "*"
 pdbpp = "*"
-pytest-html = "==1.18.0"
 
 [requires]
 python_version = "3.6"
