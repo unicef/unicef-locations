@@ -1,7 +1,7 @@
-
 from carto.exceptions import CartoException
 from django.test import TestCase
-from mock import Mock, patch
+
+from unittest.mock import Mock, patch
 
 from unicef_locations import forms
 from unicef_locations.tests.factories import GatewayTypeFactory

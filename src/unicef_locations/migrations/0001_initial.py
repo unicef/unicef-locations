@@ -6,6 +6,7 @@ import django.utils.timezone
 import model_utils.fields
 import mptt.fields
 from django.db import migrations, models
+
 from unicef_locations.libs import get_random_color
 
 

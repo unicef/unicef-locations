@@ -1,7 +1,7 @@
-
 from carto.exceptions import CartoException
 from django.test import TestCase
-from mock import Mock, patch
+
+from unittest.mock import Mock, patch
 
 # from etools.applications.EquiTrack.tests.cases import BaseTenantTestCase
 from unicef_locations import tasks
