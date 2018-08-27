@@ -31,3 +31,13 @@ class CartoDBTableFactory(factory.django.DjangoModelFactory):
     api_key = factory.Sequence(lambda n: 'API Key {}'.format(n))
     table_name = factory.Sequence(lambda n: 'table_name_{}'.format(n))
     location_type = factory.SubFactory(GatewayTypeFactory)
+
+
+class LocationRemapHistoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.LocationRemapHistory
+
+        old_location = factory.SubFactory(LocationFactory)
+        new_location = factory.SubFactory(LocationFactory)
+
+
