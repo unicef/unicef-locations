@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'dal',
     'dal_select2',
     'mptt',
+    'leaflet',
     'demo.sample',
     # 'locations',
     'unicef_locations',

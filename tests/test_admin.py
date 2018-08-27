@@ -1,6 +1,5 @@
-import mock
-
 import pytest
+from unittest import mock
 
 try:
     from django.urls import reverse

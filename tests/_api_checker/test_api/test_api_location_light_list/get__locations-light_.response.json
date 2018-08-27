@@ -7,7 +7,7 @@
         ],
         "etag": [
             "ETag",
-            "\"94326b4b491349908d6905295e43b554\""
+            "\"0cc34803ef864aa88cedd7ee445d9f77\""
         ],
         "cache-control": [
             "Cache-Control",
@@ -27,18 +27,18 @@
         ],
         "content-length": [
             "Content-Length",
-            "137"
+            "138"
         ]
     },
     "data": [
         {
-            "id": "124",
-            "name": "Location 4 [GatewayType 7 - PCODE4]",
+            "id": "920",
+            "name": "Location 4 [GatewayType 8 - PCODE4]",
             "p_code": "PCODE4",
             "gateway": {
-                "id": 221,
-                "name": "GatewayType 7",
-                "admin_level": 7
+                "id": 1284,
+                "name": "GatewayType 8",
+                "admin_level": 8
             }
         }
     ],
