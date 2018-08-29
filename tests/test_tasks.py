@@ -3,13 +3,12 @@ from django.test import TestCase
 
 from unittest.mock import Mock, patch
 
-# from etools.applications.EquiTrack.tests.cases import BaseTenantTestCase
 from unicef_locations import tasks
 from unicef_locations.models import CartoDBTable, Location
 from unicef_locations.tests.factories import CartoDBTableFactory, LocationFactory
 
 
-class TestCreateLocations(TestCase):
+class TestCreateLocations(BaseTenantTestCase):
     def test_multiple_objects(self):
         """Multiple objects match the pcode,
         just 'no added' should increment by 1
@@ -18,9 +17,10 @@ class TestCreateLocations(TestCase):
         LocationFactory(p_code="123")
         LocationFactory(p_code="123")
 
-        success, not_added, created, updated = tasks.create_location(
+        success, not_added, created, updated, remapped = tasks.create_location(
             "123",
             carto,
+            None,
             None,
             None,
             "test",
@@ -28,10 +28,12 @@ class TestCreateLocations(TestCase):
             0,
             0,
             0,
+            0,
         )
         self.assertFalse(success)
         self.assertEqual(not_added, 1)
         self.assertEqual(created, 0)
+        self.assertEqual(remapped, 0)
         self.assertEqual(updated, 0)
 
     def test_exists_no_geom(self):
@@ -41,9 +43,10 @@ class TestCreateLocations(TestCase):
         carto = CartoDBTableFactory()
         LocationFactory(p_code="123")
 
-        success, not_added, created, updated = tasks.create_location(
+        success, not_added, created, updated, remapped = tasks.create_location(
             "123",
             carto,
+            None,
             None,
             None,
             "test",
@@ -51,10 +54,12 @@ class TestCreateLocations(TestCase):
             0,
             0,
             0,
+            0,
         )
         self.assertFalse(success)
         self.assertEqual(not_added, 0)
         self.assertEqual(created, 0)
+        self.assertEqual(remapped, 0)
         self.assertEqual(updated, 0)
 
     def test_exists_point(self):
@@ -69,9 +74,10 @@ class TestCreateLocations(TestCase):
         self.assertIsNone(location.point)
         self.assertNotEqual(location.name, site_name)
 
-        success, not_added, created, updated = tasks.create_location(
+        success, not_added, created, updated, remapped = tasks.create_location(
             "123",
             carto,
+            None,
             None,
             None,
             site_name,
@@ -79,10 +85,12 @@ class TestCreateLocations(TestCase):
             0,
             0,
             0,
+            0,
         )
         self.assertTrue(success)
         self.assertEqual(not_added, 0)
         self.assertEqual(created, 0)
+        self.assertEqual(remapped, 0)
         self.assertEqual(updated, 1)
         location_updated = Location.objects.get(pk=location.pk)
         self.assertIsNotNone(location_updated.point)
@@ -100,9 +108,10 @@ class TestCreateLocations(TestCase):
         self.assertIsNone(location.geom)
         self.assertNotEqual(location.name, site_name)
 
-        success, not_added, created, updated = tasks.create_location(
+        success, not_added, created, updated, remapped = tasks.create_location(
             "123",
             carto,
+            None,
             None,
             None,
             "test",
@@ -110,10 +119,12 @@ class TestCreateLocations(TestCase):
             0,
             0,
             0,
+            0,
         )
         self.assertTrue(success)
         self.assertEqual(not_added, 0)
         self.assertEqual(created, 0)
+        self.assertEqual(remapped, 0)
         self.assertEqual(updated, 1)
         location_updated = Location.objects.get(pk=location.pk)
         self.assertIsNotNone(location_updated.geom)
@@ -127,9 +138,10 @@ class TestCreateLocations(TestCase):
         self.assertFalse(Location.objects.filter(p_code="123").exists())
         name = "Test"
 
-        success, not_added, created, updated = tasks.create_location(
+        success, not_added, created, updated, remapped = tasks.create_location(
             "123",
             carto,
+            None,
             None,
             None,
             name,
@@ -137,10 +149,12 @@ class TestCreateLocations(TestCase):
             0,
             0,
             0,
+            0,
         )
         self.assertFalse(success)
         self.assertEqual(not_added, 0)
         self.assertEqual(created, 0)
+        self.assertEqual(remapped, 0)
         self.assertEqual(updated, 0)
 
     def test_new_point(self):
@@ -151,9 +165,10 @@ class TestCreateLocations(TestCase):
         self.assertFalse(Location.objects.filter(p_code="123").exists())
         name = "Test"
 
-        success, not_added, created, updated = tasks.create_location(
+        success, not_added, created, updated, remapped = tasks.create_location(
             "123",
             carto,
+            None,
             None,
             None,
             name,
@@ -161,10 +176,12 @@ class TestCreateLocations(TestCase):
             0,
             0,
             0,
+            0,
         )
         self.assertTrue(success)
         self.assertEqual(not_added, 0)
         self.assertEqual(created, 1)
+        self.assertEqual(remapped, 0)
         self.assertEqual(updated, 0)
         location = Location.objects.get(p_code="123")
         self.assertIsNotNone(location.point)
@@ -179,9 +196,10 @@ class TestCreateLocations(TestCase):
         self.assertFalse(Location.objects.filter(p_code="123").exists())
         name = "Test"
 
-        success, not_added, created, updated = tasks.create_location(
+        success, not_added, created, updated, remapped = tasks.create_location(
             "123",
             carto,
+            None,
             None,
             None,
             name,
@@ -189,10 +207,12 @@ class TestCreateLocations(TestCase):
             0,
             0,
             0,
+            0,
         )
         self.assertTrue(success)
         self.assertEqual(not_added, 0)
         self.assertEqual(created, 1)
+        self.assertEqual(remapped, 0)
         self.assertEqual(updated, 0)
         location = Location.objects.get(p_code="123")
         self.assertIsNone(location.point)
@@ -208,13 +228,15 @@ class TestCreateLocations(TestCase):
         self.assertFalse(Location.objects.filter(p_code="123").exists())
         name = "Test"
 
-        success, not_added, created, updated = tasks.create_location(
+        success, not_added, created, updated, remapped = tasks.create_location(
             "123",
             carto,
             True,
             parent,
+            None,
             name,
             {"the_geom": "Point(20 20)"},
+            0,
             0,
             0,
             0,
@@ -222,6 +244,7 @@ class TestCreateLocations(TestCase):
         self.assertTrue(success)
         self.assertEqual(not_added, 0)
         self.assertEqual(created, 1)
+        self.assertEqual(remapped, 0)
         self.assertEqual(updated, 0)
         location = Location.objects.get(p_code="123")
         self.assertIsNotNone(location.point)
@@ -263,21 +286,21 @@ class TestCreateLocations(TestCase):
         self.assertEqual(location.parent, parent2)
 
 
-class TestUpdateSitesFromCartoDB(TestCase):
+class TestUpdateSitesFromCartoDB(BaseTenantTestCase):
     def setUp(self):
         super(TestUpdateSitesFromCartoDB, self).setUp()
         self.mock_sql = Mock()
 
     def _run_update(self, carto_table_pk):
-        with patch("unicef_locations.tasks.SQLClient.send", self.mock_sql):
+        with patch("etools.applications.locations.tasks.SQLClient.send", self.mock_sql):
             return tasks.update_sites_from_cartodb(carto_table_pk)
 
-    def _assert_response(self, response, name, created, updated, not_added):
+    def _assert_response(self, response, name, created, updated, remapped, not_added):
         self.assertEqual(
             response,
-            "Table name {}: {} sites created, {} sites updated, {} sites skipped".format(
+            "Table name {}: {} sites created, {} sites updated, {} sites remapped, {} sites skipped".format(
                 name, created,
-                updated,
+                updated, remapped,
                 not_added,
             )
         )
@@ -294,7 +317,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
         self.mock_sql.side_effect = CartoException
         carto = CartoDBTableFactory()
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 0, 0, 0)
+        self._assert_response(response, carto.table_name, 0, 0, 0, 0)
 
     def test_add(self):
         """Check that rows returned by SQLClient create a location record"""
@@ -310,7 +333,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 1, 0, 0)
+        self._assert_response(response, carto.table_name, 1, 0, 0, 0)
         self.assertTrue(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
@@ -331,7 +354,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 0, 0, 1)
+        self._assert_response(response, carto.table_name, 0, 0, 0, 1)
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
@@ -357,7 +380,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 1, 0, 0)
+        self._assert_response(response, carto.table_name, 1, 0, 0, 0)
         self.assertTrue(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
@@ -387,7 +410,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 0, 0, 1)
+        self._assert_response(response, carto.table_name, 0, 0, 0, 1)
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
@@ -414,7 +437,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 0, 0, 1)
+        self._assert_response(response, carto.table_name, 0, 0, 0, 1)
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
