@@ -5,20 +5,11 @@ from carto.exceptions import CartoException
 from carto.sql import SQLClient
 from celery.utils.log import get_task_logger
 
-from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError, transaction
 from django.utils.encoding import force_text
 
 from .auth import LocationsCartoNoAuthClient
-from .models import CartoDBTable, Location, LocationRemapHistory
-
-
-# from etools.applications.partners.models import Intervention
-# from etools.applications.reports.models import AppliedIndicator
-# from etools.applications.t2f.models import TravelActivity
-# from etools.applications.activities.models import Activity
-# from etools.applications.action_points.models import ActionPoint
-
+from .models import CartoDBTable, Location
 
 logger = get_task_logger(__name__)
 
@@ -26,6 +17,8 @@ logger = get_task_logger(__name__)
 def create_location(pcode, carto_table, parent, parent_instance,
                     remapped_old_pcode, site_name, row, sites_not_added,
                     sites_created, sites_updated, sites_remapped):
+    results = None
+
     try:
         location = None
         remapped_location = None
@@ -46,7 +39,7 @@ def create_location(pcode, carto_table, parent, parent_instance,
             carto_table.location_type, site_name, pcode
         ))
         sites_not_added += 1
-        return False, sites_not_added, sites_created, sites_updated, sites_remapped
+        return False, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
     except Location.DoesNotExist:
         pass
@@ -62,7 +55,7 @@ def create_location(pcode, carto_table, parent, parent_instance,
             create_args['parent'] = parent_instance
 
         if not row['the_geom']:
-            return False, sites_not_added, sites_created, sites_updated, sites_remapped
+            return False, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
         if 'Point' in row['the_geom']:
             create_args['point'] = row['the_geom']
@@ -92,86 +85,12 @@ def create_location(pcode, carto_table, parent, parent_instance,
                 carto_table.location_type.name
             ))
 
-            # remap related entities and save the location remap history
-            # interventions
-            ctp = ContentType.objects.get(app_label='partners', model='intervention')
-
-            '''
-            # for intervention in Intervention.objects.filter(????):
-            for intervention in Intervention.objects.all():
-                if intervention.flat_locations.get(id=remapped_location.id):
-                    LocationRemapHistory.objects.create(
-                        old_location=remapped_location,
-                        new_location=location,
-                        content_type=ctp,
-                        object_id=intervention.id,
-                    )
-                    intervention.flat_locations.remove(remapped_location)
-                    intervention.flat_locations.add(location)
-                    # TODO: logs
-
-            # intervention indicators
-            ctp = ContentType.objects.get(app_label='reports', model='appliedindicator')
-            # for appliedindicator in AppliedIndicator.objects.filter(????):
-            for appliedindicator in AppliedIndicator.objects.all():
-                if appliedindicator.locations.get(id=remapped_location.id):
-                    LocationRemapHistory.objects.create(
-                        old_location=remapped_location,
-                        new_location=location,
-                        content_type=ctp,
-                        object_id=appliedindicator.id,
-                    )
-                    appliedindicator.locations.remove(remapped_location)
-                    appliedindicator.locations.add(location)
-                    # TODO: logs
-
-            # travel activities
-            ctp = ContentType.objects.get(app_label='t2f', model='travelactivity')
-            # for travelactivity in TravelActivity.objects.filter(????):
-            for travelactivity in TravelActivity.objects.all():
-                if travelactivity.locations.get(id=remapped_location.id):
-                    LocationRemapHistory.objects.create(
-                        old_location=remapped_location,
-                        new_location=location,
-                        content_type=ctp,
-                        object_id=travelactivity.id,
-                    )
-                    travelactivity.locations.remove(remapped_location)
-                    travelactivity.locations.add(location)
-                    # TODO: logs
-
-            # activities
-            ctp = ContentType.objects.get(app_label='activities', model='activity')
-            # for activity in Activity.objects.filter(????):
-            for activity in Activity.objects.all():
-                if activity.locations.get(id=remapped_location.id):
-                    LocationRemapHistory.objects.create(
-                        old_location=remapped_location,
-                        new_location=location,
-                        content_type=ctp,
-                        object_id=activity.id,
-                    )
-                    activity.locations.remove(remapped_location)
-                    activity.locations.add(location)
-                    # TODO: logs
-
-            ctp = ContentType.objects.get(app_label='action_points', model='actionpoint')
-            for actionpoint in ActionPoint.get(location__id=remapped_location.id):
-                LocationRemapHistory.objects.create(
-                    old_location=remapped_location,
-                    new_location=location,
-                    content_type=ctp,
-                    object_id=actionpoint.id,
-                )
-                actionpoint.location.id=location.id
-                # TODO: logs
-        '''
-
-        return True, sites_not_added, sites_created, sites_updated, sites_remapped
+        results = (location, remapped_location)
+        return True, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
     else:
         if not row['the_geom']:
-            return False, sites_not_added, sites_created, sites_updated, sites_remapped
+            return False, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
         # names can be updated for existing locations with the same code
         location.name = site_name
@@ -191,7 +110,7 @@ def create_location(pcode, carto_table, parent, parent_instance,
             location.save()
         except IntegrityError:
             logger.exception('Error while saving location: %s', site_name)
-            return False, sites_not_added, sites_created, sites_updated, sites_remapped
+            return False, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
         sites_updated += 1
         logger.info('{}: {} ({})'.format(
@@ -200,11 +119,13 @@ def create_location(pcode, carto_table, parent, parent_instance,
             carto_table.location_type.name
         ))
 
-        return True, sites_not_added, sites_created, sites_updated, sites_remapped
+        results = (location, None)
+        return True, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
 
 @celery.current_app.task
 def update_sites_from_cartodb(carto_table_pk):
+    results = set()
 
     try:
         carto_table = CartoDBTable.objects.get(pk=carto_table_pk)
@@ -385,14 +306,19 @@ def update_sites_from_cartodb(carto_table_pk):
 
                     # print(remapped_old_pcode)
                     # create the actual location or retrieve existing based on type and code
-                    succ, sites_not_added, sites_created, sites_updated, sites_remapped = create_location(
+                    succ, sites_not_added, sites_created, sites_updated, sites_remapped, \
+                    partial_results = create_location(
                         pcode, carto_table,
                         parent, parent_instance, remapped_old_pcode,
                         site_name, row,
                         sites_not_added, sites_created,
-                        sites_updated, sites_remapped)
+                        sites_updated, sites_remapped
+                    )
+                    results.add(partial_results)
 
             Location.objects.rebuild()
 
-    return "Table name {}: {} sites created, {} sites updated, {} sites remapped, {} sites skipped".format(
-        carto_table.table_name, sites_created, sites_updated, sites_remapped, sites_not_added)
+    logger.warning("Table name {}: {} sites created, {} sites updated, {} sites remapped, {} sites skipped".format(
+        carto_table.table_name, sites_created, sites_updated, sites_remapped, sites_not_added))
+
+    return results
