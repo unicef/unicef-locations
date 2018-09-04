@@ -148,7 +148,7 @@ class LocationRemapHistory(models.Model):
     object_id = models.IntegerField(verbose_name=_('Object ID'))
     content_object = GenericForeignKey('content_type', 'object_id')
 
-    comment = models.TextField(verbose_name=_('Comments'), blank=True)
+    comments = models.TextField(verbose_name=_('Comments'), null=True, blank=True)
     created = AutoCreatedField(_('created'))
 
 

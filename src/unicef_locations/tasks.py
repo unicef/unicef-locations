@@ -55,6 +55,7 @@ def create_location(pcode, carto_table, parent, parent_instance,
             create_args['parent'] = parent_instance
 
         if not row['the_geom']:
+            sites_not_added += 1
             return False, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
         if 'Point' in row['the_geom']:
@@ -62,17 +63,21 @@ def create_location(pcode, carto_table, parent, parent_instance,
         else:
             create_args['geom'] = row['the_geom']
 
-        sites_created += 1
         try:
             location = Location.objects.create(**create_args)
+            sites_created += 1
         except IntegrityError:
             logger.exception('Error while creating location: %s', site_name)
+            sites_not_added += 1
+            return False, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
         logger.info('{}: {} ({})'.format(
             'Added',
             location.name,
             carto_table.location_type.name
         ))
+
+        results = (location.id, None)
 
         if remapped_location is not None:
             remapped_location.is_active = False
@@ -85,7 +90,8 @@ def create_location(pcode, carto_table, parent, parent_instance,
                 carto_table.location_type.name
             ))
 
-        results = (location, remapped_location)
+            results = (location.id, remapped_location.id)
+
         return True, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
     else:
@@ -119,7 +125,7 @@ def create_location(pcode, carto_table, parent, parent_instance,
             carto_table.location_type.name
         ))
 
-        results = (location, None)
+        results = (location.id, None)
         return True, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
 
@@ -206,61 +212,84 @@ def update_sites_from_cartodb(carto_table_pk):
     except CartoException:
         logger.exception("CartoDB exception occured")
     else:
+        # validations
+        # get the list of the existing Pcodes and previous Pcodes from the database
+
+        # New locations must have unique Pcodes (within a given admin level)
+        # Old locations must have unique Pcodes (within a given admin level)
+        # Locations case B in use (BiU) must be provided with remaps in the remap table - if not - cancel import
+        # Locations case BnRiU are not allowed
+        # Old Pcodes provided in the remap table must be unique (can't be provided multiple times)
+        # New Pcodes provided in the remap table must exist in the new dataset (Carto table)
+        # New locations must have correct geometry
+        # Upon successfully completed update the total number of "Active" locations per admin level equals the number of locations in New dataset (Carto db table)
+        # Total number of locations marked as "Inactive" equals the number of records in remap table
+
+
+        database_pcodes = set()
+        for row in Location.all_locations.filter(gateway=carto_table.location_type).values('p_code'):
+            database_pcodes.add(row['p_code'])
+        # database_pcodes = list(database_pcodes)
+
+        # get the list of the new Pcodes from the Carto data
+        new_carto_pcodes = [str(row[carto_table.pcode_col]) for row in rows]
+
+        # print(database_pcodes)
+        # print(new_carto_pcodes)
+        remap_old_pcodes = []
+        remap_new_pcodes = []
+
+        # if we have a remap table, fetch it's content and validate it
+        if carto_table.remap_table_name:
+            remapped_pcode_pairs = []
+            try:
+                remap_qry = 'select old_pcode::text, new_pcode::text from {}'.format(
+                    carto_table.remap_table_name)
+                remapped_pcode_pairs = sql_client.send(remap_qry)['rows']
+            except CartoException:
+                logger.exception("CartoDB exception occured on the remap table query")
+                return
+            else:
+                validation_failed = False
+                # test
+                # remapped_pcode_pairs.append({'new_pcode': 'testn1', 'old_pcode': 'testo1'})
+                # remapped_pcode_pairs.append({'new_pcode': 'testn2', 'old_pcode': 'testo2'})
+
+                # validate remap table
+                bad_old_pcodes = []
+                bad_new_pcodes = []
+                for remap_row in remapped_pcode_pairs:
+                    remap_old_pcodes.append(remap_row['old_pcode'])
+                    remap_new_pcodes.append(remap_row['new_pcode'])
+
+                    # check for non-existing remap pcodes in the database
+                    if remap_row['old_pcode'] not in database_pcodes:
+                        bad_old_pcodes.append(remap_row['old_pcode'])
+                    # check for non-existing remap pcodes in the Carto dataset
+                    if remap_row['new_pcode'] not in new_carto_pcodes:
+                        bad_new_pcodes.append(remap_row['new_pcode'])
+
+                if len(bad_old_pcodes) > 0:
+                    logger.warning(
+                        "Invalid old_pcode found in the remap table: {}".format(','.join(bad_old_pcodes)))
+                    validation_failed = True
+
+                if len(bad_new_pcodes) > 0:
+                    logger.warning(
+                        "Invalid new_pcode found in the remap table: {}".format(','.join(bad_new_pcodes)))
+                    validation_failed = True
+
+                if validation_failed is True:
+                    return
+
+        orphaned_old_pcodes = database_pcodes - (set(new_carto_pcodes) | set(remap_old_pcodes))
+        # TODO: check for in use
+
         # wrap Location tree updates in a transaction, to prevent an invalid tree state due to errors
         with transaction.atomic():
             # disable tree 'generation' during single row updates, rebuild the tree after.
             # this should prevent errors happening (probably)due to invalid intermediary tree state
             with Location.objects.disable_mptt_updates():
-                # if we have a remap table, fetch it's content and validate it
-                if carto_table.remap_table_name:
-                    remapped_pcode_pairs = []
-                    # get the list of the new Pcodes from the Carto data
-                    new_pcodes = [str(row[carto_table.pcode_col]) for row in sites['rows']]
-
-                    try:
-                        remap_qry = 'select old_pcode::text, new_pcode::text from {}'.format(
-                            carto_table.remap_table_name)
-                        remapped_pcode_pairs = sql_client.send(remap_qry)['rows']
-                    except CartoException:
-                        logger.exception("CartoDB exception occured on the remap table query")
-                        return
-                    else:
-                        validation_failed = False
-
-                        # get the list of the existing Pcodes and previous Pcodes from the database
-                        database_pcodes = set()
-                        for row in Location.all_locations.filter(gateway=carto_table.location_type).values('p_code'):
-                            database_pcodes.add(row['p_code'])
-                        database_pcodes = list(database_pcodes)
-
-                        # test
-                        # remapped_pcode_pairs.append({'new_pcode': 'testn1', 'old_pcode': 'testo1'})
-                        # remapped_pcode_pairs.append({'new_pcode': 'testn2', 'old_pcode': 'testo2'})
-
-                        # validate remap table
-                        bad_old_pcodes = []
-                        bad_new_pcodes = []
-                        for remap_row in remapped_pcode_pairs:
-                            # check for non-existing remap pcodes in the database
-                            if remap_row['old_pcode'] not in database_pcodes:
-                                bad_old_pcodes.append(remap_row['old_pcode'])
-                            # check for non-existing remap pcodes in the Carto dataset
-                            if remap_row['new_pcode'] not in new_pcodes:
-                                bad_new_pcodes.append(remap_row['new_pcode'])
-
-                        if len(bad_old_pcodes) > 0:
-                            logger.warning(
-                                "Invalid old_pcode found in the remap table: {}".format(','.join(bad_old_pcodes)))
-                            validation_failed = True
-
-                        if len(bad_new_pcodes) > 0:
-                            logger.warning(
-                                "Invalid new_pcode found in the remap table: {}".format(','.join(bad_new_pcodes)))
-                            validation_failed = True
-
-                        if validation_failed is True:
-                            return
-
                 for row in rows:
                     pcode = str(row[carto_table.pcode_col]).strip()
                     site_name = row[carto_table.name_col]
@@ -304,7 +333,6 @@ def update_sites_from_cartodb(carto_table_pk):
                             if pcode == remap_row['new_pcode']:
                                 remapped_old_pcode = remap_row['old_pcode']
 
-                    # print(remapped_old_pcode)
                     # create the actual location or retrieve existing based on type and code
                     succ, sites_not_added, sites_created, sites_updated, sites_remapped, \
                     partial_results = create_location(
@@ -314,7 +342,13 @@ def update_sites_from_cartodb(carto_table_pk):
                         sites_not_added, sites_created,
                         sites_updated, sites_remapped
                     )
+
                     results.add(partial_results)
+
+                if orphaned_old_pcodes:
+                    logger.warning("Deleting orphaned pcodes: {}".format(','.join(orphaned_old_pcodes)))
+                    # Location.objects.filter(pcode__in=list(orphaned_old_pcodes)).delete()
+                    Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).update(is_active=False)
 
             Location.objects.rebuild()
 

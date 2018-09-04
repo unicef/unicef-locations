@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('object_id', models.IntegerField(verbose_name='Object ID')),
-                ('comment', models.TextField(blank=True, verbose_name='Comments')),
+                ('comments', models.TextField(blank=True, null=True, verbose_name='Comments')),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False,
                                                                 verbose_name='created')),
                 ('content_type',
