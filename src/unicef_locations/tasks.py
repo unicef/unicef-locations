@@ -224,12 +224,19 @@ def update_sites_from_cartodb(carto_table_pk):
         # New locations must have correct geometry
         # Upon successfully completed update the total number of "Active" locations per admin level equals the number of locations in New dataset (Carto db table)
         # Total number of locations marked as "Inactive" equals the number of records in remap table
+        # reset to root level if:
+        #   - outsider
+        #   - gets archived
+        #   - archived lower level locations whose parents are deleted go to root level
+        #   -
+        # update children parents on remap
+        # also filter api by 'is_active'
+        # put celery tasks in chain
 
 
-        database_pcodes = set()
+        database_pcodes = []
         for row in Location.all_locations.filter(gateway=carto_table.location_type).values('p_code'):
-            database_pcodes.add(row['p_code'])
-        # database_pcodes = list(database_pcodes)
+            database_pcodes.append(row['p_code'])
 
         # get the list of the new Pcodes from the Carto data
         new_carto_pcodes = [str(row[carto_table.pcode_col]) for row in rows]
@@ -270,20 +277,71 @@ def update_sites_from_cartodb(carto_table_pk):
                         bad_new_pcodes.append(remap_row['new_pcode'])
 
                 if len(bad_old_pcodes) > 0:
-                    logger.warning(
+                    logger.exception(
                         "Invalid old_pcode found in the remap table: {}".format(','.join(bad_old_pcodes)))
                     validation_failed = True
 
                 if len(bad_new_pcodes) > 0:
-                    logger.warning(
+                    logger.exception(
                         "Invalid new_pcode found in the remap table: {}".format(','.join(bad_new_pcodes)))
                     validation_failed = True
 
                 if validation_failed is True:
                     return
 
-        orphaned_old_pcodes = database_pcodes - (set(new_carto_pcodes) | set(remap_old_pcodes))
-        # TODO: check for in use
+        # find duplicate pcodes in both local and Carto data
+        duplicates_present = False
+        temp = {}
+        duplicate_database_pcodes = []
+        for database_pcode in database_pcodes:
+            if database_pcode in temp:
+                duplicate_database_pcodes.append(database_pcode)
+            temp[database_pcode] = 1
+
+        if duplicate_database_pcodes:
+            logger.exception("Duplicates found in the database pcodes: {}".format(','.join(duplicate_database_pcodes)))
+            duplicates_present = True
+
+        temp = {}
+        duplicate_carto_pcodes = []
+        for new_carto_pcode in new_carto_pcodes:
+            if new_carto_pcode in temp:
+                duplicate_carto_pcodes.append(new_carto_pcode)
+            temp[new_carto_pcode] = 1
+
+        if duplicate_carto_pcodes:
+            logger.exception("Duplicates found in the CartoDB pcodes: {}".format(','.join(duplicate_database_pcodes)))
+            duplicates_present = True
+
+        temp = {}
+        duplicate_remap_old_pcodes = []
+        for remap_old_pcode in remap_old_pcodes:
+            if remap_old_pcode in temp:
+                duplicate_remap_old_pcodes.append(remap_old_pcode)
+            temp[remap_old_pcode] = 1
+
+        if duplicate_remap_old_pcodes:
+            logger.exception("Duplicates found in the remap table `old pcode` column: {}".
+                             format(','.join(duplicate_remap_old_pcodes)))
+            duplicates_present = True
+
+        temp = {}
+        duplicate_remap_new_pcodes = []
+        for remap_new_pcode in remap_new_pcodes:
+            if remap_new_pcode in temp:
+                duplicate_remap_new_pcodes.append(remap_new_pcode)
+            temp[remap_new_pcode] = 1
+
+        if duplicate_remap_new_pcodes:
+            logger.exception("Duplicates found in the remap table `new pcode` column: {}".
+                             format(','.join(duplicate_remap_new_pcodes)))
+            duplicates_present = True
+
+        if duplicates_present:
+            return
+
+        orphaned_old_pcodes = set(database_pcodes) - (set(new_carto_pcodes) | set(remap_old_pcodes))
+        # TODO: check for in use, in etools.src.libraries
 
         # wrap Location tree updates in a transaction, to prevent an invalid tree state due to errors
         with transaction.atomic():
@@ -347,8 +405,8 @@ def update_sites_from_cartodb(carto_table_pk):
 
                 if orphaned_old_pcodes:
                     logger.warning("Deleting orphaned pcodes: {}".format(','.join(orphaned_old_pcodes)))
-                    # Location.objects.filter(pcode__in=list(orphaned_old_pcodes)).delete()
-                    Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).update(is_active=False)
+                    Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).delete()
+                    # Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).update(is_active=False)
 
             Location.objects.rebuild()
 
