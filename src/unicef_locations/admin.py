@@ -2,7 +2,6 @@ from django import forms
 from django.contrib import admin as basic_admin
 from django.contrib.gis import admin
 from django.forms import Textarea
-from django.utils.translation import ugettext_lazy as _
 
 from leaflet.admin import LeafletGeoAdmin
 from mptt.admin import MPTTModelAdmin
@@ -37,15 +36,7 @@ class ActiveLocationsFilter(basic_admin.SimpleListFilter):
         ]
 
     def queryset(self, request, queryset):
-
-        value = self.value()
-
-        if value == 'True':
-            return Location.objects
-        elif value == 'False':
-            return Location.archived_locations
-        else:
-            return Location.all_locations
+        return queryset.filter(**self.used_parameters)
 
 
 class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
@@ -70,6 +61,14 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
         'parent',
     )
     search_fields = ('name', 'p_code',)
+
+    def get_queryset(self, request):
+        qs = Location.all_locations.get_queryset()
+
+        ordering = self.get_ordering(request)
+        if ordering:
+            qs = qs.order_by(*ordering)
+        return qs
 
     def get_form(self, request, obj=None, **kwargs):
         self.readonly_fields = [] if request.user.is_superuser else ['p_code', 'geom', 'point', 'gateway']

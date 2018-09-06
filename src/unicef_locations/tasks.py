@@ -15,21 +15,21 @@ logger = get_task_logger(__name__)
 
 
 def create_location(pcode, carto_table, parent, parent_instance,
-                    remapped_old_pcode, site_name, row, sites_not_added,
+                    remapped_old_pcodes, site_name, row, sites_not_added,
                     sites_created, sites_updated, sites_remapped):
     results = None
 
     try:
         location = None
-        remapped_location = None
-        if remapped_old_pcode is not None:
-            try:
-                # check if the remapped location exists in the database
-                remapped_location = Location.objects.get(p_code=remapped_old_pcode)
-            except Location.DoesNotExist:
-                # if remapped_old_pcode is set(passed validation), but the remapped location is not found in the
-                # list of the active locations(`Location.objects`), it means that the location was already remapped.
-                # continue with updating the `main` location, and ignore the remap.
+        remapped_locations = None
+        if remapped_old_pcodes:
+            # check if the remapped location exists in the database
+            remapped_locations = Location.objects.filter(p_code__in=list(remapped_old_pcodes))
+
+            if not remapped_locations:
+                # if remapped_old_pcodes are set and passed validations, but they are not found in the
+                # list of the active locations(`Location.objects`), it means that they were already remapped.
+                # in this case update the `main` location, and ignore the remap.
                 location = Location.objects.get(p_code=pcode)
         else:
             location = Location.objects.get(p_code=pcode)
@@ -77,20 +77,22 @@ def create_location(pcode, carto_table, parent, parent_instance,
             carto_table.location_type.name
         ))
 
-        results = (location.id, None)
+        results = []
+        if remapped_locations:
+            for remapped_location in remapped_locations:
+                remapped_location.is_active = False
+                remapped_location.save()
 
-        if remapped_location is not None:
-            remapped_location.is_active = False
-            remapped_location.save()
+                sites_remapped += 1
+                logger.info('{}: {} ({})'.format(
+                    'Remapped',
+                    remapped_location.name,
+                    carto_table.location_type.name
+                ))
 
-            sites_remapped += 1
-            logger.info('{}: {} ({})'.format(
-                'Remapped',
-                remapped_location.name,
-                carto_table.location_type.name
-            ))
-
-            results = (location.id, remapped_location.id)
+                results.append((location.id, remapped_location.id))
+        else:
+            results = [(location.id, None)]
 
         return True, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
@@ -125,13 +127,13 @@ def create_location(pcode, carto_table, parent, parent_instance,
             carto_table.location_type.name
         ))
 
-        results = (location.id, None)
+        results = [(location.id, None)]
         return True, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
 
 @celery.current_app.task
 def update_sites_from_cartodb(carto_table_pk):
-    results = set()
+    results = []
 
     try:
         carto_table = CartoDBTable.objects.get(pk=carto_table_pk)
@@ -290,7 +292,7 @@ def update_sites_from_cartodb(carto_table_pk):
                     return
 
         # find duplicate pcodes in both local and Carto data
-        duplicates_present = False
+        duplicates_found = False
         temp = {}
         duplicate_database_pcodes = []
         for database_pcode in database_pcodes:
@@ -300,7 +302,7 @@ def update_sites_from_cartodb(carto_table_pk):
 
         if duplicate_database_pcodes:
             logger.exception("Duplicates found in the database pcodes: {}".format(','.join(duplicate_database_pcodes)))
-            duplicates_present = True
+            duplicates_found = True
 
         temp = {}
         duplicate_carto_pcodes = []
@@ -311,7 +313,7 @@ def update_sites_from_cartodb(carto_table_pk):
 
         if duplicate_carto_pcodes:
             logger.exception("Duplicates found in the CartoDB pcodes: {}".format(','.join(duplicate_database_pcodes)))
-            duplicates_present = True
+            duplicates_found = True
 
         temp = {}
         duplicate_remap_old_pcodes = []
@@ -323,21 +325,9 @@ def update_sites_from_cartodb(carto_table_pk):
         if duplicate_remap_old_pcodes:
             logger.exception("Duplicates found in the remap table `old pcode` column: {}".
                              format(','.join(duplicate_remap_old_pcodes)))
-            duplicates_present = True
+            duplicates_found = True
 
-        temp = {}
-        duplicate_remap_new_pcodes = []
-        for remap_new_pcode in remap_new_pcodes:
-            if remap_new_pcode in temp:
-                duplicate_remap_new_pcodes.append(remap_new_pcode)
-            temp[remap_new_pcode] = 1
-
-        if duplicate_remap_new_pcodes:
-            logger.exception("Duplicates found in the remap table `new pcode` column: {}".
-                             format(','.join(duplicate_remap_new_pcodes)))
-            duplicates_present = True
-
-        if duplicates_present:
+        if duplicates_found:
             return
 
         orphaned_old_pcodes = set(database_pcodes) - (set(new_carto_pcodes) | set(remap_old_pcodes))
@@ -349,11 +339,11 @@ def update_sites_from_cartodb(carto_table_pk):
             # this should prevent errors happening (probably)due to invalid intermediary tree state
             with Location.objects.disable_mptt_updates():
                 for row in rows:
-                    pcode = str(row[carto_table.pcode_col]).strip()
+                    carto_pcode = str(row[carto_table.pcode_col]).strip()
                     site_name = row[carto_table.name_col]
 
                     if not site_name or site_name.isspace():
-                        logger.warning("No name for location with PCode: {}".format(pcode))
+                        logger.warning("No name for location with PCode: {}".format(carto_pcode))
                         sites_not_added += 1
                         continue
 
@@ -385,23 +375,23 @@ def update_sites_from_cartodb(carto_table_pk):
                             continue
 
                     # check if the Carto location should be remapped to an old location
-                    remapped_old_pcode = None
+                    remapped_old_pcodes = set()
                     if carto_table.remap_table_name and len(remapped_pcode_pairs) > 0:
                         for remap_row in remapped_pcode_pairs:
-                            if pcode == remap_row['new_pcode']:
-                                remapped_old_pcode = remap_row['old_pcode']
+                            if carto_pcode == remap_row['new_pcode']:
+                                remapped_old_pcodes.add(remap_row['old_pcode'])
 
-                    # create the actual location or retrieve existing based on type and code
+                    # create the location or update the existing based on type and code
                     succ, sites_not_added, sites_created, sites_updated, sites_remapped, \
                     partial_results = create_location(
-                        pcode, carto_table,
-                        parent, parent_instance, remapped_old_pcode,
+                        carto_pcode, carto_table,
+                        parent, parent_instance, remapped_old_pcodes,
                         site_name, row,
                         sites_not_added, sites_created,
                         sites_updated, sites_remapped
                     )
 
-                    results.add(partial_results)
+                    results += partial_results
 
                 if orphaned_old_pcodes:
                     logger.warning("Deleting orphaned pcodes: {}".format(','.join(orphaned_old_pcodes)))
