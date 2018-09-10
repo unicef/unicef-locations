@@ -81,6 +81,7 @@ def create_location(pcode, carto_table, parent, parent_instance,
         if remapped_locations:
             for remapped_location in remapped_locations:
                 remapped_location.is_active = False
+                # remapped_location.parent = None
                 remapped_location.save()
 
                 sites_remapped += 1
@@ -301,7 +302,8 @@ def update_sites_from_cartodb(carto_table_pk):
             temp[database_pcode] = 1
 
         if duplicate_database_pcodes:
-            logger.exception("Duplicates found in the database pcodes: {}".format(','.join(duplicate_database_pcodes)))
+            logger.exception("Duplicates found in the existing database pcodes: {}".
+                             format(','.join(duplicate_database_pcodes)))
             duplicates_found = True
 
         temp = {}
@@ -312,7 +314,8 @@ def update_sites_from_cartodb(carto_table_pk):
             temp[new_carto_pcode] = 1
 
         if duplicate_carto_pcodes:
-            logger.exception("Duplicates found in the CartoDB pcodes: {}".format(','.join(duplicate_database_pcodes)))
+            logger.exception("Duplicates found in the new CartoDB pcodes: {}".
+                             format(','.join(duplicate_database_pcodes)))
             duplicates_found = True
 
         temp = {}
@@ -394,9 +397,9 @@ def update_sites_from_cartodb(carto_table_pk):
                     results += partial_results
 
                 if orphaned_old_pcodes:
-                    logger.warning("Deleting orphaned pcodes: {}".format(','.join(orphaned_old_pcodes)))
-                    Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).delete()
-                    # Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).update(is_active=False)
+                    logger.warning("Archiving unused pcodes: {}".format(','.join(orphaned_old_pcodes)))
+                    # Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).delete()
+                    Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).update(is_active=False)
 
             Location.objects.rebuild()
 

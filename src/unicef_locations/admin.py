@@ -1,3 +1,5 @@
+from celery import chain
+
 from django import forms
 from django.contrib import admin as basic_admin
 from django.contrib.gis import admin
@@ -90,8 +92,7 @@ class CartoDBTableAdmin(admin.ModelAdmin):
     actions = ('import_sites',)
 
     def import_sites(self, request, queryset):
-        for table in queryset:
-            update_sites_from_cartodb.delay(table.pk)
+        chain([update_sites_from_cartodb.si(table.pk) for table in queryset]).delay()
 
 
 admin.site.register(Location, LocationAdmin)
