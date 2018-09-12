@@ -92,6 +92,8 @@ class CartoDBTableAdmin(admin.ModelAdmin):
     actions = ('import_sites',)
 
     def import_sites(self, request, queryset):
+        # re-sort the queryset so the admin ordering does not affect the import order
+        queryset = sorted(queryset, key=lambda l: (l.tree_id, l.lft, l.pk))
         chain([update_sites_from_cartodb.si(table.pk) for table in queryset]).delay()
 
 

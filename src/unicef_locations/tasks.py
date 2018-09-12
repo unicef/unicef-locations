@@ -217,26 +217,6 @@ def update_sites_from_cartodb(carto_table_pk):
     else:
         # validations
         # get the list of the existing Pcodes and previous Pcodes from the database
-
-        # New locations must have unique Pcodes (within a given admin level)
-        # Old locations must have unique Pcodes (within a given admin level)
-        # Locations case B in use (BiU) must be provided with remaps in the remap table - if not - cancel import
-        # Locations case BnRiU are not allowed
-        # Old Pcodes provided in the remap table must be unique (can't be provided multiple times)
-        # New Pcodes provided in the remap table must exist in the new dataset (Carto table)
-        # New locations must have correct geometry
-        # Upon successfully completed update the total number of "Active" locations per admin level equals the number of locations in New dataset (Carto db table)
-        # Total number of locations marked as "Inactive" equals the number of records in remap table
-        # reset to root level if:
-        #   - outsider
-        #   - gets archived
-        #   - archived lower level locations whose parents are deleted go to root level
-        #   -
-        # update children parents on remap
-        # also filter api by 'is_active'
-        # put celery tasks in chain
-
-
         database_pcodes = []
         for row in Location.all_locations.filter(gateway=carto_table.location_type).values('p_code'):
             database_pcodes.append(row['p_code'])
@@ -244,8 +224,6 @@ def update_sites_from_cartodb(carto_table_pk):
         # get the list of the new Pcodes from the Carto data
         new_carto_pcodes = [str(row[carto_table.pcode_col]) for row in rows]
 
-        # print(database_pcodes)
-        # print(new_carto_pcodes)
         remap_old_pcodes = []
         remap_new_pcodes = []
 
@@ -261,10 +239,6 @@ def update_sites_from_cartodb(carto_table_pk):
                 return
             else:
                 validation_failed = False
-                # test
-                # remapped_pcode_pairs.append({'new_pcode': 'testn1', 'old_pcode': 'testo1'})
-                # remapped_pcode_pairs.append({'new_pcode': 'testn2', 'old_pcode': 'testo2'})
-
                 # validate remap table
                 bad_old_pcodes = []
                 bad_new_pcodes = []
@@ -333,9 +307,6 @@ def update_sites_from_cartodb(carto_table_pk):
         if duplicates_found:
             return
 
-        orphaned_old_pcodes = set(database_pcodes) - (set(new_carto_pcodes) | set(remap_old_pcodes))
-        # TODO: check for in use, in etools.src.libraries
-
         # wrap Location tree updates in a transaction, to prevent an invalid tree state due to errors
         with transaction.atomic():
             # disable tree 'generation' during single row updates, rebuild the tree after.
@@ -396,9 +367,9 @@ def update_sites_from_cartodb(carto_table_pk):
 
                     results += partial_results
 
+                orphaned_old_pcodes = set(database_pcodes) - (set(new_carto_pcodes) | set(remap_old_pcodes))
                 if orphaned_old_pcodes:
                     logger.warning("Archiving unused pcodes: {}".format(','.join(orphaned_old_pcodes)))
-                    # Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).delete()
                     Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).update(is_active=False)
 
             Location.objects.rebuild()
