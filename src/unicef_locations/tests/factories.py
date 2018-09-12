@@ -39,5 +39,3 @@ class LocationRemapHistoryFactory(factory.django.DjangoModelFactory):
 
         old_location = factory.SubFactory(LocationFactory)
         new_location = factory.SubFactory(LocationFactory)
-
-
