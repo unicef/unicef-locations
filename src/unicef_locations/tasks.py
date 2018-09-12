@@ -308,12 +308,12 @@ def update_sites_from_cartodb(carto_table_pk):
 
 
 def validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_client):
+    remapped_pcode_pairs = []
     remap_old_pcodes = []
     remap_new_pcodes = []
+    remap_table_valid = True
 
-    # if we have a remap table, fetch it's content and validate it
     if carto_table.remap_table_name:
-        remapped_pcode_pairs = []
         try:
             remap_qry = 'select old_pcode::text, new_pcode::text from {}'.format(
                 carto_table.remap_table_name)
@@ -322,7 +322,6 @@ def validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_cli
             logger.exception("CartoDB exception occured on the remap table query")
             remap_table_valid = False
         else:
-            remap_table_valid = True
             # validate remap table
             bad_old_pcodes = []
             bad_new_pcodes = []
