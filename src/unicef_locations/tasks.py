@@ -15,7 +15,7 @@ logger = get_task_logger(__name__)
 
 
 @celery.current_app.task
-def update_sites_from_cartodb(carto_table_pk):
+def update_sites_from_cartodb(carto_table_pk):  # noqa: ignore=C901
     results = []
 
     try:
