@@ -1,10 +1,8 @@
 from celery import chain
-
 from django import forms
 from django.contrib import admin as basic_admin
 from django.contrib.gis import admin
 from django.forms import Textarea
-
 from leaflet.admin import LeafletGeoAdmin
 from mptt.admin import MPTTModelAdmin
 

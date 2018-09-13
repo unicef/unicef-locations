@@ -4,7 +4,6 @@ import celery
 from carto.exceptions import CartoException
 from carto.sql import SQLClient
 from celery.utils.log import get_task_logger
-
 from django.db import IntegrityError, transaction
 from django.utils.encoding import force_text
 
