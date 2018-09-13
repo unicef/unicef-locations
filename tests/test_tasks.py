@@ -330,8 +330,8 @@ class TestCreateLocations(TestCase):
         self.assertIsNone(location.geom)
         self.assertEqual(location.name, name)
 
-        self.assertFalse(remapped_location_1.is_active)
-        self.assertFalse(remapped_location_2.is_active)
+        self.assertFalse(Location.objects.get(p_code="remap_123").is_active)
+        self.assertFalse(Location.objects.get(p_code="remap_321").is_active)
 
 
 class TestUpdateSitesFromCartoDB(TestCase):
