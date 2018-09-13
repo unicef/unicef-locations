@@ -271,8 +271,10 @@ class TestCreateLocations(TestCase):
             carto,
             True,
             parent2,
+            None,
             name,
             {"the_geom": "Point(20 20)"},
+            0,
             0,
             0,
             0,
@@ -297,15 +299,8 @@ class TestUpdateSitesFromCartoDB(TestCase):
         with patch("unicef_locations.tasks.SQLClient.send", self.mock_sql):
             return tasks.update_sites_from_cartodb(carto_table_pk)
 
-    def _assert_response(self, response, name, created, updated, remapped, not_added):
-        self.assertEqual(
-            response,
-            "Table name {}: {} sites created, {} sites updated, {} sites remapped, {} sites skipped".format(
-                name, created,
-                updated, remapped,
-                not_added,
-            )
-        )
+    def _assert_response(self, response, expected_result_length):
+        self.assertEqual(len(response), expected_result_length)
 
     def test_not_exist(self):
         """Test that when carto record does not exist, nothing happens"""
@@ -319,7 +314,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
         self.mock_sql.side_effect = CartoException
         carto = CartoDBTableFactory()
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 0, 0, 0, 0)
+        self._assert_response(response, 0)
 
     def test_add(self):
         """Check that rows returned by SQLClient create a location record"""
@@ -335,7 +330,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 1, 0, 0, 0)
+        self._assert_response(response, 1)
         self.assertTrue(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
@@ -356,7 +351,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 0, 0, 0, 1)
+        self._assert_response(response, 0)
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
@@ -382,7 +377,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 1, 0, 0, 0)
+        self._assert_response(response, 1)
         self.assertTrue(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
@@ -412,7 +407,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 0, 0, 0, 1)
+        self._assert_response(response, 0)
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
@@ -439,7 +434,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
         response = self._run_update(carto.pk)
-        self._assert_response(response, carto.table_name, 0, 0, 0, 1)
+        self._assert_response(response, 0)
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
