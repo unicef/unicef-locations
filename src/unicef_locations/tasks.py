@@ -129,74 +129,6 @@ def update_sites_from_cartodb(carto_table_pk):
     return results
 
 
-def get_cartodb_locations(sql_client, carto_table):
-    rows = []
-    cartodb_id_col = 'cartodb_id'
-
-    try:
-        query_row_count = sql_client.send('select count(*) from {}'.format(carto_table.table_name))
-        row_count = query_row_count['rows'][0]['count']
-
-        # do not spam Carto with requests, wait 1 second
-        time.sleep(1)
-        query_max_id = sql_client.send('select MAX({}) from {}'.format(cartodb_id_col, carto_table.table_name))
-        max_id = query_max_id['rows'][0]['max']
-    except CartoException:
-        logger.exception("Cannot fetch pagination prequisites from CartoDB for table {}".format(
-            carto_table.table_name
-        ))
-        return "Table name {}: {} sites created, {} sites updated, {} sites remapped, {} sites skipped".format(
-            carto_table.table_name, 0, 0, 0, 0
-        )
-
-    offset = 0
-    limit = 100
-
-    # failsafe in the case when cartodb id's are too much off compared to the nr. of records
-    if max_id > (5 * row_count):
-        limit = max_id + 1
-        logger.warning("The CartoDB primary key seemf off, pagination is not possible")
-
-    if carto_table.parent_code_col and carto_table.parent:
-        qry = 'select st_AsGeoJSON(the_geom) as the_geom, {}, {}, {} from {}'.format(
-            carto_table.name_col,
-            carto_table.pcode_col,
-            carto_table.parent_code_col,
-            carto_table.table_name)
-    else:
-        qry = 'select st_AsGeoJSON(the_geom) as the_geom, {}, {} from {}'.format(
-            carto_table.name_col,
-            carto_table.pcode_col,
-            carto_table.table_name)
-
-    while offset <= max_id:
-        paged_qry = qry + ' WHERE {} > {} AND {} <= {}'.format(
-            cartodb_id_col,
-            offset,
-            cartodb_id_col,
-            offset + limit
-        )
-        logger.info('Requesting rows between {} and {} for {}'.format(
-            offset,
-            offset + limit,
-            carto_table.table_name
-        ))
-
-        # do not spam Carto with requests, wait 1 second
-        time.sleep(1)
-        sites = sql_client.send(paged_qry)
-        rows += sites['rows']
-        offset += limit
-
-        if 'error' in sites:
-            # it seems we can have both valid results and error messages in the same CartoDB response
-            logger.exception("CartoDB API error received: {}".format(sites['error']))
-            # When this error occurs, we receive truncated locations, probably it's better to interrupt the import
-            return False, []
-
-    return True, rows
-
-
 def create_location(pcode, carto_table, parent, parent_instance, remapped_old_pcodes, site_name,
                     row, sites_not_added, sites_created, sites_updated, sites_remapped):
 
@@ -311,6 +243,72 @@ def create_location(pcode, carto_table, parent, parent_instance, remapped_old_pc
 
         results = [(location.id, None)]
         return True, sites_not_added, sites_created, sites_updated, sites_remapped, results
+
+
+def get_cartodb_locations(sql_client, carto_table):
+    rows = []
+    cartodb_id_col = 'cartodb_id'
+
+    try:
+        query_row_count = sql_client.send('select count(*) from {}'.format(carto_table.table_name))
+        row_count = query_row_count['rows'][0]['count']
+
+        # do not spam Carto with requests, wait 1 second
+        time.sleep(1)
+        query_max_id = sql_client.send('select MAX({}) from {}'.format(cartodb_id_col, carto_table.table_name))
+        max_id = query_max_id['rows'][0]['max']
+    except CartoException:
+        logger.exception("Cannot fetch pagination prequisites from CartoDB for table {}".format(
+            carto_table.table_name
+        ))
+        return False, []
+
+    offset = 0
+    limit = 100
+
+    # failsafe in the case when cartodb id's are too much off compared to the nr. of records
+    if max_id > (5 * row_count):
+        limit = max_id + 1
+        logger.warning("The CartoDB primary key seemf off, pagination is not possible")
+
+    if carto_table.parent_code_col and carto_table.parent:
+        qry = 'select st_AsGeoJSON(the_geom) as the_geom, {}, {}, {} from {}'.format(
+            carto_table.name_col,
+            carto_table.pcode_col,
+            carto_table.parent_code_col,
+            carto_table.table_name)
+    else:
+        qry = 'select st_AsGeoJSON(the_geom) as the_geom, {}, {} from {}'.format(
+            carto_table.name_col,
+            carto_table.pcode_col,
+            carto_table.table_name)
+
+    while offset <= max_id:
+        paged_qry = qry + ' WHERE {} > {} AND {} <= {}'.format(
+            cartodb_id_col,
+            offset,
+            cartodb_id_col,
+            offset + limit
+        )
+        logger.info('Requesting rows between {} and {} for {}'.format(
+            offset,
+            offset + limit,
+            carto_table.table_name
+        ))
+
+        # do not spam Carto with requests, wait 1 second
+        time.sleep(1)
+        sites = sql_client.send(paged_qry)
+        rows += sites['rows']
+        offset += limit
+
+        if 'error' in sites:
+            # it seems we can have both valid results and error messages in the same CartoDB response
+            logger.exception("CartoDB API error received: {}".format(sites['error']))
+            # When this error occurs, we receive truncated locations, probably it's better to interrupt the import
+            return False, []
+
+    return True, rows
 
 
 def validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_client):
