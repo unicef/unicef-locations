@@ -323,7 +323,7 @@ class TestCreateLocations(TestCase):
         self.assertTrue(success)
         self.assertEqual(not_added, 0)
         self.assertEqual(created, 1)
-        self.assertEqual(remapped, 1)
+        self.assertEqual(remapped, len(remapped_pcodes))
         self.assertEqual(updated, 0)
         location = Location.objects.get(p_code="123")
         self.assertIsNotNone(location.point)
@@ -349,7 +349,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
     def test_not_exist(self):
         """Test that when carto record does not exist, nothing happens"""
         self.assertFalse(CartoDBTable.objects.filter(pk=404).exists())
-        self.assertIsNone(tasks.update_sites_from_cartodb(404))
+        self.assertFalse(tasks.update_sites_from_cartodb(404))
 
     def test_sql_client_error(self):
         """Check that a CartoException on SQLClient.send
