@@ -154,7 +154,7 @@ class TestCreateLocations(TestCase):
             0,
         )
         self.assertFalse(success)
-        self.assertEqual(not_added, 0)
+        self.assertEqual(not_added, 1)
         self.assertEqual(created, 0)
         self.assertEqual(remapped, 0)
         self.assertEqual(updated, 0)
