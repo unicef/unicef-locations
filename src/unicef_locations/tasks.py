@@ -130,7 +130,7 @@ def update_sites_from_cartodb(carto_table_pk):
 
 
 def create_location(pcode, carto_table, parent, parent_instance, remapped_old_pcodes, site_name,
-                    row, sites_not_added, sites_created, sites_updated, sites_remapped):
+                    row, sites_not_added, sites_created, sites_updated, sites_remapped):    # pragma: no cover
 
     results = None
     try:
