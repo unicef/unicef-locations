@@ -294,7 +294,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
         self.mock_sql = Mock()
 
     def _run_update(self, carto_table_pk):
-        with patch("etools.applications.locations.tasks.SQLClient.send", self.mock_sql):
+        with patch("unicef_locations.tasks.SQLClient.send", self.mock_sql):
             return tasks.update_sites_from_cartodb(carto_table_pk)
 
     def _assert_response(self, response, name, created, updated, remapped, not_added):
