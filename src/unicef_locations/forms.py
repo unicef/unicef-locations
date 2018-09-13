@@ -18,7 +18,7 @@ class CartoDBTableForm(forms.ModelForm):
         model = CartoDBTable
         fields = '__all__'
 
-    def clean(self):
+    def clean(self):    # pragma: no cover
 
         domain = self.cleaned_data['domain']
         table_name = self.cleaned_data['table_name']
