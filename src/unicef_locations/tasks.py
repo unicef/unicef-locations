@@ -21,7 +21,7 @@ def update_sites_from_cartodb(carto_table_pk):
         carto_table = CartoDBTable.objects.get(pk=carto_table_pk)
     except CartoDBTable.DoesNotExist:
         logger.exception('Cannot retrieve CartoDBTable with pk: %s', carto_table_pk)
-        return
+        return results
 
     auth_client = LocationsCartoNoAuthClient(base_url="https://{}.carto.com/".format(carto_table.domain))
     sql_client = SQLClient(auth_client)
@@ -32,7 +32,7 @@ def update_sites_from_cartodb(carto_table_pk):
         carto_succesfully_queried, rows = get_cartodb_locations(sql_client, carto_table)
 
         if not carto_succesfully_queried:
-            return
+            return results
     except CartoException:
         logger.exception("CartoDB exception occured")
     else:
@@ -50,11 +50,11 @@ def update_sites_from_cartodb(carto_table_pk):
             validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_client)
 
         if not remap_table_valid:
-            return
+            return results
 
         # check for  duplicate pcodes in both local and Carto data
         if duplicate_pcodes_exist(database_pcodes, new_carto_pcodes, remap_old_pcodes):
-            return
+            return results
 
         # wrap Location tree updates in a transaction, to prevent an invalid tree state due to errors
         with transaction.atomic():
