@@ -245,7 +245,7 @@ def create_location(pcode, carto_table, parent, parent_instance, remapped_old_pc
         return True, sites_not_added, sites_created, sites_updated, sites_remapped, results
 
 
-def get_cartodb_locations(sql_client, carto_table): # pragma: no cover
+def get_cartodb_locations(sql_client, carto_table):    # pragma: no cover
     rows = []
     cartodb_id_col = 'cartodb_id'
 
@@ -311,7 +311,7 @@ def get_cartodb_locations(sql_client, carto_table): # pragma: no cover
     return True, rows
 
 
-def validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_client): # pragma: no cover
+def validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_client):   # pragma: no cover
     remapped_pcode_pairs = []
     remap_old_pcodes = []
     remap_new_pcodes = []
@@ -353,7 +353,7 @@ def validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_cli
     return remap_table_valid, remapped_pcode_pairs, remap_old_pcodes, remap_new_pcodes
 
 
-def duplicate_pcodes_exist(database_pcodes, new_carto_pcodes, remap_old_pcodes): # pragma: no cover
+def duplicate_pcodes_exist(database_pcodes, new_carto_pcodes, remap_old_pcodes):    # pragma: no cover
     duplicates_found = False
     temp = {}
     duplicate_database_pcodes = []
