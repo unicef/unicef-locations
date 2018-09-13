@@ -8,7 +8,7 @@ from unicef_locations.models import CartoDBTable, Location
 from unicef_locations.tests.factories import CartoDBTableFactory, LocationFactory
 
 
-class TestCreateLocations(BaseTenantTestCase):
+class TestCreateLocations(TestCase):
     def test_multiple_objects(self):
         """Multiple objects match the pcode,
         just 'no added' should increment by 1
@@ -286,7 +286,7 @@ class TestCreateLocations(BaseTenantTestCase):
         self.assertEqual(location.parent, parent2)
 
 
-class TestUpdateSitesFromCartoDB(BaseTenantTestCase):
+class TestUpdateSitesFromCartoDB(TestCase):
     def setUp(self):
         super(TestUpdateSitesFromCartoDB, self).setUp()
         self.mock_sql = Mock()
