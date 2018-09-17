@@ -52,7 +52,7 @@ class CartoDBTableForm(forms.ModelForm):
         if remap_table_name:
             try:
                 remap_table = sql_client.send('select * from {} limit 1'.format(remap_table_name))
-            except CartoException:
+            except CartoException:  # pragma: no-cover
                 logger.exception("CartoDB exception occured")
                 raise ValidationError("Couldn't connect to the CartoDB remap table: {}".format(remap_table_name))
             else:
@@ -64,7 +64,7 @@ class CartoDBTableForm(forms.ModelForm):
                     ))
 
                 if 'new_pcode' not in row.keys():
-                    raise ValidationError('The PCode column ({}) is not in table: {}'.format(
+                    raise ValidationError('The New PCode column ({}) is not in table: {}'.format(
                         'new_pcode', remap_table_name
                     ))
 

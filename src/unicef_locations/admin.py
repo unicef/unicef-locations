@@ -62,7 +62,7 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
     )
     search_fields = ('name', 'p_code',)
 
-    def get_queryset(self, request):
+    def get_queryset(self, request):    # pragma: no-cover
         qs = Location.all_locations.get_queryset()
 
         ordering = self.get_ordering(request)

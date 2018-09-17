@@ -1,3 +1,5 @@
+from unittest import skip
+
 from carto.exceptions import CartoException
 from django.test import TestCase
 
@@ -480,3 +482,62 @@ class TestUpdateSitesFromCartoDB(TestCase):
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
+
+    def test_duplicate_db_pcodes(self):
+        """ Check if unallowed duplicate local pcodes exist"""
+        self.mock_sql.return_value = {"rows": [{
+            "the_geom": "Point(20 20)",
+            "name": "New Location",
+            "pcode": "123",
+            "parent": "654",
+            "max": 1,
+            "count": 1,
+        }]}
+        carto = CartoDBTableFactory(
+            parent_code_col="parent"
+        )
+        LocationFactory(p_code="123", gateway=carto.location_type).save()
+        LocationFactory(p_code="123", gateway=carto.location_type).save()
+        response = self._run_update(carto.pk)
+        self._assert_response(response, [])
+
+    def test_remap_table_invalid(self):
+        """ """
+        self.mock_sql.return_value = {"rows": [{
+            "the_geom": "Point(20 20)",
+            "name": "New Location",
+            "pcode": "123",
+            "max": 1,
+            "count": 1,
+        }]}
+        carto = CartoDBTableFactory(
+            remap_table_name="test_rmp",
+        )
+
+        LocationFactory(p_code="123", gateway=carto.location_type)
+        response = self._run_update(carto.pk)
+        # TODO: rewrite it to throw an exception?
+        self._assert_response(response, [])
+
+    @skip("Cannot be done until the location import task is refactored")
+    def test_validate_remap_table(self):
+        """ """
+        self.mock_sql.return_value = {
+            "rows": [{
+                    "the_geom": "Point(20 20)",
+                    "name": "New Location",
+                    "pcode": "123",
+                    "max": 1,
+                    "count": 1,
+                },
+                {'old_pcode': '123', 'new_pcode': 'r123'},
+                {'old_pcode': '123_2', 'new_pcode': 'r123'},
+                {'old_pcode': '456', 'new_pcode': 'r456'},
+            ]
+        }
+
+        carto = CartoDBTableFactory(remap_table_name="test_rmp")
+        LocationFactory(p_code="123", gateway=carto.location_type)
+        LocationFactory(p_code="456", gateway=carto.location_type)
+
+        response = self._run_update(carto.pk)
