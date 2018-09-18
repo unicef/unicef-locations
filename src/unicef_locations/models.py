@@ -139,16 +139,24 @@ class LocationRemapHistory(models.Model):
         on_delete=models.CASCADE,
         related_name="+"
     )
-
     content_type = models.ForeignKey(
         ContentType,
         verbose_name=_('Content Type'),
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
     )
-    object_id = models.IntegerField(verbose_name=_('Object ID'))
+    object_id = models.IntegerField(
+        verbose_name=_('Object ID'),
+        blank=True,
+        null=True
+    )
     content_object = GenericForeignKey('content_type', 'object_id')
-
-    comments = models.TextField(verbose_name=_('Comments'), null=True, blank=True)
+    comments = models.TextField(
+        verbose_name=_('Comments'),
+        blank=True,
+        null=True
+    )
     created = AutoCreatedField(_('created'))
 
 
