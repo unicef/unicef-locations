@@ -1,6 +1,6 @@
 import time
-import celery
 
+import celery
 from carto.exceptions import CartoException
 from carto.sql import SQLClient
 from celery.utils.log import get_task_logger
