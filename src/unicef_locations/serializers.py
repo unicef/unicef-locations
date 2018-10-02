@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import CartoDBTable, GatewayType, Location
+from .models import CartoDBTable, GatewayType, Location, LocationRemapHistory
 
 
 class CartoDBTableSerializer(serializers.ModelSerializer):
@@ -79,3 +79,10 @@ class LocationExportFlatSerializer(serializers.ModelSerializer):
 
     def get_geom(self, obj):
         return obj.geom.point_on_surface if obj.geom else ""
+
+
+class LocationRemapHistorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LocationRemapHistory
+        fields = "__all__"

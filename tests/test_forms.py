@@ -19,6 +19,7 @@ class TestCartoDBTableForm(TestCase):
             "name_col": "name",
             "pcode_col": "pcode",
             "parent_code_col": "parent",
+            "remap_table_name": "test_remap",
             "location_type": gateway.pk,
         }
 
@@ -83,12 +84,62 @@ class TestCartoDBTableForm(TestCase):
             "The Parent Code column (parent) is not in table: test"
         )
 
+    def test_no_remap_table(self):
+        """Check validation when there is no `remap_table`"""
+        self.data["remap_table_name"] = ""
+        self.mock_sql.return_value = {"rows": [{
+            "name": "",
+            "pcode": "",
+            "parent": "",
+        }]}
+
+        form = forms.CartoDBTableForm(self.data)
+        self.assertTrue(self._test_clean(form))
+
+    def test_remap_table_no_old_pcode(self):
+        """Check that validation fails when there is no `old_pcode` in the `remap_table`"""
+        self.mock_sql.return_value = {"rows": [{
+            "name": "",
+            "pcode": "",
+            "parent": "",
+            "new_pcode": "",
+        }]}
+
+        form = forms.CartoDBTableForm(self.data)
+        self.assertFalse(self._test_clean(form))
+        errors = form.errors.as_data()
+        self.assertEqual(len(errors["__all__"]), 1)
+        self.assertEqual(
+            errors["__all__"][0].message,
+            "The Old PCode column (old_pcode) is not in table: test_remap"
+        )
+
+    def test_remap_table_no_new_pcode(self):
+        """Check that validation fails when there is no `new_pcode` in the `remap_table`"""
+        self.mock_sql.return_value = {"rows": [{
+            "name": "",
+            "pcode": "",
+            "parent": "",
+            "old_pcode": "",
+        }]}
+
+        form = forms.CartoDBTableForm(self.data)
+        self.assertFalse(self._test_clean(form))
+        errors = form.errors.as_data()
+        self.assertEqual(len(errors["__all__"]), 1)
+        self.assertEqual(
+            errors["__all__"][0].message,
+            "The New PCode column (new_pcode) is not in table: test_remap"
+        )
+
     def test_clean(self):
         """Check that validation passes"""
         self.mock_sql.return_value = {"rows": [{
             "name": "",
             "pcode": "",
             "parent": "",
+            "old_pcode": "",
+            "new_pcode": "",
         }]}
         form = forms.CartoDBTableForm(self.data)
         self.assertTrue(self._test_clean(form))

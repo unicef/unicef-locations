@@ -31,10 +31,16 @@ class GatewayType(models.Model):
         return self.name
 
 
-class LocationManager(TreeManager):
-
+class ActiveLocationsManager(TreeManager):
     def get_queryset(self):
-        return super(LocationManager, self).get_queryset().order_by('name').select_related('gateway')
+        return super(ActiveLocationsManager, self).get_queryset().filter(is_active=True)\
+            .order_by('name').select_related('gateway')
+
+
+class AllLocationsManager(TreeManager):
+    def get_queryset(self):
+        return super(AllLocationsManager, self).get_queryset()\
+            .order_by('name').select_related('gateway')
 
 
 class Location(MPTTModel):
@@ -82,10 +88,12 @@ class Location(MPTTModel):
         blank=True,
     )
     point = models.PointField(verbose_name=_("Point"), null=True, blank=True)
+    is_active = models.BooleanField(verbose_name=_("Active"), default=True, blank=True)
     created = AutoCreatedField(_('created'))
     modified = AutoLastModifiedField(_('modified'))
 
-    objects = LocationManager()
+    objects = ActiveLocationsManager()
+    all_locations = AllLocationsManager()
 
     def __str__(self):
         # TODO: Make generic
@@ -111,6 +119,30 @@ class Location(MPTTModel):
         unique_together = ('name', 'gateway', 'p_code')
         ordering = ['name']
         app_label = 'locations'
+
+
+class LocationRemapHistory(models.Model):
+    '''
+    Location Remap History records for the related objects(interventions, travels, activities, actions)
+    '''
+    old_location = models.ForeignKey(
+        Location,
+        verbose_name=_("Old Location"),
+        on_delete=models.CASCADE,
+        related_name="+"
+    )
+    new_location = models.ForeignKey(
+        Location,
+        verbose_name=_("New Location"),
+        on_delete=models.CASCADE,
+        related_name="+"
+    )
+    comments = models.TextField(
+        verbose_name=_('Comments'),
+        blank=True,
+        null=True
+    )
+    created = AutoCreatedField(_('created'))
 
 
 @receiver(post_delete, sender=Location)
@@ -139,6 +171,8 @@ class CartoDBTable(MPTTModel):
     )
     name_col = models.CharField(max_length=254, default='name', verbose_name=_('Name Column'))
     pcode_col = models.CharField(max_length=254, default='pcode', verbose_name=_('Pcode Column'))
+    # Cartodb table name used to remap old pcodes to new pcodes
+    remap_table_name = models.CharField(max_length=254, verbose_name=_('Remap Table Name'), blank=True, null=True)
     parent_code_col = models.CharField(max_length=254, default='', blank=True, verbose_name=_('Parent Code Column'))
     parent = TreeForeignKey(
         'self', null=True, blank=True, related_name='children', db_index=True,
