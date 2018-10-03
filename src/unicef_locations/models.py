@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _
 from model_utils.fields import AutoCreatedField, AutoLastModifiedField
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel, TreeForeignKey
+from mptt.querysets import TreeQuerySet
 
 from .cache import invalidate_cache
 from .libs import get_random_color
@@ -31,15 +32,13 @@ class GatewayType(models.Model):
         return self.name
 
 
-class ActiveLocationsManager(TreeManager):
+class LocationsManager(TreeManager):
     def get_queryset(self):
-        return super(ActiveLocationsManager, self).get_queryset().filter(is_active=True)\
+        return super(LocationsManager, self).get_queryset().filter(is_active=True)\
             .order_by('name').select_related('gateway')
 
-
-class AllLocationsManager(TreeManager):
-    def get_queryset(self):
-        return super(AllLocationsManager, self).get_queryset()\
+    def all_locations(self):
+        return super(LocationsManager, self).get_queryset()\
             .order_by('name').select_related('gateway')
 
 
@@ -92,8 +91,7 @@ class Location(MPTTModel):
     created = AutoCreatedField(_('created'))
     modified = AutoLastModifiedField(_('modified'))
 
-    objects = ActiveLocationsManager()
-    all_locations = AllLocationsManager()
+    objects = LocationsManager()
 
     def __str__(self):
         # TODO: Make generic
