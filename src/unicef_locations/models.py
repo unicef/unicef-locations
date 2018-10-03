@@ -8,7 +8,6 @@ from django.utils.translation import ugettext as _
 from model_utils.fields import AutoCreatedField, AutoLastModifiedField
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel, TreeForeignKey
-from mptt.querysets import TreeQuerySet
 
 from .cache import invalidate_cache
 from .libs import get_random_color
