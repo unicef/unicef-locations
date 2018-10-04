@@ -36,6 +36,10 @@ class LocationsManager(TreeManager):
         return super(LocationsManager, self).get_queryset().filter(is_active=True)\
             .order_by('name').select_related('gateway')
 
+    def archived_locations(self):
+        return super(LocationsManager, self).get_queryset().filter(is_active=False)\
+            .order_by('name').select_related('gateway')
+
     def all_locations(self):
         return super(LocationsManager, self).get_queryset()\
             .order_by('name').select_related('gateway')
