@@ -31,15 +31,17 @@ class GatewayType(models.Model):
         return self.name
 
 
-class ActiveLocationsManager(TreeManager):
+class LocationsManager(TreeManager):
     def get_queryset(self):
-        return super(ActiveLocationsManager, self).get_queryset().filter(is_active=True)\
+        return super(LocationsManager, self).get_queryset().filter(is_active=True)\
             .order_by('name').select_related('gateway')
 
+    def archived_locations(self):
+        return super(LocationsManager, self).get_queryset().filter(is_active=False)\
+            .order_by('name').select_related('gateway')
 
-class AllLocationsManager(TreeManager):
-    def get_queryset(self):
-        return super(AllLocationsManager, self).get_queryset()\
+    def all_locations(self):
+        return super(LocationsManager, self).get_queryset()\
             .order_by('name').select_related('gateway')
 
 
@@ -92,8 +94,7 @@ class Location(MPTTModel):
     created = AutoCreatedField(_('created'))
     modified = AutoLastModifiedField(_('modified'))
 
-    objects = ActiveLocationsManager()
-    all_locations = AllLocationsManager()
+    objects = LocationsManager()
 
     def __str__(self):
         # TODO: Make generic
