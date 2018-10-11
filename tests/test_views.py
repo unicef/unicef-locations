@@ -5,6 +5,9 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
+from unittest import mock
+
+from unicef_locations.cache import etag_cached
 from unicef_locations.config import conf
 from unicef_locations.models import Location
 from unicef_locations.tests.factories import LocationFactory
@@ -20,7 +23,7 @@ def test_api_locationtypes_list(django_app, admin_user):
 def test_api_location_light_list(django_app, admin_user, locations3):
     url = reverse('locations:locations-light-list')
     res = django_app.get(url, user=admin_user)
-    assert sorted(res.json[0].keys()) == ['id', 'location_type', 'location_type_admin_level', 'name', 'p_code']
+    assert sorted(res.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
 
 
 def test_api_location_heavy_list(django_app, admin_user, location):
@@ -28,7 +31,7 @@ def test_api_location_heavy_list(django_app, admin_user, location):
 
     response = django_app.get(url, user=admin_user)
     assert sorted(response.json[0].keys()) == [
-        'geo_point', 'id', 'location_type', 'location_type_admin_level', 'name', 'p_code', 'parent'
+        'gateway', 'geo_point', 'id', 'name', 'p_code', 'parent'
     ]
 
 
@@ -111,7 +114,7 @@ def test_api_location_autocomplete(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user, params={"q": "Loc"})
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['id', 'location_type', 'location_type_admin_level', 'name', 'p_code']
+    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
     assert "Loc" in response.json[0]["name"]
 
 
@@ -121,5 +124,21 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user)
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['id', 'location_type', 'location_type_admin_level', 'name', 'p_code']
+    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
     assert "Loc" in response.json[0]["name"]
+
+
+def test_cache_key_configuration():
+    func = mock.Mock()
+    conf.GET_CACHE_KEY = func
+
+    # with mock.patch('test_views.test_cache_key') as cache_key:
+    class Dummy:
+        request = mock.Mock()
+
+        @etag_cached('prefix')
+        def test(self):
+            return {}
+
+    Dummy().test()
+    assert func.call_count == 1

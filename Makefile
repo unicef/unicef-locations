@@ -12,8 +12,9 @@ help:
 
 
 develop:
-	pip install pre-commit
-	pip install -e .[dev]
+	@${MAKE} clean
+	pipenv install -d
+	pip install -e .[test]
 
 
 test:

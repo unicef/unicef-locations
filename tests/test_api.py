@@ -1,36 +1,41 @@
 # -*- coding: utf-8 -*-
+from drf_api_checker.pytest import contract, frozenfixture
+
+import pytest
+
 try:
     from django.urls import reverse
 except ImportError:
     # TODO: remove when django<2.0 will be unsupported
     from django.core.urlresolvers import reverse
-from drf_api_checker.pytest import contract, frozenfixture
+
+pytestmark = pytest.mark.django_db
 
 
 @frozenfixture
-def gateway():
+def gateway2():
     from unicef_locations.tests.factories import GatewayTypeFactory
     return GatewayTypeFactory()
 
 
 @frozenfixture
-def location():
+def location2():
     from unicef_locations.tests.factories import LocationFactory
     return LocationFactory(parent=None)
 
 
 @contract()
-def test_api_locationtypes_list(django_app, admin_user, gateway):
+def test_api_locationtypes_list(django_app, admin_user, gateway2):
     return reverse('locations:locationtypes-list')
 
 
 @contract()
-def test_api_location_light_list(django_app, admin_user, location):
+def test_api_location_light_list(django_app, admin_user, location2):
     return reverse('locations:locations-light-list')
 
 
 @contract()
-def test_api_location_list(django_app, admin_user, location):
+def test_api_location_list(django_app, admin_user, location2):
     return reverse('locations:locations-list')
 
     #

@@ -41,7 +41,7 @@ def etag_cached(cache_key: str, public_cache=False):
     def decorator(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
-            key = get_cache_key(self.request)
+            key = conf.GET_CACHE_KEY(self.request)
 
             cache_etag = cache.get(key)
             request_etag = self.request.META.get("HTTP_IF_NONE_MATCH", None)

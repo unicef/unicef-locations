@@ -1,0 +1,13 @@
+{
+    "gateway2": {
+        "master": {
+            "model": "locations.gatewaytype",
+            "pk": 1283,
+            "fields": {
+                "name": "GatewayType 7",
+                "admin_level": 7
+            }
+        },
+        "deps": []
+    }
+}
