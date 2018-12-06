@@ -359,7 +359,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
         """
         self.mock_sql.side_effect = CartoException
         carto = CartoDBTableFactory()
-        response = self._run_update(carto.pk)
+        self._run_update(carto.pk)
         # self._assert_response(response, [])
 
     def test_add(self):
@@ -523,7 +523,8 @@ class TestUpdateSitesFromCartoDB(TestCase):
     def test_validate_remap_table(self):
         """ """
         self.mock_sql.return_value = {
-            "rows": [{
+            "rows": [
+                {
                     "the_geom": "Point(20 20)",
                     "name": "New Location",
                     "pcode": "123",
@@ -540,4 +541,4 @@ class TestUpdateSitesFromCartoDB(TestCase):
         LocationFactory(p_code="123", gateway=carto.location_type)
         LocationFactory(p_code="456", gateway=carto.location_type)
 
-        response = self._run_update(carto.pk)
+        self._run_update(carto.pk)
