@@ -2,16 +2,17 @@
 
 import pytest
 
+from unicef_locations.tests.factories import LocationFactory
+
 
 @pytest.fixture()
 def location(db):
-    from unicef_locations.tests.factories import LocationFactory
     return LocationFactory()
 
 
 @pytest.fixture()
 def locations3(db):
-    return [location(db) for _ in range(3)]
+    return [LocationFactory() for _ in range(3)]
 
 
 @pytest.fixture()
