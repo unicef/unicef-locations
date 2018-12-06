@@ -1,3 +1,9 @@
+1.4.2
+=====
+* Possible fix for deadlock issue
+* Update requirements, django security alert, and moved to psycopg2-binary
+* Clean up tests
+
 1.4.1
 =====
 * Update managers for Locations
