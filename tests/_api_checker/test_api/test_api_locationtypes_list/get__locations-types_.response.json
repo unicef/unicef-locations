@@ -19,14 +19,16 @@
         ],
         "content-length": [
             "Content-Length",
-            "52"
+            "133"
         ]
     },
     "data": [
         {
-            "id": 1283,
-            "name": "GatewayType 7",
-            "admin_level": 7
+            "id": 1603,
+            "created": "2019-01-11T14:07:36.810233Z",
+            "modified": "2019-01-11T14:07:36.810476Z",
+            "name": "GatewayType 0",
+            "admin_level": 0
         }
     ],
     "content_type": null
