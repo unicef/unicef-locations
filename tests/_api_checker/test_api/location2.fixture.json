@@ -2,18 +2,19 @@
     "location2": {
         "master": {
             "model": "locations.location",
-            "pk": 920,
+            "pk": 1151,
             "fields": {
-                "name": "Location 4",
-                "gateway": 1284,
+                "name": "Location 0",
+                "gateway": 1604,
                 "latitude": null,
                 "longitude": null,
-                "p_code": "PCODE4",
+                "p_code": "PCODE0",
                 "parent": null,
                 "geom": null,
                 "point": "SRID=4326;POINT (20 20)",
-                "created": "2018-08-13T14:18:33.846Z",
-                "modified": "2018-08-13T14:18:33.848Z",
+                "is_active": true,
+                "created": "2019-01-11T14:07:38.127Z",
+                "modified": "2019-01-11T14:07:38.128Z",
                 "lft": 1,
                 "rght": 2,
                 "tree_id": 1,
@@ -23,10 +24,12 @@
         "deps": [
             {
                 "model": "locations.gatewaytype",
-                "pk": 1284,
+                "pk": 1604,
                 "fields": {
-                    "name": "GatewayType 8",
-                    "admin_level": 8
+                    "created": "2019-01-11T14:07:38.125Z",
+                    "modified": "2019-01-11T14:07:38.126Z",
+                    "name": "GatewayType 1",
+                    "admin_level": 1
                 }
             }
         ]
