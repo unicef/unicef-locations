@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.core.exceptions import ImproperlyConfigured
 from django.core.signals import setting_changed
 from django.urls import get_callable

@@ -1,13 +1,7 @@
-# -*- coding: utf-8 -*-
+from django.urls import reverse
 from drf_api_checker.pytest import contract, frozenfixture
 
 import pytest
-
-try:
-    from django.urls import reverse
-except ImportError:
-    # TODO: remove when django<2.0 will be unsupported
-    from django.core.urlresolvers import reverse
 
 pytestmark = pytest.mark.django_db
 
