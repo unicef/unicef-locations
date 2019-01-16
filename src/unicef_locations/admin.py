@@ -6,9 +6,10 @@ from django.forms import Textarea
 from leaflet.admin import LeafletGeoAdmin
 from mptt.admin import MPTTModelAdmin
 
-from .forms import CartoDBTableForm
-from .models import CartoDBTable, GatewayType, Location
+from .forms import CartoDBTableForm, ArcgisDBTableForm
+from .models import ArcgisDBTable, CartoDBTable, GatewayType, Location
 from .tasks import update_sites_from_cartodb
+from .arcgis_tasks import import_arcgis_locations
 
 
 class AutoSizeTextForm(forms.ModelForm):
@@ -95,6 +96,26 @@ class CartoDBTableAdmin(admin.ModelAdmin):
         chain([update_sites_from_cartodb.si(table.pk) for table in queryset]).delay()
 
 
+class ArcgisDBTableAdmin(admin.ModelAdmin):
+    form = ArcgisDBTableForm
+    save_as = True
+    list_display = (
+        'service_name',
+        'location_type',
+        'name_col',
+        'pcode_col',
+        'parent_code_col',
+    )
+
+    actions = ('import_sites',)
+
+    def import_sites(self, request, queryset):
+        # re-sort the queryset so the admin ordering does not affect the import order
+        queryset = sorted(queryset, key=lambda l: (l.tree_id, l.lft, l.pk))
+        chain([import_arcgis_locations.si(table.pk) for table in queryset]).delay()
+
+
 admin.site.register(Location, LocationAdmin)
 admin.site.register(GatewayType)
 admin.site.register(CartoDBTable, CartoDBTableAdmin)
+admin.site.register(ArcgisDBTable, ArcgisDBTableAdmin)

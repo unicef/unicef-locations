@@ -187,3 +187,35 @@ class CartoDBTable(MPTTModel):
 
     class Meta:
         app_label = 'locations'
+
+
+class ArcgisDBTable(MPTTModel):
+    """
+    Represents a table in CartoDB, it is used to import locations
+
+    Relates to :model:`locations.GatewayType`
+    """
+
+    service_url = models.CharField(max_length=512, verbose_name=_('Service URL'))
+    service_name = models.CharField(max_length=254, verbose_name=_('Service Name'))
+    location_type = models.ForeignKey(
+        GatewayType, verbose_name=_('Location Type'),
+        on_delete=models.CASCADE,
+    )
+    name_col = models.CharField(max_length=254, default='name', verbose_name=_('Name Column'))
+    pcode_col = models.CharField(max_length=254, default='pcode', verbose_name=_('Pcode Column'))
+    # Cartodb table name used to remap old pcodes to new pcodes
+    remap_table_service_url = models.CharField(max_length=512, verbose_name=_('Remap Table Service URL'), blank=True, null=True)
+    parent_code_col = models.CharField(max_length=254, default='', blank=True, verbose_name=_('Parent Code Column'))
+    parent = TreeForeignKey(
+        'self', null=True, blank=True, related_name='children', db_index=True,
+        verbose_name=_('Parent'),
+        on_delete=models.CASCADE,
+    )
+    color = models.CharField(blank=True, default=get_random_color, max_length=7, verbose_name=_('Color'))
+
+    def __str__(self):
+        return self.service_name
+
+    class Meta:
+        app_label = 'locations'
