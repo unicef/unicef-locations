@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
+from django.urls import reverse
 from drf_api_checker.pytest import contract, frozenfixture
 
 import pytest
 
-try:
-    from django.urls import reverse
-except ImportError:
-    # TODO: remove when django<2.0 will be unsupported
-    from django.core.urlresolvers import reverse
+from tests.api_checker import LastModifiedRecorder
 
 pytestmark = pytest.mark.django_db
 
@@ -24,17 +20,17 @@ def location2():
     return LocationFactory(parent=None)
 
 
-@contract()
+@contract(recorder_class=LastModifiedRecorder)
 def test_api_locationtypes_list(django_app, admin_user, gateway2):
     return reverse('locations:locationtypes-list')
 
 
-@contract()
+@contract(recorder_class=LastModifiedRecorder)
 def test_api_location_light_list(django_app, admin_user, location2):
     return reverse('locations:locations-light-list')
 
 
-@contract()
+@contract(recorder_class=LastModifiedRecorder)
 def test_api_location_list(django_app, admin_user, location2):
     return reverse('locations:locations-list')
 

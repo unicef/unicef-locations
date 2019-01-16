@@ -1,3 +1,7 @@
+1.5
+=====
+* Models extend TimeStampedModel
+
 1.4.2
 =====
 * Possible fix for deadlock issue
