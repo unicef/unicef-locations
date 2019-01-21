@@ -1,3 +1,4 @@
+import json
 import time
 
 import celery
@@ -5,7 +6,7 @@ from celery.utils.log import get_task_logger
 from arcgis.features import FeatureCollection, Feature, FeatureLayer, FeatureSet
 from django.db import IntegrityError, transaction
 from django.utils.encoding import force_text
-
+from django.contrib.gis.geos import Polygon, MultiPolygon, Point
 
 from .models import ArcgisDBTable, Location
 from .task_utils import create_location, validate_remap_table, duplicate_pcodes_exist
@@ -30,12 +31,24 @@ def import_arcgis_locations(arcgis_table_pk):
     # https://esri.github.io/arcgis-python-api/apidoc/html/arcgis.features.toc.html#
     try:
         feature_layer = FeatureLayer(arcgis_table.service_url)
-        rows = feature_layer.query()
+        fc = json.loads(feature_layer.query(out_sr=4326).to_geojson)
+        rows = fc['features']
+
+        '''
+        print('-------------------------------')
+        print(fc['type'])
+        for row in rows:
+            print(type(row['geometry']))
+            print(row['properties'])
+            break
+        print('-------------------------------')
+        '''
+
     except RuntimeError:  # pragma: no-cover
         logger.exception("Cannot fetch location data from Arcgis")
         return results
 
-    arcgis_pcodes = [str(row.get_value(arcgis_table.pcode_col).strip()) for row in rows]
+    arcgis_pcodes = [str(row['properties'][arcgis_table.pcode_col].strip()) for row in rows]
 
     remap_old_pcodes = []
     if arcgis_table.remap_table_service_url:
@@ -71,8 +84,8 @@ def import_arcgis_locations(arcgis_table_pk):
 
         with Location.objects.disable_mptt_updates():
             for row in rows:
-                arcgis_pcode = str(row.get_value(arcgis_table.pcode_col)).strip()
-                site_name = row.get_value(arcgis_table.name_col)
+                arcgis_pcode = str(row['properties'][arcgis_table.pcode_col]).strip()
+                site_name = row['properties'][arcgis_table.name_col]
 
                 if not site_name or site_name.isspace():
                     logger.warning("No name for location with PCode: {}".format(arcgis_pcode))
@@ -86,7 +99,7 @@ def import_arcgis_locations(arcgis_table_pk):
                 if arcgis_table.parent_code_col and arcgis_table.parent:
                     msg = None
                     parent = arcgis_table.parent.__class__
-                    parent_code = row.get_value(arcgis_table.parent_code_col)
+                    parent_code = row['properties'][arcgis_table.parent_code_col]
                     try:
                         parent_instance = Location.objects.get(p_code=parent_code)
                     except Location.MultipleObjectsReturned:
@@ -112,12 +125,22 @@ def import_arcgis_locations(arcgis_table_pk):
                         if arcgis_pcode == remap_row['new_pcode']:
                             remapped_old_pcodes.add(remap_row['old_pcode'])
 
+                if row['geometry']['type'] == 'Polygon':
+                    geom = MultiPolygon(Polygon(row['geometry']['coordinates'][0]))
+                elif row['geometry']['type'] == 'Point':
+                    # TODO test with real data
+                    geom = Point(row['geometry']['coordinates'])
+                else:
+                    logger.warning("Invalid Arcgis location type for: {}".format(arcgis_pcode))
+                    sites_not_added += 1
+                    continue
+
                 # create the location or update the existing based on type and code
                 succ, sites_not_added, sites_created, sites_updated, sites_remapped, \
                 partial_results = create_location(
                     arcgis_pcode, arcgis_table.location_type,
                     parent, parent_instance, remapped_old_pcodes,
-                    site_name, row.geometry,
+                    site_name, geom.json,
                     sites_not_added, sites_created,
                     sites_updated, sites_remapped
                 )
@@ -132,6 +155,6 @@ def import_arcgis_locations(arcgis_table_pk):
         Location.objects.rebuild()
 
     logger.warning("Table name {}: {} sites created, {} sites updated, {} sites remapped, {} sites skipped".format(
-        arcgis_table.table_name, sites_created, sites_updated, sites_remapped, sites_not_added))
+        arcgis_table.service_name, sites_created, sites_updated, sites_remapped, sites_not_added))
 
     return results
