@@ -15,4 +15,3 @@ class Migration(migrations.Migration):
             options={'verbose_name': 'Remap history', 'verbose_name_plural': 'Location remap history'},
         ),
     ]
-
