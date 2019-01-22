@@ -145,6 +145,10 @@ class LocationRemapHistory(TimeStampedModel):
     )
     created = AutoCreatedField(_('created'))
 
+    class Meta:
+        verbose_name = _('Remap history')
+        verbose_name_plural = _('Location remap history')
+
 
 @receiver(post_delete, sender=Location)
 @receiver(post_save, sender=Location)
