@@ -146,7 +146,7 @@ class LocationRemapHistory(TimeStampedModel):
     created = AutoCreatedField(_('created'))
 
     class Meta:
-        verbose_name = _('remap history')
+        verbose_name = _('Remap history')
         verbose_name_plural = _('Location remap history')
 
 
