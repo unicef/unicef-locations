@@ -25,7 +25,7 @@ class GatewayType(TimeStampedModel):
 
     class Meta:
         ordering = ['name']
-        verbose_name = 'Location Type'
+        verbose_name = _('Location Type')
 
     def __str__(self):
         return self.name
@@ -123,9 +123,9 @@ class Location(TimeStampedModel, MPTTModel):
 
 
 class LocationRemapHistory(TimeStampedModel):
-    '''
+    """
     Location Remap History records for the related objects(interventions, travels, activities, actions)
-    '''
+    """
     old_location = models.ForeignKey(
         Location,
         verbose_name=_("Old Location"),

@@ -34,7 +34,7 @@ def import_arcgis_locations(arcgis_table_pk):
         fc = json.loads(feature_layer.query(out_sr=4326).to_geojson)
         rows = fc['features']
 
-        '''
+        """
         print('-------------------------------')
         print(fc['type'])
         for row in rows:
@@ -42,7 +42,7 @@ def import_arcgis_locations(arcgis_table_pk):
             print(row['properties'])
             break
         print('-------------------------------')
-        '''
+        """
 
     except RuntimeError:  # pragma: no-cover
         logger.exception("Cannot fetch location data from Arcgis")
@@ -126,7 +126,7 @@ def import_arcgis_locations(arcgis_table_pk):
                             remapped_old_pcodes.add(remap_row['old_pcode'])
 
                 if row['geometry']['type'] == 'Polygon':
-                    geom = MultiPolygon(Polygon(row['geometry']['coordinates'][0]))
+                    geom = MultiPolygon([Polygon(coord) for coord in row['geometry']['coordinates']])
                 elif row['geometry']['type'] == 'Point':
                     # TODO test with real data
                     geom = Point(row['geometry']['coordinates'])
