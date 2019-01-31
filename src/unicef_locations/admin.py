@@ -9,8 +9,8 @@ from mptt.admin import MPTTModelAdmin
 
 from .forms import CartoDBTableForm, ArcgisDBTableForm
 from .models import ArcgisDBTable, CartoDBTable, GatewayType, Location
-from .tasks import update_sites_from_cartodb
-from .arcgis_tasks import import_arcgis_locations
+from .tasks_cartodb import update_sites_from_cartodb
+from .tasks_arcgis import import_arcgis_locations
 
 
 class AutoSizeTextForm(forms.ModelForm):

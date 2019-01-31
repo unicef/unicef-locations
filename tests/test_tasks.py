@@ -5,8 +5,9 @@ from django.test import TestCase
 
 from unittest.mock import Mock, patch
 
-from unicef_locations import tasks
 from unicef_locations.models import CartoDBTable, Location
+from unicef_locations.tasks_cartodb import update_sites_from_cartodb
+from unicef_locations.task_utils import create_location
 from unicef_locations.tests.factories import CartoDBTableFactory, LocationFactory
 
 
@@ -19,7 +20,7 @@ class TestCreateLocations(TestCase):
         LocationFactory(p_code="123")
         LocationFactory(p_code="123")
 
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             None,
@@ -46,7 +47,7 @@ class TestCreateLocations(TestCase):
         carto = CartoDBTableFactory()
         LocationFactory(p_code="123")
 
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             None,
@@ -78,7 +79,7 @@ class TestCreateLocations(TestCase):
         self.assertIsNone(location.point)
         self.assertNotEqual(location.name, site_name)
 
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             None,
@@ -112,7 +113,7 @@ class TestCreateLocations(TestCase):
         self.assertIsNone(location.geom)
         self.assertNotEqual(location.name, site_name)
 
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             None,
@@ -142,7 +143,7 @@ class TestCreateLocations(TestCase):
         self.assertFalse(Location.objects.filter(p_code="123").exists())
         name = "Test"
 
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             None,
@@ -169,7 +170,7 @@ class TestCreateLocations(TestCase):
         self.assertFalse(Location.objects.filter(p_code="123").exists())
         name = "Test"
 
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             None,
@@ -200,7 +201,7 @@ class TestCreateLocations(TestCase):
         self.assertFalse(Location.objects.filter(p_code="123").exists())
         name = "Test"
 
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             None,
@@ -232,7 +233,7 @@ class TestCreateLocations(TestCase):
         self.assertFalse(Location.objects.filter(p_code="123").exists())
         name = "Test"
 
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             True,
@@ -268,7 +269,7 @@ class TestCreateLocations(TestCase):
         name = "Test"
 
         self.assertEqual(location.parent, parent1)
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             True,
@@ -309,7 +310,7 @@ class TestCreateLocations(TestCase):
         self.assertTrue(remapped_location_1.is_active)
         self.assertTrue(remapped_location_2.is_active)
 
-        success, not_added, created, updated, remapped, results = tasks.create_location(
+        success, not_added, created, updated, remapped, results = create_location(
             "123",
             carto,
             True,
@@ -342,8 +343,8 @@ class TestUpdateSitesFromCartoDB(TestCase):
         self.mock_sql = Mock()
 
     def _run_update(self, carto_table_pk):
-        with patch("unicef_locations.tasks.SQLClient.send", self.mock_sql):
-            return tasks.update_sites_from_cartodb(carto_table_pk)
+        with patch("unicef_locations.tasks_cartodb.SQLClient.send", self.mock_sql):
+            return update_sites_from_cartodb(carto_table_pk)
 
     def _assert_response(self, response, expected_result):
         self.assertEqual(response, expected_result)
@@ -351,7 +352,7 @@ class TestUpdateSitesFromCartoDB(TestCase):
     def test_not_exist(self):
         """Test that when carto record does not exist, nothing happens"""
         self.assertFalse(CartoDBTable.objects.filter(pk=404).exists())
-        self.assertFalse(tasks.update_sites_from_cartodb(404))
+        self.assertFalse(update_sites_from_cartodb(404))
 
     def test_sql_client_error(self):
         """Check that a CartoException on SQLClient.send
