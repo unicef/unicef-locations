@@ -31,19 +31,8 @@ def import_arcgis_locations(arcgis_table_pk):
     # https://esri.github.io/arcgis-python-api/apidoc/html/arcgis.features.toc.html#
     try:
         feature_layer = FeatureLayer(arcgis_table.service_url)
-        fc = json.loads(feature_layer.query(out_sr=4326).to_geojson)
-        rows = fc['features']
-
-        """
-        print('-------------------------------')
-        print(fc['type'])
-        for row in rows:
-            print(type(row['geometry']))
-            print(row['properties'])
-            break
-        print('-------------------------------')
-        """
-
+        featurecollection = json.loads(feature_layer.query(out_sr=4326).to_geojson)
+        rows = featurecollection['features']
     except RuntimeError:  # pragma: no-cover
         logger.exception("Cannot fetch location data from Arcgis")
         return results
@@ -53,7 +42,6 @@ def import_arcgis_locations(arcgis_table_pk):
     remap_old_pcodes = []
     if arcgis_table.remap_table_service_url:
         try:
-
             remapped_pcode_pairs = []
             remap_feature_layer = FeatureLayer(arcgis_table.remap_table_service_url)
             remap_rows = remap_feature_layer.query()

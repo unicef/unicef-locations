@@ -2,6 +2,7 @@ from celery import chain
 from django import forms
 from django.contrib import admin as basic_admin
 from django.contrib.gis import admin
+from django.db import transaction
 from django.forms import Textarea
 from leaflet.admin import LeafletGeoAdmin
 from mptt.admin import MPTTModelAdmin
@@ -91,6 +92,11 @@ class CartoDBTableAdmin(admin.ModelAdmin):
     actions = ('import_sites',)
 
     def import_sites(self, request, queryset):
+        # ensure the location tree is valid before we import/update the data
+        with transaction.atomic():
+            Location.objects.all_locations().select_for_update().only('id')
+            Location.objects.rebuild()
+
         # re-sort the queryset so the admin ordering does not affect the import order
         queryset = sorted(queryset, key=lambda l: (l.tree_id, l.lft, l.pk))
         chain([update_sites_from_cartodb.si(table.pk) for table in queryset]).delay()
@@ -110,6 +116,11 @@ class ArcgisDBTableAdmin(admin.ModelAdmin):
     actions = ('import_sites',)
 
     def import_sites(self, request, queryset):
+        # ensure the location tree is valid before we import/update the data
+        with transaction.atomic():
+            Location.objects.all_locations().select_for_update().only('id')
+            Location.objects.rebuild()
+
         # re-sort the queryset so the admin ordering does not affect the import order
         queryset = sorted(queryset, key=lambda l: (l.tree_id, l.lft, l.pk))
         chain([import_arcgis_locations.si(table.pk) for table in queryset]).delay()

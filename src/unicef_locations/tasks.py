@@ -64,13 +64,11 @@ def update_sites_from_cartodb(carto_table_pk):
         if duplicate_pcodes_exist(database_pcodes, new_carto_pcodes, remap_old_pcodes):
             return results
 
-        # wrap Location tree updates in a transaction, to prevent an invalid tree state due to errors
         with transaction.atomic():
             # should write lock the locations table until the tree is rebuilt
             Location.objects.all_locations().select_for_update().only('id')
 
-            # disable tree 'generation' during single row updates, rebuild the tree after.
-            # this should prevent errors happening (probably)due to invalid intermediary tree state
+            # disable mptt tree single row updates, it prevents random tree state errors
             with Location.objects.disable_mptt_updates():
                 for row in rows:
                     carto_pcode = str(row[carto_table.pcode_col]).strip()
@@ -193,14 +191,52 @@ def get_cartodb_locations(sql_client, carto_table):
 
         # do not spam Carto with requests, wait 1 second
         time.sleep(1)
-        sites = sql_client.send(paged_qry)
-        rows += sites['rows']
-        offset += limit
-
-        if 'error' in sites:
-            # it seems we can have both valid results and error messages in the same CartoDB response
-            logger.exception("CartoDB API error received: {}".format(sites['error']))
-            # When this error occurs, we receive truncated locations, probably it's better to interrupt the import
-            return False, []
+        try:
+            sites = sql_client.send(paged_qry)
+        except CartoException:  # pragma: no-cover
+            logger.exception("CartoDB API pagination failed at offset: {}".format(offset))
+            retried_row = retry_failed_query(sql_client, paged_qry, offset)
+            if retried_row:
+                rows += retried_row
+                offset += limit
+            else:
+                # can not continue if we have missing pages..
+                return False, []
+        else:
+            if 'error' in sites:
+                # it seems we can have both valid results and error messages in the same CartoDB response
+                # When this occurs, we receive truncated locations, interrupt the import due to incomplete data
+                logger.exception("CartoDB API error received: {}".format(sites['error']))
+                return False, []
+            else:
+                rows += sites['rows']
+                offset += limit
 
     return True, rows
+
+
+def retry_failed_query(sql_client, failed_query, offset):
+    """
+    Retry a timed-out CartoDB query
+    :param sql_client:
+    :param failed_query:
+    :param offset:
+    :return:
+    """
+
+    retries = 0
+    logger.warning('Retrying table page at offset {}'.format(offset))
+    while retries < 5:
+        time.sleep(1)
+        retries += 1
+        try:
+            sites = sql_client.send(failed_query)
+        except CartoException:
+            if retries < 5:
+                logger.warning('Retrying again table page at offset {}'.format(offset))
+        else:
+            if 'error' in sites:
+                return False
+            else:
+                return sites['rows']
+    return False
