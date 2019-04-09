@@ -14,8 +14,8 @@ from setuptools import find_packages, setup
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist as BaseSDistCommand
 
-HERE = os.path.abspath(os.path.dirname(__file__))
-init = os.path.join(HERE, "src", "unicef_locations", "__init__.py")
+ROOT = os.path.realpath(os.path.dirname(__file__))
+init = os.path.join(ROOT, "src", "unicef_locations", "__init__.py")
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
 _name_re = re.compile(r'NAME\s+=\s+(.*)')
 
@@ -28,7 +28,7 @@ with open(init, 'rb') as f:
 
 
 def read(*files):
-    content = ''
+    content = []
     for f in files:
         content.extend(codecs.open(os.path.join(ROOT, 'src', 'requirements', f), 'r').readlines())
     return "\n".join(filter(lambda l:not l.startswith('-'), content))
