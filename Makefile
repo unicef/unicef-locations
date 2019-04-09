@@ -4,11 +4,13 @@ DEMOPATH=tests/demoproject
 
 
 help:
-	@echo "develop                 setup development environment"
-	@echo "lint                    run pyflake/isort checks"
-	@echo "clean                   clean dev environment"
-	@echo "fullclean               totally remove any development/test artifacts"
-	@echo "test                    run test suite"
+	@echo "Usage:"
+	@echo "   develop                 setup development environment"
+	@echo "   lint                    run pyflake/isort checks"
+	@echo "   clean                   clean dev environment"
+	@echo "   fullclean               totally remove any development/test artifacts"
+	@echo "   test                    run test suite"
+	@echo "   requirements            generate requirements files from Pipfile"
 
 
 develop:
@@ -45,3 +47,10 @@ fullclean:
 
 travis:
 	docker run --privileged -it --rm --name travis-debug -u travis quay.io/travisci/travis-python /bin/bash -l
+
+
+requirements:
+	pipenv lock -r > src/requirements/install.pip
+	pipenv lock -r -d > src/requirements/testing.pip
+	sed -i "" 's/\(.*\)==.*/\1/g' src/requirements/install.pip && sed -i "" '1d' src/requirements/install.pip
+	sed -i "" 's/\(.*\)==.*/\1/g' src/requirements/testing.pip && sed -i "" '1d' src/requirements/testing.pip
