@@ -13,6 +13,7 @@ from distutils.errors import DistutilsError
 from setuptools import find_packages, setup
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist as BaseSDistCommand
+from setuptools.command.test import test as TestCommand
 
 ROOT = os.path.realpath(os.path.dirname(__file__))
 init = os.path.join(ROOT, "src", "unicef_locations", "__init__.py")
