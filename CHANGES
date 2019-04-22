@@ -1,3 +1,7 @@
+1.6
+===
+* Update django-mptt requirement to >=0.10
+
 1.5
 =====
 * Models extend TimeStampedModel
