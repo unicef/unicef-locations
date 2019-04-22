@@ -9,7 +9,7 @@ django-fsm
 django-js-asset
 django-leaflet
 django-model-utils
-django-mptt
+django-mptt>=0.10
 django
 future
 idna
