@@ -9,12 +9,12 @@ db-env: &db-env
 py36: &py36
   working_directory: ~/code
   docker:
-    - image: circleci/python:3.6
+    - image: unicef/etools:test-base-p3-v2
       environment:
         PGHOST: 127.0.0.1
         DATABASE_URL: "postgis://postgres:postgres@localhost:5432/circle_test"
         RELEASE_MATCH: "release/*"
-    - image: circleci/postgres:9.5-alpine
+    - image: circleci/postgres:9.5-alpine-postgis
       <<: *db-env
 
 py37: &py37
@@ -25,7 +25,7 @@ py37: &py37
         PGHOST: 127.0.0.1
         DATABASE_URL: "postgis://postgres:postgres@localhost:5432/circle_test"
         RELEASE_MATCH: "release/*"
-    - image: circleci/postgres:9.5-alpine
+    - image: circleci/postgres:9.5-alpine-postgis
       <<: *db-env
 
 jobs:
