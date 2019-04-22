@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 django-autocomplete-light = "*"
-django-mptt = "*"
+django-mptt = ">=0.10"
 django-model-utils = "*"
 django-leaflet = "*"
 carto = "*"
