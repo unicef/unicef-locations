@@ -10,13 +10,11 @@ help:
 	@echo "   clean                   clean dev environment"
 	@echo "   fullclean               totally remove any development/test artifacts"
 	@echo "   test                    run test suite"
-	@echo "   requirements            generate requirements files from Pipfile"
 
 
 develop:
 	@${MAKE} clean
-	pipenv install -d
-	pip install -e .[test]
+	pip install .[test]
 
 
 test:
@@ -47,10 +45,3 @@ fullclean:
 
 travis:
 	docker run --privileged -it --rm --name travis-debug -u travis quay.io/travisci/travis-python /bin/bash -l
-
-
-requirements:
-	pipenv lock -r > src/requirements/install.pip
-	pipenv lock -r -d > src/requirements/testing.pip
-	sed -i "" 's/\(.*\)==.*/\1/g' src/requirements/install.pip && sed -i "" '1d' src/requirements/install.pip
-	sed -i "" 's/\(.*\)==.*/\1/g' src/requirements/testing.pip && sed -i "" '1d' src/requirements/testing.pip
