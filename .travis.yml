@@ -1,29 +1,30 @@
+dist: xenial
 language: python
-sudo: true
+sudo: false
+
 python:
   - 3.6
+  - 3.7
 
 services:
   - postgresql
 
 
 addons:
-  postgresql: "9.6"
+  postgresql: "9.5"
   apt:
     packages:
-      - postgresql-9.6-postgis-2.3
+      - postgresql-9.5-postgis-2.4
 
 env:
-  - DJANGO=1.10
-  - DJANGO=1.11
-  - DJANGO=2.0
-
+  - DJANGO=2.1
+  - DJANGO=2.2
 
 install:
-  - pip install tox-pipenv
+  - pip install tox codecov
 
 script:
-  - tox -e "d${DJANGO//.}-py${TRAVIS_PYTHON_VERSION//.}"
+  - tox -e "py${TRAVIS_PYTHON_VERSION//.}-d${DJANGO//.}" -- py.test tests -v
 
 before_success:
   - coverage erase

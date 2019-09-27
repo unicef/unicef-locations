@@ -10,6 +10,8 @@ __pycache__/
 .pytest_cache
 .benchmarks
 .venv
-.idea
+.idea/
 .tox
 .vscode
+Pipfile
+Pipfile.lock

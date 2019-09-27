@@ -4,17 +4,17 @@ DEMOPATH=tests/demoproject
 
 
 help:
-	@echo "develop                 setup development environment"
-	@echo "lint                    run pyflake/isort checks"
-	@echo "clean                   clean dev environment"
-	@echo "fullclean               totally remove any development/test artifacts"
-	@echo "test                    run test suite"
+	@echo "Usage:"
+	@echo "   develop                 setup development environment"
+	@echo "   lint                    run pyflake/isort checks"
+	@echo "   clean                   clean dev environment"
+	@echo "   fullclean               totally remove any development/test artifacts"
+	@echo "   test                    run test suite"
 
 
 develop:
 	@${MAKE} clean
-	pipenv install -d
-	pip install -e .[test]
+	pip install .[test]
 
 
 test:

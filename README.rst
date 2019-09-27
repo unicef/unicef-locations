@@ -8,8 +8,7 @@ Contributing
 ------------
 
     - checkout code
-    - pipenv install -d
-    - pipenv run test
+    - pip install .[test]
 
 Links
 -----
