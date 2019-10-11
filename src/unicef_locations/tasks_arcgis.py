@@ -1,15 +1,16 @@
 import json
-import time
 
 import celery
+# from arcgis.features import FeatureCollection, Feature, FeatureSet
+from arcgis.features import FeatureLayer
 from celery.utils.log import get_task_logger
-from arcgis.features import FeatureCollection, Feature, FeatureLayer, FeatureSet
-from django.db import IntegrityError, transaction
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+# from django.db import IntegrityError
+from django.db import transaction
 from django.utils.encoding import force_text
-from django.contrib.gis.geos import Polygon, MultiPolygon, Point
 
 from .models import ArcgisDBTable, Location
-from .task_utils import create_location, validate_remap_table, duplicate_pcodes_exist
+from .task_utils import create_location, duplicate_pcodes_exist, validate_remap_table
 
 logger = get_task_logger(__name__)
 
@@ -125,13 +126,13 @@ def import_arcgis_locations(arcgis_table_pk):
 
                 # create the location or update the existing based on type and code
                 succ, sites_not_added, sites_created, sites_updated, sites_remapped, \
-                partial_results = create_location(
-                    arcgis_pcode, arcgis_table.location_type,
-                    parent, parent_instance, remapped_old_pcodes,
-                    site_name, geom.json,
-                    sites_not_added, sites_created,
-                    sites_updated, sites_remapped
-                )
+                    partial_results = create_location(
+                        arcgis_pcode, arcgis_table.location_type,
+                        parent, parent_instance, remapped_old_pcodes,
+                        site_name, geom.json,
+                        sites_not_added, sites_created,
+                        sites_updated, sites_remapped
+                    )
 
                 results += partial_results
 

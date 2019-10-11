@@ -1,4 +1,5 @@
 import time
+
 import celery
 from carto.exceptions import CartoException
 from carto.sql import SQLClient
@@ -8,7 +9,13 @@ from django.utils.encoding import force_text
 
 from .auth import LocationsCartoNoAuthClient
 from .models import CartoDBTable, Location
-from .task_utils import create_location, validate_remap_table, duplicate_pcodes_exist
+from .task_utils import (
+    create_location,
+    duplicate_pcodes_exist,
+    filter_remapped_locations,
+    remap_location,
+    validate_remap_table,
+)
 
 logger = get_task_logger(__name__)
 
@@ -154,7 +161,6 @@ def update_sites_from_cartodb(carto_table_pk):
         carto_table.table_name, sites_created, sites_updated, sites_remapped, sites_not_added))
 
 
-
 def get_cartodb_locations(sql_client, carto_table):
 
     rows = []
@@ -223,7 +229,7 @@ def get_cartodb_locations(sql_client, carto_table):
 
 
 def retry_failed_query(sql_client, failed_query, offset):
-    # TODO: find an use for this method/conn retry. It seems connection errors don't really occur after the connection 
+    # TODO: find an use for this method/conn retry. It seems connection errors don't really occur after the connection
     # has been already established, but when connection errors happen right at the start, it may worth retrying.
 
     """

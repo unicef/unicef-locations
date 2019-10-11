@@ -7,10 +7,10 @@ from django.forms import Textarea
 from leaflet.admin import LeafletGeoAdmin
 from mptt.admin import MPTTModelAdmin
 
-from .forms import CartoDBTableForm, ArcgisDBTableForm
+from .forms import ArcgisDBTableForm, CartoDBTableForm
 from .models import ArcgisDBTable, CartoDBTable, GatewayType, Location
-from .tasks_cartodb import update_sites_from_cartodb
 from .tasks_arcgis import import_arcgis_locations
+from .tasks_cartodb import update_sites_from_cartodb
 
 
 class AutoSizeTextForm(forms.ModelForm):

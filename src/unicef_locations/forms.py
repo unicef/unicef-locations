@@ -7,7 +7,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from .auth import LocationsCartoNoAuthClient
-from .models import CartoDBTable, ArcgisDBTable
+from .models import ArcgisDBTable, CartoDBTable
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +71,6 @@ class CartoDBTableForm(forms.ModelForm):
         return self.cleaned_data
 
 
-
-
 class ArcgisDBTableForm(forms.ModelForm):
 
     class Meta:
@@ -83,56 +81,12 @@ class ArcgisDBTableForm(forms.ModelForm):
         print(self.cleaned_data)
         # TODO: regex for valid arcgis URL before connecting
 
-        name_col = self.cleaned_data['name_col']
-        pcode_col = self.cleaned_data['pcode_col']
-        service_name = self.cleaned_data['service_name']
-        service_url = self.cleaned_data['service_url']
-        parent_code_col = self.cleaned_data['parent_code_col']
-        remap_table_service_url = self.cleaned_data['remap_table_service_url']
+        # name_col = self.cleaned_data['name_col']
+        # pcode_col = self.cleaned_data['pcode_col']
+        # service_name = self.cleaned_data['service_name']
+        # service_url = self.cleaned_data['service_url']
+        # parent_code_col = self.cleaned_data['parent_code_col']
+        # remap_table_service_url = self.cleaned_data['remap_table_service_url']
 
-        # auth_client = LocationsCartoNoAuthClient(base_url="https://{}.carto.com/".format(str(domain)))
-
-        # TMP
-        return self.cleaned_data
-
-        sql_client = SQLClient(auth_client)
-        try:
-            sites = sql_client.send('select * from {} limit 1'.format(table_name))
-        except CartoException:
-            logger.exception("CartoDB exception occured")
-            raise ValidationError("Couldn't connect to CartoDB table: {}".format(table_name))
-        else:
-            row = sites['rows'][0]
-            if name_col not in row:
-                raise ValidationError('The Name column ({}) is not in table: {}'.format(
-                    name_col, table_name
-                ))
-            if pcode_col not in row:
-                raise ValidationError('The PCode column ({}) is not in table: {}'.format(
-                    pcode_col, table_name
-                ))
-            if parent_code_col and parent_code_col not in row:
-                raise ValidationError('The Parent Code column ({}) is not in table: {}'.format(
-                    parent_code_col, table_name
-                ))
-
-        if remap_table_name:
-            try:
-                remap_table = sql_client.send('select * from {} limit 1'.format(remap_table_name))
-            except CartoException:  # pragma: no-cover
-                logger.exception("CartoDB exception occured")
-                raise ValidationError("Couldn't connect to the CartoDB remap table: {}".format(remap_table_name))
-            else:
-                row = remap_table['rows'][0]
-
-                if 'old_pcode' not in row.keys():
-                    raise ValidationError('The Old PCode column ({}) is not in table: {}'.format(
-                        'old_pcode', remap_table_name
-                    ))
-
-                if 'new_pcode' not in row.keys():
-                    raise ValidationError('The New PCode column ({}) is not in table: {}'.format(
-                        'new_pcode', remap_table_name
-                    ))
-
+        # TODO: think about validations
         return self.cleaned_data
