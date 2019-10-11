@@ -15,13 +15,12 @@ logger = get_task_logger(__name__)
 
 @celery.current_app.task # noqa: ignore=C901
 def update_sites_from_cartodb(carto_table_pk):
-    results = []
 
     try:
         carto_table = CartoDBTable.objects.get(pk=carto_table_pk)
     except CartoDBTable.DoesNotExist:
         logger.exception('Cannot retrieve CartoDBTable with pk: %s', carto_table_pk)
-        return results
+        return None
 
     auth_client = LocationsCartoNoAuthClient(base_url="https://{}.carto.com/".format(carto_table.domain))
     sql_client = SQLClient(auth_client)
@@ -32,9 +31,9 @@ def update_sites_from_cartodb(carto_table_pk):
         carto_succesfully_queried, rows = get_cartodb_locations(sql_client, carto_table)
 
         if not carto_succesfully_queried:
-            return results
+            return None
     except CartoException:  # pragma: no-cover
-        logger.exception("Cannot fetch locations from CartoDB")
+        logger.exception("CartoDB exception occured")
     else:
         # validations
         # get the list of the existing Pcodes and previous Pcodes from the database
@@ -45,31 +44,55 @@ def update_sites_from_cartodb(carto_table_pk):
         # get the list of the new Pcodes from the Carto data
         new_carto_pcodes = [str(row[carto_table.pcode_col]) for row in rows]
 
-        if carto_table.remap_table_name:
-            try:
-                remap_qry = 'select old_pcode::text, new_pcode::text from {}'.format(
-                    carto_table.remap_table_name)
-                remapped_pcode_pairs = sql_client.send(remap_qry)['rows']
-                # validate remap table contents
-                remap_table_valid, remap_old_pcodes, remap_new_pcodes = \
-                    validate_remap_table(remapped_pcode_pairs, database_pcodes, new_carto_pcodes)
+        # validate remap table contents
+        remap_table_valid, remap_table_pcode_pairs, remap_old_pcodes, remap_new_pcodes = \
+            validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_client)
 
-                if not remap_table_valid:
-                    return results
-            except CartoException:  # pragma: no-cover
-                logger.exception("Cannot fetch location remap table from CartoDB")
-                return results
+        if not remap_table_valid:
+            return None
 
         # check for  duplicate pcodes in both local and Carto data
         if duplicate_pcodes_exist(database_pcodes, new_carto_pcodes, remap_old_pcodes):
-            return results
+            return None
 
+        # wrap Location tree updates in a transaction, to prevent an invalid tree state due to errors
         with transaction.atomic():
             # should write lock the locations table until the tree is rebuilt
             Location.objects.all_locations().select_for_update().only('id')
 
-            # disable mptt tree single row updates, it prevents random tree state errors
+            # disable tree 'generation' during single row updates, rebuild the tree after the rows are updated.
             with Location.objects.disable_mptt_updates():
+                # update locations in two steps: step 1: remap, step 2: update. THe reason of this approach is that
+                # a remapped 'old' pcode can appear as a newly inserted pcode. Remapping before updating/inserting
+                # should prevent the problem of archiving 'good' locations when remapping.
+
+                # REMAP locations
+                if carto_table.remap_table_name and len(remap_table_pcode_pairs) > 0:
+                    # remapped_pcode_pairs ex.: {'old_pcode': 'ET0721', 'new_pcode': 'ET0714'}
+                    remap_table_pcode_pairs = list(filter(
+                        filter_remapped_locations,
+                        remap_table_pcode_pairs
+                    ))
+
+                    aggregated_remapped_pcode_pairs = {}
+                    for row in rows:
+                        carto_pcode = str(row[carto_table.pcode_col]).strip()
+                        for remap_row in remap_table_pcode_pairs:
+                            # create the location or update the existing based on type and code
+                            if carto_pcode == remap_row['new_pcode']:
+                                if carto_pcode not in aggregated_remapped_pcode_pairs:
+                                    aggregated_remapped_pcode_pairs[carto_pcode] = []
+                                aggregated_remapped_pcode_pairs[carto_pcode].append(remap_row['old_pcode'])
+
+                    # aggregated_remapped_pcode_pairs - {'new_pcode': ['old_pcode_1', old_pcode_2, ...], ...}
+                    for remapped_new_pcode, remapped_old_pcodes in aggregated_remapped_pcode_pairs.items():
+                        remap_location(
+                            carto_table,
+                            remapped_new_pcode,
+                            remapped_old_pcodes
+                        )
+
+                # UPDATE locations
                 for row in rows:
                     carto_pcode = str(row[carto_table.pcode_col]).strip()
                     site_name = row[carto_table.name_col]
@@ -106,39 +129,34 @@ def update_sites_from_cartodb(carto_table_pk):
                             sites_not_added += 1
                             continue
 
-                    # check if the Carto location should be remapped to an old location
-                    remapped_old_pcodes = set()
-                    if carto_table.remap_table_name and len(remapped_pcode_pairs) > 0:  # pragma: no-cover
-                        for remap_row in remapped_pcode_pairs:
-                            if carto_pcode == remap_row['new_pcode']:
-                                remapped_old_pcodes.add(remap_row['old_pcode'])
-
                     # create the location or update the existing based on type and code
-                    succ, sites_not_added, sites_created, sites_updated, sites_remapped, \
-                        partial_results = create_location(
-                            carto_pcode, carto_table.location_type,
-                            parent, parent_instance, remapped_old_pcodes,
-                            site_name, row['the_geom'],
-                            sites_not_added, sites_created,
-                            sites_updated, sites_remapped
-                        )
-
-                    results += partial_results
+                    succ, sites_not_added, sites_created, sites_updated = create_location(
+                        carto_pcode, carto_table,
+                        parent, parent_instance,
+                        site_name, row,
+                        sites_not_added, sites_created, sites_updated
+                    )
 
                 orphaned_old_pcodes = set(database_pcodes) - (set(new_carto_pcodes) | set(remap_old_pcodes))
                 if orphaned_old_pcodes:  # pragma: no-cover
                     logger.warning("Archiving unused pcodes: {}".format(','.join(orphaned_old_pcodes)))
-                    Location.objects.filter(p_code__in=list(orphaned_old_pcodes)).update(is_active=False)
+                    Location.objects.filter(
+                        p_code__in=list(orphaned_old_pcodes),
+                        is_active=True,
+                    ).update(
+                        is_active=False
+                    )
 
+            # rebuild location tree
             Location.objects.rebuild()
 
     logger.warning("Table name {}: {} sites created, {} sites updated, {} sites remapped, {} sites skipped".format(
         carto_table.table_name, sites_created, sites_updated, sites_remapped, sites_not_added))
 
-    return results
 
 
 def get_cartodb_locations(sql_client, carto_table):
+
     rows = []
     cartodb_id_col = 'cartodb_id'
 
@@ -191,31 +209,23 @@ def get_cartodb_locations(sql_client, carto_table):
 
         # do not spam Carto with requests, wait 1 second
         time.sleep(1)
-        try:
-            sites = sql_client.send(paged_qry)
-        except CartoException:  # pragma: no-cover
-            logger.exception("CartoDB API pagination failed at offset: {}".format(offset))
-            retried_row = retry_failed_query(sql_client, paged_qry, offset)
-            if retried_row:
-                rows += retried_row
-                offset += limit
-            else:
-                # can not continue if we have missing pages..
-                return False, []
-        else:
-            if 'error' in sites:
-                # it seems we can have both valid results and error messages in the same CartoDB response
-                # When this occurs, we receive truncated locations, interrupt the import due to incomplete data
-                logger.exception("CartoDB API error received: {}".format(sites['error']))
-                return False, []
-            else:
-                rows += sites['rows']
-                offset += limit
+        sites = sql_client.send(paged_qry)
+        rows += sites['rows']
+        offset += limit
+
+        if 'error' in sites:
+            # it seems we can have both valid results and error messages in the same CartoDB response
+            logger.exception("CartoDB API error received: {}".format(sites['error']))
+            # When this error occurs, we receive truncated locations, probably it's better to interrupt the import
+            return False, []
 
     return True, rows
 
 
 def retry_failed_query(sql_client, failed_query, offset):
+    # TODO: find an use for this method/conn retry. It seems connection errors don't really occur after the connection 
+    # has been already established, but when connection errors happen right at the start, it may worth retrying.
+
     """
     Retry a timed-out CartoDB query
     :param sql_client:
