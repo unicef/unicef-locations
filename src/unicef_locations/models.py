@@ -209,7 +209,12 @@ class ArcgisDBTable(MPTTModel):
     name_col = models.CharField(max_length=254, default='name', verbose_name=_('Name Column'))
     pcode_col = models.CharField(max_length=254, default='pcode', verbose_name=_('Pcode Column'))
     # Cartodb table name used to remap old pcodes to new pcodes
-    remap_table_service_url = models.CharField(max_length=512, verbose_name=_('Remap Table Service URL'), blank=True, null=True)
+    remap_table_service_url = models.CharField(
+        max_length=512,
+        verbose_name=_('Remap Table Service URL'),
+        blank=True,
+        null=True
+    )
     parent_code_col = models.CharField(max_length=254, default='', blank=True, verbose_name=_('Parent Code Column'))
     parent = TreeForeignKey(
         'self', null=True, blank=True, related_name='children', db_index=True,

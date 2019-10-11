@@ -1,5 +1,6 @@
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
+from carto.exceptions import CartoException
 
 from .models import Location
 
