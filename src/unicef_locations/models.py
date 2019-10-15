@@ -193,9 +193,9 @@ class CartoDBTable(TimeStampedModel, MPTTModel):
         app_label = 'unicef_locations'
 
 
-class ArcgisDBTable(MPTTModel):
+class ArcgisDBTable(TimeStampedModel, MPTTModel):
     """
-    Represents a table in CartoDB, it is used to import locations
+    Represents a table in Arcgis Online, it is used to import locations
 
     Relates to :model:`locations.GatewayType`
     """
@@ -208,7 +208,7 @@ class ArcgisDBTable(MPTTModel):
     )
     name_col = models.CharField(max_length=254, default='name', verbose_name=_('Name Column'))
     pcode_col = models.CharField(max_length=254, default='pcode', verbose_name=_('Pcode Column'))
-    # Cartodb table name used to remap old pcodes to new pcodes
+    # AOS table name used to remap old pcodes to new pcodes
     remap_table_service_url = models.CharField(
         max_length=512,
         verbose_name=_('Remap Table Service URL'),
