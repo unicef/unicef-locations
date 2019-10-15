@@ -78,7 +78,6 @@ class ArcgisDBTableForm(forms.ModelForm):
         fields = '__all__'
 
     def clean(self):
-        print(self.cleaned_data)
         # TODO: regex for valid arcgis URL before connecting
 
         # name_col = self.cleaned_data['name_col']
