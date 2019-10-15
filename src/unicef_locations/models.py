@@ -119,7 +119,6 @@ class Location(TimeStampedModel, MPTTModel):
     class Meta:
         unique_together = ('name', 'gateway', 'p_code')
         ordering = ['name']
-        app_label = 'unicef_locations'
 
 
 class LocationRemapHistory(TimeStampedModel):
@@ -190,7 +189,7 @@ class CartoDBTable(TimeStampedModel, MPTTModel):
         return self.table_name
 
     class Meta:
-        app_label = 'unicef_locations'
+        app_label = 'locations'
 
 
 class ArcgisDBTable(TimeStampedModel, MPTTModel):
@@ -227,4 +226,4 @@ class ArcgisDBTable(TimeStampedModel, MPTTModel):
         return self.service_name
 
     class Meta:
-        app_label = 'unicef_locations'
+        app_label = 'locations'
