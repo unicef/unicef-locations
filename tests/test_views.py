@@ -20,19 +20,53 @@ def test_api_locationtypes_list(django_app, admin_user):
     assert res.status_code == 200
 
 
-def test_api_location_light_list(django_app, admin_user, locations3):
+def test_api_location_light_list(
+        django_app,
+        admin_user,
+        locations3,
+        django_assert_num_queries,
+):
     url = reverse('locations:locations-light-list')
-    res = django_app.get(url, user=admin_user)
+    with django_assert_num_queries(10):
+        res = django_app.get(url, user=admin_user)
     assert sorted(res.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
 
 
-def test_api_location_heavy_list(django_app, admin_user, location):
+def test_api_location_heavy_list(
+        django_app,
+        admin_user,
+        location,
+        django_assert_num_queries,
+):
     url = reverse('locations:locations-list')
 
-    response = django_app.get(url, user=admin_user)
+    with django_assert_num_queries(10):
+        response = django_app.get(url, user=admin_user)
     assert sorted(response.json[0].keys()) == [
         'gateway', 'geo_point', 'id', 'name', 'p_code', 'parent'
     ]
+
+
+def test_api_location_queries(
+        django_app,
+        admin_user,
+        location,
+        django_assert_num_queries,
+):
+    url = reverse('locations:locations-list')
+
+    with django_assert_num_queries(10):
+        response = django_app.get(url, user=admin_user)
+
+    query_count = 3
+    with django_assert_num_queries(query_count):
+        response = django_app.get(url, user=admin_user)
+
+    # add another location with reference to parent
+    # and ensure no extra queries
+    LocationFactory(parent=location)
+    with django_assert_num_queries(query_count):
+        response = django_app.get(url, user=admin_user)
 
 
 def test_api_location_values(django_app, admin_user, locations3):
