@@ -1,0 +1,35 @@
+{
+    "status_code": 200,
+    "headers": {
+        "content-type": [
+            "Content-Type",
+            "application/json"
+        ],
+        "vary": [
+            "Vary",
+            "Accept, Cookie"
+        ],
+        "allow": [
+            "Allow",
+            "GET, POST, HEAD, OPTIONS"
+        ],
+        "x-frame-options": [
+            "X-Frame-Options",
+            "SAMEORIGIN"
+        ],
+        "content-length": [
+            "Content-Length",
+            "133"
+        ]
+    },
+    "data": [
+        {
+            "id": 1603,
+            "created": "2019-01-11T14:07:36.810000Z",
+            "modified": "2019-01-11T14:07:36.810000Z",
+            "name": "GatewayType 0",
+            "admin_level": 0
+        }
+    ],
+    "content_type": null
+}

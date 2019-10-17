@@ -37,7 +37,12 @@ class LocationLightSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_name(obj):
-        return '{} [{} - {}]'.format(obj.name, obj.gateway.name, obj.p_code)
+        return '{} [{} - {}]{}'.format(
+            obj.name,
+            obj.gateway.name,
+            obj.p_code,
+            " -- {}".format(obj.parent.name) if obj.parent else "",
+        )
 
     class Meta:
         model = Location
