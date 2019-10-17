@@ -1,3 +1,9 @@
+1.8
+===
+* Add parent name to locations name value in LocationLightSerializer
+* Update frozenfixtures
+* Update base_name param in urls confs
+
 1.7
 ===
 * Add migration
