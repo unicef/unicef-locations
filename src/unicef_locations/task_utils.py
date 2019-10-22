@@ -172,49 +172,39 @@ def filter_remapped_locations(remap_row):
     return True
 
 
-def validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_client):  # pragma: no-cover
-    remapped_pcode_pairs = []
+def validate_remap_table(remap_table_pcode_pairs, database_pcodes, imported_pcodes):  # pragma: no-cover
     remap_old_pcodes = []
     remap_new_pcodes = []
     remap_table_valid = True
 
-    if carto_table.remap_table_name:
-        try:
-            remap_qry = 'select old_pcode::text, new_pcode::text from {}'.format(
-                carto_table.remap_table_name)
-            remapped_pcode_pairs = sql_client.send(remap_qry)['rows']
-        except CartoException:  # pragma: no-cover
-            logger.exception("CartoDB exception occured on the remap table query")
-            remap_table_valid = False
-        else:
-            # validate remap table
-            bad_old_pcodes = []
-            bad_new_pcodes = []
-            for remap_row in remapped_pcode_pairs:
-                if 'old_pcode' not in remap_row or 'new_pcode' not in remap_row:
-                    return False, remapped_pcode_pairs, remap_old_pcodes, remap_new_pcodes
+    # validate remap table
+    bad_old_pcodes = []
+    bad_new_pcodes = []
+    for remap_row in remap_table_pcode_pairs:
+        if 'old_pcode' not in remap_row or 'new_pcode' not in remap_row:
+            return False, remap_old_pcodes, remap_new_pcodes
 
-                remap_old_pcodes.append(remap_row['old_pcode'])
-                remap_new_pcodes.append(remap_row['new_pcode'])
+        remap_old_pcodes.append(remap_row['old_pcode'])
+        remap_new_pcodes.append(remap_row['new_pcode'])
 
-                # check for non-existing remap pcodes in the database
-                if remap_row['old_pcode'] not in database_pcodes:
-                    bad_old_pcodes.append(remap_row['old_pcode'])
-                # check for non-existing remap pcodes in the Carto dataset
-                if remap_row['new_pcode'] not in new_carto_pcodes:
-                    bad_new_pcodes.append(remap_row['new_pcode'])
+        # check for non-existing remap pcodes in the database
+        if remap_row['old_pcode'] not in database_pcodes:
+            bad_old_pcodes.append(remap_row['old_pcode'])
+        # check for non-existing remap pcodes in the Carto dataset
+        if remap_row['new_pcode'] not in imported_pcodes:
+            bad_new_pcodes.append(remap_row['new_pcode'])
 
-            if len(bad_old_pcodes) > 0:
-                logger.exception(
-                    "Invalid old_pcode found in the remap table: {}".format(','.join(bad_old_pcodes)))
-                remap_table_valid = False
+    if len(bad_old_pcodes) > 0:
+        logger.exception(
+            "Invalid old_pcode found in the remap table: {}".format(','.join(bad_old_pcodes)))
+        remap_table_valid = False
 
-            if len(bad_new_pcodes) > 0:
-                logger.exception(
-                    "Invalid new_pcode found in the remap table: {}".format(','.join(bad_new_pcodes)))
-                remap_table_valid = False
+    if len(bad_new_pcodes) > 0:
+        logger.exception(
+            "Invalid new_pcode found in the remap table: {}".format(','.join(bad_new_pcodes)))
+        remap_table_valid = False
 
-    return remap_table_valid, remapped_pcode_pairs, remap_old_pcodes, remap_new_pcodes
+    return remap_table_valid, remap_old_pcodes, remap_new_pcodes
 
 
 # TODO: Reenable coverage after the location import task is refactored

@@ -2,6 +2,7 @@ import json
 
 import celery
 # from arcgis.features import FeatureCollection, Feature, FeatureSet
+from arcgis.gis import GIS
 from arcgis.features import FeatureLayer
 from celery.utils.log import get_task_logger
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
@@ -10,7 +11,13 @@ from django.db import transaction
 from django.utils.encoding import force_text
 
 from .models import ArcgisDBTable, Location
-from .task_utils import create_location, duplicate_pcodes_exist, validate_remap_table
+from .task_utils import (
+    create_location,
+    duplicate_pcodes_exist,
+    filter_remapped_locations,
+    remap_location,
+    validate_remap_table
+)
 
 logger = get_task_logger(__name__)
 
@@ -31,7 +38,11 @@ def import_arcgis_locations(arcgis_table_pk):
 
     # https://esri.github.io/arcgis-python-api/apidoc/html/arcgis.features.toc.html#
     try:
-        feature_layer = FeatureLayer(arcgis_table.service_url)
+        # if the layer/table is public it does not have to receive auth obj
+        # feature_layer = FeatureLayer(arcgis_table.service_url)
+        gis_auth = GIS('https://csabadenes.maps.arcgis.com', 'csabadenes', 'Parola123!')
+        feature_layer = FeatureLayer(arcgis_table.service_url, gis=gis_auth)
+
         featurecollection = json.loads(feature_layer.query(out_sr=4326).to_geojson)
         rows = featurecollection['features']
     except RuntimeError:  # pragma: no-cover
@@ -43,19 +54,21 @@ def import_arcgis_locations(arcgis_table_pk):
     remap_old_pcodes = []
     if arcgis_table.remap_table_service_url:
         try:
-            remapped_pcode_pairs = []
+            remap_table_pcode_pairs = []
+            # remap_feature_layer = FeatureLayer(arcgis_table.remap_table_service_url, gis=gis_auth)
+            # if the layer/table is public it does not have to receive auth obj
             remap_feature_layer = FeatureLayer(arcgis_table.remap_table_service_url)
             remap_rows = remap_feature_layer.query()
 
             for row in remap_rows:
-                remapped_pcode_pairs.append({
+                remap_table_pcode_pairs.append({
                     "old_pcode": row.get_value("old_pcode"),
                     "new_pcode": row.get_value("new_pcode"),
                 })
 
             # validate remap table contents
-            remap_table_valid, remap_old_pcodes, remap_new_pcodes = \
-                validate_remap_table(remapped_pcode_pairs, database_pcodes, arcgis_pcodes)
+            remap_table_valid, remapped_old_pcodes, remapped_new_pcodes = \
+                validate_remap_table(remap_table_pcode_pairs, database_pcodes, arcgis_pcodes)
 
             if not remap_table_valid:
                 return results
@@ -72,6 +85,32 @@ def import_arcgis_locations(arcgis_table_pk):
         Location.objects.all_locations().select_for_update().only('id')
 
         with Location.objects.disable_mptt_updates():
+            # REMAP locations
+            if arcgis_table.remap_table_service_url and len(remap_table_pcode_pairs) > 0:
+                # remapped_pcode_pairs ex.: {'old_pcode': 'ET0721', 'new_pcode': 'ET0714'}
+                remap_table_pcode_pairs = list(filter(
+                    filter_remapped_locations,
+                    remap_table_pcode_pairs
+                ))
+
+                aggregated_remapped_pcode_pairs = {}
+                for row in rows:
+                    arcgis_pcode = str(row['properties'][arcgis_table.pcode_col]).strip()
+                    for remap_row in remap_table_pcode_pairs:
+                        # create the location or update the existing based on type and code
+                        if arcgis_pcode == remap_row['new_pcode']:
+                            if arcgis_pcode not in aggregated_remapped_pcode_pairs:
+                                aggregated_remapped_pcode_pairs[arcgis_pcode] = []
+                            aggregated_remapped_pcode_pairs[arcgis_pcode].append(remap_row['old_pcode'])
+
+                # aggregated_remapped_pcode_pairs - {'new_pcode': ['old_pcode_1', old_pcode_2, ...], ...}
+                for remapped_new_pcode, remapped_old_pcodes in aggregated_remapped_pcode_pairs.items():
+                    remap_location(
+                        arcgis_table,
+                        remapped_new_pcode,
+                        remapped_old_pcodes
+                    )
+
             for row in rows:
                 arcgis_pcode = str(row['properties'][arcgis_table.pcode_col]).strip()
                 site_name = row['properties'][arcgis_table.name_col]
@@ -107,13 +146,6 @@ def import_arcgis_locations(arcgis_table_pk):
                         sites_not_added += 1
                         continue
 
-                # check if the new location should be remapped to an old location
-                remapped_old_pcodes = set()
-                if arcgis_table.remap_table_service_url and len(remapped_pcode_pairs) > 0:  # pragma: no-cover
-                    for remap_row in remapped_pcode_pairs:
-                        if arcgis_pcode == remap_row['new_pcode']:
-                            remapped_old_pcodes.add(remap_row['old_pcode'])
-
                 if row['geometry']['type'] == 'Polygon':
                     geom = MultiPolygon([Polygon(coord) for coord in row['geometry']['coordinates']])
                 elif row['geometry']['type'] == 'Point':
@@ -128,10 +160,9 @@ def import_arcgis_locations(arcgis_table_pk):
                 succ, sites_not_added, sites_created, sites_updated, sites_remapped, \
                     partial_results = create_location(
                         arcgis_pcode, arcgis_table.location_type,
-                        parent, parent_instance, remapped_old_pcodes,
+                        parent, parent_instance,
                         site_name, geom.json,
-                        sites_not_added, sites_created,
-                        sites_updated, sites_remapped
+                        sites_not_added, sites_created, sites_updated
                     )
 
                 results += partial_results

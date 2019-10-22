@@ -51,9 +51,19 @@ def update_sites_from_cartodb(carto_table_pk):
         # get the list of the new Pcodes from the Carto data
         new_carto_pcodes = [str(row[carto_table.pcode_col]) for row in rows]
 
+        remap_table_pcode_pairs = []
+        if carto_table.remap_table_name:
+            try:
+                remap_qry = 'select old_pcode::text, new_pcode::text from {}'.format(
+                    carto_table.remap_table_name)
+                remap_table_pcode_pairs = sql_client.send(remap_qry)['rows']
+            except CartoException:  # pragma: no-cover
+                logger.exception("Cannot fetch location remap data from CartoDB")
+                return None
+
         # validate remap table contents
-        remap_table_valid, remap_table_pcode_pairs, remap_old_pcodes, remap_new_pcodes = \
-            validate_remap_table(database_pcodes, new_carto_pcodes, carto_table, sql_client)
+        remap_table_valid, remap_old_pcodes, remap_new_pcodes = \
+            validate_remap_table(remap_table_pcode_pairs, database_pcodes, new_carto_pcodes)
 
         if not remap_table_valid:
             return None
