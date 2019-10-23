@@ -51,9 +51,9 @@ def import_arcgis_locations(arcgis_table_pk):
     arcgis_pcodes = [str(row['properties'][arcgis_table.pcode_col].strip()) for row in rows]
 
     remap_old_pcodes = []
+    remap_table_pcode_pairs = []
     if arcgis_table.remap_table_service_url:
         try:
-            remap_table_pcode_pairs = []
             # remap_feature_layer = FeatureLayer(arcgis_table.remap_table_service_url, gis=gis_auth)
             # if the layer/table is public it does not have to receive auth obj
             remap_feature_layer = FeatureLayer(arcgis_table.remap_table_service_url)
