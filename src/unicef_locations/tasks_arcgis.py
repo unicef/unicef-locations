@@ -38,9 +38,9 @@ def import_arcgis_locations(arcgis_table_pk):
     # https://esri.github.io/arcgis-python-api/apidoc/html/arcgis.features.toc.html#
     try:
         # if the layer/table is public it does not have to receive auth obj
-        # feature_layer = FeatureLayer(arcgis_table.service_url)
-        gis_auth = GIS('https://csabadenes.maps.arcgis.com', 'csabadenes', 'Parola123!')
-        feature_layer = FeatureLayer(arcgis_table.service_url, gis=gis_auth)
+        feature_layer = FeatureLayer(arcgis_table.service_url)
+        # gis_auth = GIS('https://[user].maps.arcgis.com', '[user]', '[pwd]')
+        # feature_layer = FeatureLayer(arcgis_table.service_url, gis=gis_auth)
 
         featurecollection = json.loads(feature_layer.query(out_sr=4326).to_geojson)
         rows = featurecollection['features']
@@ -110,6 +110,7 @@ def import_arcgis_locations(arcgis_table_pk):
                         remapped_old_pcodes
                     )
 
+            # UPDATE locations
             for row in rows:
                 arcgis_pcode = str(row['properties'][arcgis_table.pcode_col]).strip()
                 site_name = row['properties'][arcgis_table.name_col]
