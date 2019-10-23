@@ -1,4 +1,4 @@
-from carto.exceptions import CartoException
+# from carto.exceptions import CartoException
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
 
@@ -7,15 +7,15 @@ from .models import Location
 logger = get_task_logger(__name__)
 
 
-def create_location(pcode, carto_table, parent, parent_instance, site_name, row,
+def create_location(pcode, datadef_table, parent, parent_instance, site_name, the_geom,
                     sites_not_added, sites_created, sites_updated):
     """
     :param pcode: pcode of the new/updated location
-    :param carto_table:
+    :param datadef_table: table tha holds the imported dataset properties, carto or arcgis
     :param parent:
     :param parent_instance:
     :param site_name:
-    :param row: the new location data as received from CartoDB
+    :param the_geom: the imported locations geometry
     :param sites_not_added:
     :param sites_created:
     :param sites_updated:
@@ -25,18 +25,18 @@ def create_location(pcode, carto_table, parent, parent_instance, site_name, row,
     logger.info('{}: {} ({})'.format(
         'Importing location',
         pcode,
-        carto_table.location_type.name
+        datadef_table.location_type.name
     ))
 
     location = None
     try:
-        # TODO: revisit this, maybe include (location name?) carto_table in the check
+        # TODO: revisit this, maybe include (location name?) carto/arcgis table in the check
         # see below at update branch - names can be updated for existing locations with the same code
         location = Location.objects.all_locations().get(p_code=pcode)
 
     except Location.MultipleObjectsReturned:
         logger.warning("Multiple locations found for: {}, {} ({})".format(
-            carto_table.location_type, site_name, pcode
+            datadef_table.location_type, site_name, pcode
         ))
         sites_not_added += 1
         return False, sites_not_added, sites_created, sites_updated
@@ -48,20 +48,16 @@ def create_location(pcode, carto_table, parent, parent_instance, site_name, row,
         # try to create the location
         create_args = {
             'p_code': pcode,
-            'gateway': carto_table.location_type,
+            'gateway': datadef_table.location_type,
             'name': site_name
         }
         if parent and parent_instance:
             create_args['parent'] = parent_instance
 
-        if not row['the_geom']:
-            sites_not_added += 1
-            return False, sites_not_added, sites_created, sites_updated
-
-        if 'Point' in row['the_geom']:
-            create_args['point'] = row['the_geom']
+        if 'Point' in the_geom:
+            create_args['point'] = the_geom
         else:
-            create_args['geom'] = row['the_geom']
+            create_args['geom'] = the_geom
 
         try:
             location = Location.objects.create(**create_args)
@@ -74,13 +70,13 @@ def create_location(pcode, carto_table, parent, parent_instance, site_name, row,
         logger.info('{}: {} ({})'.format(
             'Added',
             location.name,
-            carto_table.location_type.name
+            datadef_table.location_type.name
         ))
 
         return True, sites_not_added, sites_created, sites_updated
 
     else:
-        if not row['the_geom']:
+        if not the_geom:
             return False, sites_not_added, sites_created, sites_updated
 
         # names can be updated for existing locations with the same code
@@ -88,10 +84,10 @@ def create_location(pcode, carto_table, parent, parent_instance, site_name, row,
         # TODO: re-confirm if this is not a problem. (assuming that every row in the new data is active)
         location.is_active = True
 
-        if 'Point' in row['the_geom']:
-            location.point = row['the_geom']
+        if 'Point' in the_geom:
+            location.point = the_geom
         else:
-            location.geom = row['the_geom']
+            location.geom = the_geom
 
         if parent and parent_instance:
             logger.info("Updating parent:{} for location {}".format(parent_instance, location))
@@ -109,15 +105,15 @@ def create_location(pcode, carto_table, parent, parent_instance, site_name, row,
         logger.info('{}: {} ({})'.format(
             'Updated',
             location.name,
-            carto_table.location_type.name
+            datadef_table.location_type.name
         ))
 
         return True, sites_not_added, sites_created, sites_updated
 
 
-def remap_location(carto_table, new_pcode, remapped_pcodes):
+def remap_location(datadef_table, new_pcode, remapped_pcodes):
     """
-    :param carto_table:
+    :param datadef_table: table tha holds the imported dataset properties, carto or arcgis
     :param new_pcode: pcode the others will be remapped to
     :param remapped_pcodes: pcodes to be remapped and archived/removed
 
@@ -134,10 +130,10 @@ def remap_location(carto_table, new_pcode, remapped_pcodes):
     try:
         new_location = Location.objects.all_locations().get(p_code=new_pcode)
         # the approach below is not good - remap should work across location levels, and probably for archived locs too
-        # new_location = Location.objects.get(p_code=new_pcode, gateway=carto_table.location_type)
+        # new_location = Location.objects.get(p_code=new_pcode, gateway=datadef_table.location_type)
     except Location.MultipleObjectsReturned:
         logger.warning("REMAP: multiple locations found for new pcode: {} ({})".format(
-            new_pcode, carto_table.location_type
+            new_pcode, datadef_table.location_type
         ))
         return None
     except Location.DoesNotExist:
@@ -145,7 +141,7 @@ def remap_location(carto_table, new_pcode, remapped_pcodes):
         # the `name`  and `parent` will be updated in the next step of the update process.
         create_args = {
             'p_code': new_pcode,
-            'gateway': carto_table.location_type,
+            'gateway': datadef_table.location_type,
             'name': new_pcode   # the name is temporary
         }
         new_location = Location.objects.create(**create_args)
@@ -158,7 +154,7 @@ def remap_location(carto_table, new_pcode, remapped_pcodes):
         logger.info('Prepared to remap {} to {} ({})'.format(
             remapped_location.p_code,
             new_location.p_code,
-            carto_table.location_type.name
+            datadef_table.location_type.name
         ))
 
         results.append((new_location.id, remapped_location.id))

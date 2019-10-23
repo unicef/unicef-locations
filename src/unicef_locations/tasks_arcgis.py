@@ -23,14 +23,13 @@ logger = get_task_logger(__name__)
 
 @celery.current_app.task # noqa: ignore=C901
 def import_arcgis_locations(arcgis_table_pk):
-    results = []
     sites_created = sites_updated = sites_remapped = sites_not_added = 0
 
     try:
         arcgis_table = ArcgisDBTable.objects.get(pk=arcgis_table_pk)
     except ArcgisDBTable.DoesNotExist:
         logger.exception('Cannot retrieve ArcgisDBTable with pk: %s', arcgis_table_pk)
-        return results
+        return None
 
     database_pcodes = []
     for row in Location.objects.all_locations().filter(gateway=arcgis_table.location_type).values('p_code'):
@@ -47,7 +46,7 @@ def import_arcgis_locations(arcgis_table_pk):
         rows = featurecollection['features']
     except RuntimeError:  # pragma: no-cover
         logger.exception("Cannot fetch location data from Arcgis")
-        return results
+        return None
 
     arcgis_pcodes = [str(row['properties'][arcgis_table.pcode_col].strip()) for row in rows]
 
@@ -71,14 +70,14 @@ def import_arcgis_locations(arcgis_table_pk):
                 validate_remap_table(remap_table_pcode_pairs, database_pcodes, arcgis_pcodes)
 
             if not remap_table_valid:
-                return results
+                return None
         except RuntimeError:  # pragma: no-cover
             logger.exception("Cannot fetch location remap data from Arcgis")
-            return results
+            return None
 
     # check for  duplicate pcodes in both local and new data
     if duplicate_pcodes_exist(database_pcodes, arcgis_pcodes, remap_old_pcodes):
-        return results
+        return None
 
     with transaction.atomic():
         # we should write lock the locations table until the location tree is rebuilt
@@ -149,23 +148,20 @@ def import_arcgis_locations(arcgis_table_pk):
                 if row['geometry']['type'] == 'Polygon':
                     geom = MultiPolygon([Polygon(coord) for coord in row['geometry']['coordinates']])
                 elif row['geometry']['type'] == 'Point':
-                    # TODO test with real data
+                    # TODO: test with real data, need a dataset wich also has coordinates
                     geom = Point(row['geometry']['coordinates'])
                 else:
-                    logger.warning("Invalid Arcgis location type for: {}".format(arcgis_pcode))
+                    # logger.warning("Invalid Arcgis location type for: {}".format(arcgis_pcode))
                     sites_not_added += 1
                     continue
 
                 # create the location or update the existing based on type and code
-                succ, sites_not_added, sites_created, sites_updated, sites_remapped, \
-                    partial_results = create_location(
-                        arcgis_pcode, arcgis_table.location_type,
+                succ, sites_not_added, sites_created, sites_updated = create_location(
+                        arcgis_pcode, arcgis_table,
                         parent, parent_instance,
                         site_name, geom.json,
                         sites_not_added, sites_created, sites_updated
                     )
-
-                results += partial_results
 
             orphaned_old_pcodes = set(database_pcodes) - (set(arcgis_pcodes) | set(remap_old_pcodes))
             if orphaned_old_pcodes:  # pragma: no-cover
@@ -176,5 +172,3 @@ def import_arcgis_locations(arcgis_table_pk):
 
     logger.warning("Table name {}: {} sites created, {} sites updated, {} sites remapped, {} sites skipped".format(
         arcgis_table.service_name, sites_created, sites_updated, sites_remapped, sites_not_added))
-
-    return results
