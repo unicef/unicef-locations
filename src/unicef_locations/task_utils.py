@@ -11,7 +11,7 @@ def create_location(pcode, datadef_table, parent, parent_instance, site_name, th
                     sites_not_added, sites_created, sites_updated):
     """
     :param pcode: pcode of the new/updated location
-    :param datadef_table: table tha holds the imported dataset properties, carto or arcgis
+    :param datadef_table: table that holds the imported dataset properties, carto or arcgis
     :param parent:
     :param parent_instance:
     :param site_name:

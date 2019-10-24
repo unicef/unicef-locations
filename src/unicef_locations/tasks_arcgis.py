@@ -147,6 +147,8 @@ def import_arcgis_locations(arcgis_table_pk):
                         continue
 
                 if row['geometry']['type'] == 'Polygon':
+                    # we need to manually cast/convert the geometry provided by the Arcgis API to MultiPolygon,
+                    # because it seems, at this point, they dont natively support the MultiPolygon type as we expect it
                     geom = MultiPolygon([Polygon(coord) for coord in row['geometry']['coordinates']])
                 elif row['geometry']['type'] == 'Point':
                     # TODO: test with real data, need a dataset wich also has coordinates
