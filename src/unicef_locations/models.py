@@ -34,15 +34,15 @@ class GatewayType(TimeStampedModel):
 class LocationsManager(TreeManager):
     def get_queryset(self):
         return super(LocationsManager, self).get_queryset().filter(is_active=True)\
-            .order_by('name').select_related('gateway')
+            .order_by('name').select_related('gateway', 'parent')
 
     def archived_locations(self):
         return super(LocationsManager, self).get_queryset().filter(is_active=False)\
-            .order_by('name').select_related('gateway')
+            .order_by('name').select_related('gateway', 'parent')
 
     def all_locations(self):
         return super(LocationsManager, self).get_queryset()\
-            .order_by('name').select_related('gateway')
+            .order_by('name').select_related('gateway', 'parent')
 
 
 class Location(TimeStampedModel, MPTTModel):

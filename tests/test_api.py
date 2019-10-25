@@ -1,5 +1,5 @@
 from django.urls import reverse
-from drf_api_checker.pytest import contract, frozenfixture
+from drf_api_checker.pytest import contract, default_fixture_name, frozenfixture
 
 import pytest
 
@@ -8,14 +8,14 @@ from tests.api_checker import LastModifiedRecorder
 pytestmark = pytest.mark.django_db
 
 
-@frozenfixture
-def gateway2():
+@frozenfixture(fixture_name=default_fixture_name)
+def gateway2(db, request):
     from unicef_locations.tests.factories import GatewayTypeFactory
     return GatewayTypeFactory()
 
 
-@frozenfixture
-def location2():
+@frozenfixture(fixture_name=default_fixture_name)
+def location2(db, request):
     from unicef_locations.tests.factories import LocationFactory
     return LocationFactory(parent=None)
 
