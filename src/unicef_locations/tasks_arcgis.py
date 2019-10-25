@@ -1,12 +1,9 @@
 import json
 
 import celery
-# from arcgis.features import FeatureCollection, Feature, FeatureSet
-from arcgis.gis import GIS
 from arcgis.features import FeatureLayer
 from celery.utils.log import get_task_logger
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
-# from django.db import IntegrityError
 from django.db import transaction
 from django.utils.encoding import force_text
 
@@ -16,7 +13,7 @@ from .task_utils import (
     duplicate_pcodes_exist,
     filter_remapped_locations,
     remap_location,
-    validate_remap_table
+    validate_remap_table,
 )
 
 logger = get_task_logger(__name__)
@@ -39,6 +36,7 @@ def import_arcgis_locations(arcgis_table_pk):
     try:
         # if the layer/table is public it does not have to receive auth obj
         feature_layer = FeatureLayer(arcgis_table.service_url)
+        # from arcgis.gis import GIS
         # gis_auth = GIS('https://[user].maps.arcgis.com', '[user]', '[pwd]')
         # feature_layer = FeatureLayer(arcgis_table.service_url, gis=gis_auth)
 
@@ -160,11 +158,11 @@ def import_arcgis_locations(arcgis_table_pk):
 
                 # create the location or update the existing based on type and code
                 succ, sites_not_added, sites_created, sites_updated = create_location(
-                        arcgis_pcode, arcgis_table,
-                        parent, parent_instance,
-                        site_name, geom.json,
-                        sites_not_added, sites_created, sites_updated
-                    )
+                    arcgis_pcode, arcgis_table,
+                    parent, parent_instance,
+                    site_name, geom.json,
+                    sites_not_added, sites_created, sites_updated
+                )
 
             orphaned_old_pcodes = set(database_pcodes) - (set(arcgis_pcodes) | set(remap_old_pcodes))
             if orphaned_old_pcodes:  # pragma: no-cover
