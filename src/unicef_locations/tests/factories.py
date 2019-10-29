@@ -34,6 +34,16 @@ class CartoDBTableFactory(factory.django.DjangoModelFactory):
     location_type = factory.SubFactory(GatewayTypeFactory)
 
 
+class ArcgisDBTableFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.ArcgisDBTable
+
+    service_url = factory.Sequence(lambda n: 'ServiceUrl {}'.format(n))
+    service_name = factory.Sequence(lambda n: 'ServiceName {}'.format(n))
+    remap_table_service_url = None
+    location_type = factory.SubFactory(GatewayTypeFactory)
+
+
 class LocationRemapHistoryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.LocationRemapHistory

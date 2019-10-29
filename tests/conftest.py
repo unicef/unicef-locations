@@ -26,6 +26,12 @@ def cartodbtable():
 
 
 @pytest.fixture()
+def arcgisdbtable():
+    from unicef_locations.tests.factories import ArcgisDBTableFactory
+    return ArcgisDBTableFactory()
+
+
+@pytest.fixture()
 def user_staff():
     from unicef_locations.tests.factories import CartoDBTableFactory
     return CartoDBTableFactory()

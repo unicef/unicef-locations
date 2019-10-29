@@ -52,3 +52,27 @@ def test_admin_cartodbtable_edit(django_app, admin_user, cartodbtable):
     response = django_app.get(url, user=admin_user)
     response = response.form.submit()
     assert response
+
+
+def test_admin_arcgisdbtable(django_app, admin_user, arcgisdbtable):
+    url = reverse('admin:locations_arcgisdbtable_changelist')
+    response = django_app.get(url, user=admin_user)
+    assert response
+
+
+def test_admin_arcgisdbtable_action(django_app, admin_user, arcgisdbtable):
+    url = reverse('admin:locations_arcgisdbtable_changelist')
+
+    with mock.patch('unicef_locations.admin.import_arcgis_locations'):
+        res = django_app.get(url, user=admin_user)
+        res.form['action'] = 'import_sites'
+        res.form['_selected_action'].checked = True
+        res = res.form.submit().follow()
+        assert res
+
+
+def test_admin_arcgisdbtable_edit(django_app, admin_user, arcgisdbtable):
+    url = reverse('admin:locations_arcgisdbtable_change', args=[arcgisdbtable.id])
+    response = django_app.get(url, user=admin_user)
+    response = response.form.submit()
+    assert response
