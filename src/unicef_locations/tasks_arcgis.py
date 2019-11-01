@@ -1,7 +1,7 @@
 import json
 
 import celery
-from arcgis.features import FeatureLayer
+from arcgis.features import FeatureLayer, FeatureSet
 from celery.utils.log import get_task_logger
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
@@ -40,9 +40,9 @@ def import_arcgis_locations(arcgis_table_pk):
         # gis_auth = GIS('https://[user].maps.arcgis.com', '[user]', '[pwd]')
         # feature_layer = FeatureLayer(arcgis_table.service_url, gis=gis_auth)
 
-        featurecollection = json.loads(feature_layer.query(out_sr=4326).to_geojson)
+        featurecollection = json.loads(str(FeatureSet(feature_layer.query(out_sr=4326)).to_geojson))
         rows = featurecollection['features']
-    except RuntimeError:  # pragma: no-cover
+    except RuntimeError:
         logger.exception("Cannot fetch location data from Arcgis")
         return None
 
@@ -50,7 +50,7 @@ def import_arcgis_locations(arcgis_table_pk):
 
     remap_old_pcodes = []
     remap_table_pcode_pairs = []
-    if arcgis_table.remap_table_service_url:
+    if arcgis_table.remap_table_service_url:  # pragma: no-cover
         try:
             # remap_feature_layer = FeatureLayer(arcgis_table.remap_table_service_url, gis=gis_auth)
             # if the layer/table is public it does not have to receive auth obj
@@ -69,7 +69,7 @@ def import_arcgis_locations(arcgis_table_pk):
 
             if not remap_table_valid:
                 return None
-        except RuntimeError:  # pragma: no-cover
+        except RuntimeError:
             logger.exception("Cannot fetch location remap data from Arcgis")
             return None
 
@@ -83,7 +83,7 @@ def import_arcgis_locations(arcgis_table_pk):
 
         with Location.objects.disable_mptt_updates():
             # REMAP locations
-            if arcgis_table.remap_table_service_url and len(remap_table_pcode_pairs) > 0:
+            if arcgis_table.remap_table_service_url and len(remap_table_pcode_pairs) > 0:  # pragma: no-cover
                 # remapped_pcode_pairs ex.: {'old_pcode': 'ET0721', 'new_pcode': 'ET0714'}
                 remap_table_pcode_pairs = list(filter(
                     filter_remapped_locations,

@@ -1,6 +1,9 @@
+import json
+
 from unittest import skip
 
 from carto.exceptions import CartoException
+from django.contrib.gis.geos import Point
 from django.test import TestCase
 
 from unittest.mock import Mock, patch
@@ -485,11 +488,29 @@ class TestUpdateSitesFromCartoDB(TestCase):
 class TestUpdateSitesFromArcgis(TestCase):
     def setUp(self):
         super(TestUpdateSitesFromArcgis, self).setUp()
+        # self.mock_fs = Mock(return_value=[])
         self.mock_results = Mock()
+        self.features = [{
+            "properties": {
+                "name": "New Location",
+                "pcode": "123",
+                "parent": "12",
+            },
+            "geometry": {
+                "type": "Point", # Point | Polygon
+                "coordinates": (20, 20)
+            },
+        }]
+        self.mock_results.return_value = {"features": self.features}
+        self.mock_results.__str__ = self.mock_results
+        self.mock_results.__str__.return_value = json.dumps({"features": self.features})
+        # self.mock_results.__call__ = self.mock_results
+        # self.mock_results.__call__.return_value = json.dumps({"features": self.features})
 
-    def _run_update(self, carto_table_pk):
-        with patch("unicef_locations.tasks_arcgis.FeatureLayer.query", self.mock_results):
-            return import_arcgis_locations(carto_table_pk)
+    def _run_update(self, arcgis_table_pk):
+        with patch("unicef_locations.tasks_arcgis.FeatureLayer") ,\
+                patch("unicef_locations.tasks_arcgis.FeatureSet.to_geojson", self.mock_results):
+            return import_arcgis_locations(arcgis_table_pk)
 
     def _assert_response(self, response, expected_result):
         self.assertEqual(response, expected_result)
@@ -499,54 +520,28 @@ class TestUpdateSitesFromArcgis(TestCase):
         self.assertFalse(import_arcgis_locations(404))
 
     def test_add(self):
-        """Check that rows returned by SQLClient create a location record"""
-        mock_ft = Mock(return_value = {
-            "properties": {
-                "name": "New Location",
-                "pcode": "123",
-                "max": 1,
-                "count": 1,
-            },
-            "geometry": {
-                "type": "point", # point | polygon
-                "coordinates": "(20 20)"
-            }
-        })
-        self.mock_results.return_value = {"features": [mock_ft]}
-
-        arcgistbl = ArcgisDBTableFactory()
+        ag_parent = ArcgisDBTableFactory()
+        arcgisdbtable = ArcgisDBTableFactory(
+            parent=ag_parent,
+            parent_code_col="parent"
+        )
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
-        response = self._run_update(arcgistbl.pk)
 
+        LocationFactory(p_code="12")
+        response = self._run_update(arcgisdbtable.pk)
         location = Location.objects.get(name="New Location", p_code="123")
+        response = self._run_update(arcgisdbtable.pk)
+
         self.assertIsNotNone(location)
         self._assert_response(response, None)
 
-
     def test_add_parent_multiple(self):
-        """Check that if parent is provided but multiple locations match parent
-        that location record is NOT created
-        """
+        """Check for disallowed multiple parent locations"""
         ag_parent = ArcgisDBTableFactory()
-        LocationFactory(p_code="456")
-        LocationFactory(p_code="456")
-
-        mock_ft = Mock(return_value = {
-            "properties": {
-                "name": "New Location",
-                "pcode": "123",
-                "max": 1,
-                "count": 1,
-            },
-            "geometry": {
-                "type": "point", # point | polygon
-                "coordinates": "(20 20)"
-            }
-        })
-        self.mock_results.return_value = {"features": [mock_ft]}
-
+        LocationFactory(p_code="12")
+        LocationFactory(p_code="12")
         arcgisdbtable = ArcgisDBTableFactory(
             parent=ag_parent,
             parent_code_col="parent",
@@ -556,7 +551,7 @@ class TestUpdateSitesFromArcgis(TestCase):
         )
         response = self._run_update(arcgisdbtable.pk)
         self._assert_response(response, None)
-        # we should check the logs instead for the warning message
+        #TODO: probably we should check the logs instead for the warning message
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
@@ -567,21 +562,6 @@ class TestUpdateSitesFromArcgis(TestCase):
         """
         ag_parent = ArcgisDBTableFactory()
         LocationFactory(p_code="456")
-        
-        mock_ft = Mock(return_value = {
-            "properties": {
-                "name": "New Location",
-                "pcode": "123",
-                "max": 1,
-                "count": 1,
-            },
-            "geometry": {
-                "type": "point", # point | polygon
-                "coordinates": "(20 20)"
-            }
-        })
-        self.mock_results.return_value = {"features": [mock_ft]}
-
         arcgisdbtable = ArcgisDBTableFactory(
             parent=ag_parent,
             parent_code_col="parent"
@@ -591,7 +571,10 @@ class TestUpdateSitesFromArcgis(TestCase):
         )
         response = self._run_update(arcgisdbtable.pk)
         self._assert_response(response, None)
-        # we should check the logs instead for the warning message
+        #TODO: probably we should check the logs instead for the warning message
         self.assertFalse(
             Location.objects.filter(name="New Location", p_code="123").exists()
         )
+
+    def test_remap(self):
+        pass
