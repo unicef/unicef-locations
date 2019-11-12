@@ -35,18 +35,16 @@ def update_sites_from_cartodb(carto_table_pk):
 
     try:
         # query cartodb for the locations with geometries
-        carto_succesfully_queried, rows = get_cartodb_locations(sql_client, carto_table)
+        carto_successfully_queried, rows = get_cartodb_locations(sql_client, carto_table)
 
-        if not carto_succesfully_queried:
+        if not carto_successfully_queried:
             return None
     except CartoException:  # pragma: no-cover
         logger.exception("CartoDB exception occured")
     else:
-        # validations
         # get the list of the existing Pcodes and previous Pcodes from the database
-        database_pcodes = []
-        for row in Location.objects.all_locations().filter(gateway=carto_table.location_type).values('p_code'):
-            database_pcodes.append(row['p_code'])
+        all_locations_qs = Location.objects.all_locations().filter(gateway=carto_table.location_type).values('p_code')
+        database_pcodes = [row['p_code'] for row in all_locations_qs]
 
         # get the list of the new Pcodes from the Carto data
         new_carto_pcodes = [str(row[carto_table.pcode_col]) for row in rows]
@@ -56,10 +54,11 @@ def update_sites_from_cartodb(carto_table_pk):
             try:
                 remap_qry = 'select old_pcode::text, new_pcode::text from {}'.format(
                     carto_table.remap_table_name)
-                remap_table_pcode_pairs = sql_client.send(remap_qry)['rows']
             except CartoException:  # pragma: no-cover
                 logger.exception("Cannot fetch location remap data from CartoDB")
                 return None
+            else:
+                remap_table_pcode_pairs = sql_client.send(remap_qry)['rows']
 
         # validate remap table contents
         remap_table_valid, remap_old_pcodes, remap_new_pcodes = \

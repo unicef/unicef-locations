@@ -28,9 +28,8 @@ def import_arcgis_locations(arcgis_table_pk):
         logger.exception('Cannot retrieve ArcgisDBTable with pk: %s', arcgis_table_pk)
         return None
 
-    database_pcodes = []
-    for row in Location.objects.all_locations().filter(gateway=arcgis_table.location_type).values('p_code'):
-        database_pcodes.append(row['p_code'])
+    all_locations_qs = Location.objects.all_locations().filter(gateway=arcgis_table.location_type).values('p_code')
+    database_pcodes = [row['p_code'] for row in all_locations_qs]
 
     # https://esri.github.io/arcgis-python-api/apidoc/html/arcgis.features.toc.html#
     try:
@@ -41,10 +40,11 @@ def import_arcgis_locations(arcgis_table_pk):
         # feature_layer = FeatureLayer(arcgis_table.service_url, gis=gis_auth)
 
         featurecollection = json.loads(str(FeatureSet(feature_layer.query(out_sr=4326)).to_geojson))
-        rows = featurecollection['features']
     except RuntimeError:
         logger.exception("Cannot fetch location data from Arcgis")
         return None
+    else:
+        rows = featurecollection['features']
 
     arcgis_pcodes = [str(row['properties'][arcgis_table.pcode_col].strip()) for row in rows]
 
