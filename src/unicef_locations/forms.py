@@ -1,6 +1,7 @@
 
 import logging
 
+from arcgis.features import FeatureLayer
 from carto.exceptions import CartoException
 from carto.sql import SQLClient
 from django import forms
@@ -8,6 +9,8 @@ from django.core.exceptions import ValidationError
 
 from .auth import LocationsCartoNoAuthClient
 from .models import ArcgisDBTable, CartoDBTable
+
+# from arcgis.features import FeatureSet
 
 logger = logging.getLogger(__name__)
 
@@ -78,14 +81,27 @@ class ArcgisDBTableForm(forms.ModelForm):
         fields = '__all__'
 
     def clean(self):
-        # TODO: regex for valid arcgis URL before connecting
-
+        service_url = self.cleaned_data['service_url']
+        remap_table_service_url = self.cleaned_data['remap_table_service_url']
         # name_col = self.cleaned_data['name_col']
         # pcode_col = self.cleaned_data['pcode_col']
-        # service_name = self.cleaned_data['service_name']
-        # service_url = self.cleaned_data['service_url']
         # parent_code_col = self.cleaned_data['parent_code_col']
-        # remap_table_service_url = self.cleaned_data['remap_table_service_url']
 
-        # TODO: think about validations
+        try:
+            # gis_auth = GIS('https://[user].maps.arcgis.com', '[user]', '[pwd]')
+            # features = FeatureLayer(service_url, gis=gis_auth)
+            FeatureLayer(service_url)
+            # TODO: finish validating the remaining colums against the featureset fields
+        except RuntimeError:
+            raise ValidationError("Cannot load Arcgis dataset from: {}".format(service_url))
+
+        if remap_table_service_url:
+            try:
+                # gis_auth = GIS('https://[user].maps.arcgis.com', '[user]', '[pwd]')
+                # features = FeatureLayer(service_url, gis=gis_auth)
+                FeatureLayer(remap_table_service_url)
+                # TODO: check if new_pcode, old_pcode are present in the remap table fields
+            except RuntimeError:
+                raise ValidationError("Cannot load Arcgis remap table from: {}".format(remap_table_service_url))
+
         return self.cleaned_data
