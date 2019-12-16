@@ -1,3 +1,10 @@
+1.9
+===
+* Added support to python 3.8
+* Dropped support to python 3.6
+* Added support to django 3.0
+* Dropped support to python 2.1
+
 1.8
 ===
 * Add parent name to locations name value in LocationLightSerializer

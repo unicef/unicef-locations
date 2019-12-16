@@ -13,8 +13,8 @@ from .models import CartoDBTable, Location
 logger = get_task_logger(__name__)
 
 
-@celery.current_app.task # noqa: ignore=C901
-def update_sites_from_cartodb(carto_table_pk):
+@celery.current_app.task  # noqa: ignore=C901
+def update_sites_from_cartodb(carto_table_pk):  # noqa: ignore=C901
     results = []
 
     try:
