@@ -1,7 +1,11 @@
-from django.test import SimpleTestCase
+from django.test import TestCase, SimpleTestCase
 
+from unicef_locations.models import Location
 from unicef_locations.tests.factories import CartoDBTableFactory, GatewayTypeFactory, LocationFactory
 
+import pytest
+
+pytestmark = pytest.mark.django_db
 
 def test_point_lat_long(location):
     assert isinstance(location.point_lat_long, str)
@@ -34,3 +38,11 @@ class TestStrUnicode(SimpleTestCase):
 
         carto_db_table = CartoDBTableFactory.build(table_name='xyz')
         self.assertEqual(str(carto_db_table), u'xyz')
+
+
+class TestModels(TestCase):
+    '''Cover archived locations in manager'''
+
+    def test_archived_location(self):
+        location = LocationFactory(is_active=False)
+        self.assertIsNotNone(Location.objects.archived_locations())

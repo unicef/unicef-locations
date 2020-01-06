@@ -488,7 +488,6 @@ class TestUpdateSitesFromCartoDB(TestCase):
 class TestUpdateSitesFromArcgis(TestCase):
     def setUp(self):
         super(TestUpdateSitesFromArcgis, self).setUp()
-        # self.mock_fs = Mock(return_value=[])
         self.mock_results = Mock()
         self.features = [{
             "properties": {
@@ -504,8 +503,6 @@ class TestUpdateSitesFromArcgis(TestCase):
         self.mock_results.return_value = {"features": self.features}
         self.mock_results.__str__ = self.mock_results
         self.mock_results.__str__.return_value = json.dumps({"features": self.features})
-        # self.mock_results.__call__ = self.mock_results
-        # self.mock_results.__call__.return_value = json.dumps({"features": self.features})
 
     def _run_update(self, arcgis_table_pk):
         with patch("unicef_locations.tasks_arcgis.FeatureLayer") ,\
