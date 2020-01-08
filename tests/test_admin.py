@@ -74,5 +74,4 @@ def test_admin_arcgisdbtable_action(django_app, admin_user, arcgisdbtable):
 def test_admin_arcgisdbtable_edit(django_app, admin_user, arcgisdbtable):
     url = reverse('admin:locations_arcgisdbtable_change', args=[arcgisdbtable.id])
     response = django_app.get(url, user=admin_user)
-    response = response.form.submit()
     assert response

@@ -1,7 +1,8 @@
 
+import json
 import logging
 
-from arcgis.features import FeatureLayer
+from arcgis.features import FeatureLayer, FeatureSet
 from carto.exceptions import CartoException
 from carto.sql import SQLClient
 from django import forms
@@ -83,25 +84,51 @@ class ArcgisDBTableForm(forms.ModelForm):
     def clean(self):
         service_url = self.cleaned_data['service_url']
         remap_table_service_url = self.cleaned_data['remap_table_service_url']
-        # name_col = self.cleaned_data['name_col']
-        # pcode_col = self.cleaned_data['pcode_col']
-        # parent_code_col = self.cleaned_data['parent_code_col']
-
-        try:
-            # gis_auth = GIS('https://[user].maps.arcgis.com', '[user]', '[pwd]')
-            # features = FeatureLayer(service_url, gis=gis_auth)
-            FeatureLayer(service_url)
-            # TODO: finish validating the remaining colums against the featureset fields
-        except RuntimeError:
-            raise ValidationError("Cannot load Arcgis dataset from: {}".format(service_url))
+        name_col = self.cleaned_data['name_col']
+        pcode_col = self.cleaned_data['pcode_col']
+        parent_code_col = self.cleaned_data['parent_code_col']
 
         if remap_table_service_url:
             try:
                 # gis_auth = GIS('https://[user].maps.arcgis.com', '[user]', '[pwd]')
                 # features = FeatureLayer(service_url, gis=gis_auth)
-                FeatureLayer(remap_table_service_url)
-                # TODO: check if new_pcode, old_pcode are present in the remap table fields
+                remap_feature_layer = FeatureLayer(remap_table_service_url)
             except RuntimeError:
                 raise ValidationError("Cannot load Arcgis remap table from: {}".format(remap_table_service_url))
+            else:
+                remap_row = remap_feature_layer.query()[0]
+
+                if 'old_pcode' not in remap_row.keys():
+                    raise ValidationError('The Old PCode column (old_pcode) is missing from the table: {}'.format(
+                        remap_table_service_url
+                    ))
+
+                if 'new_pcode' not in remap_row.keys():
+                    raise ValidationError('The New PCode column (new_pcode) is missing from the table: {}'.format(
+                        remap_table_service_url
+                    ))
+
+        try:
+            # gis_auth = GIS('https://[user].maps.arcgis.com', '[user]', '[pwd]')
+            # features = FeatureLayer(service_url, gis=gis_auth)
+            feature_layer = FeatureLayer(service_url)
+        except RuntimeError:
+            raise ValidationError("Cannot load Arcgis dataset from: {}".format(service_url))
+        else:
+            featurecollection = json.loads(str(FeatureSet(feature_layer.query(out_sr=4326)).to_geojson))
+            properties = featurecollection['properties']
+
+            if name_col not in properties:
+                raise ValidationError('The Name column ({}) is missing from the dataset: {}'.format(
+                    name_col, service_url
+                ))
+            if pcode_col not in properties:
+                raise ValidationError('The PCode column ({}) is missing from the dataset: {}'.format(
+                    pcode_col, service_url
+                ))
+            if parent_code_col and parent_code_col not in properties:
+                raise ValidationError('The Parent Code column ({}) is missing from the dataset: {}'.format(
+                    parent_code_col, service_url
+                ))
 
         return self.cleaned_data

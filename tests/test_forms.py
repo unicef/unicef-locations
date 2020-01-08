@@ -1,5 +1,6 @@
 from carto.exceptions import CartoException
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
 from unittest.mock import Mock, patch
 
@@ -154,6 +155,7 @@ class TestArcgisTableForm(TestCase):
         self.mock_response = Mock()
         gateway = GatewayTypeFactory()
         self.data = {
+            "service_name": "test",
             "service_url": "test://test.test",
             "remap_table_service_url": "test://test_remap.test",
             "name_col": "name",
@@ -172,36 +174,55 @@ class TestArcgisTableForm(TestCase):
                 "coordinates": (20, 20)
             },
         }
+        self.remap_table = [{
+            "old_pcode": "op",
+            "new_pcode": "np",
+        }]
 
     def _test_clean(self, form):
-        with patch("unicef_locations.tasks_arcgis.FeatureLayer", self.mock_response):
+        with patch("unicef_locations.forms.FeatureLayer", self.mock_response):
             return form.is_valid()
 
     def test_no_connection(self):
         """Check that validation fails when the arcgis dataset doesn't load"""
+        self.data['remap_table_service_url'] = ''
         self.mock_response.side_effect = RuntimeError
         form = forms.ArcgisDBTableForm(self.data)
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
-        print('errors["__all__"][0].message', errors["__all__"][0].message)
+        self.assertEqual(
+            errors["__all__"][0].message,
+            'Cannot load Arcgis dataset from: {}'.format(self.data['service_url'])
+        )
 
-    '''
-    def test_no_name_col(self):
-        """Check that validation fails when `name_col` is missing"""
-        self.mock_sql.return_value = {"rows": [{
-            "pcode": "",
-            "parent": "",
-        }]}
-        form = forms.CartoDBTableForm(self.data)
+    def test_remap_table_conn_err(self):
+        self.mock_response.side_effect = RuntimeError
+        form = forms.ArcgisDBTableForm(self.data)
         self.assertFalse(self._test_clean(form))
         errors = form.errors.as_data()
         self.assertEqual(len(errors["__all__"]), 1)
         self.assertEqual(
             errors["__all__"][0].message,
-            "The Name column (name) is not in table: test"
+            'Cannot load Arcgis remap table from: {}'.format(self.data['remap_table_service_url'])
         )
 
+    def test_no_name_col(self):
+        """Check that validation fails when `name_col` is missing"""
+        self.data['remap_table_service_url'] = ''
+        del(self.feature["properties"]["name"])
+        with patch("unicef_locations.forms.FeatureSet.to_geojson", Mock()):
+            self.mock_response.return_value = self.data
+            form = forms.ArcgisDBTableForm(self.data)
+            self.assertFalse(self._test_clean(form))
+            errors = form.errors.as_data()
+            self.assertEqual(len(errors["__all__"]), 1)
+            self.assertEqual(
+                errors["__all__"][0].message,
+                "The Name column (name) is not in table: test"
+            )
+
+    '''
     def test_no_pcode_col(self):
         """Check that validation fails when `pcode_col` is missing"""
         self.mock_sql.return_value = {"rows": [{
