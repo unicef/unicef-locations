@@ -1,59 +1,64 @@
-1.9
-===
+Release 1.10 (in development)
+--------------
+* Added support to django 3.1
+
+
+Release 1.9
+--------------
 * Added support to python 3.8
 * Dropped support to python 3.6
 * Added support to django 3.0
 * Dropped support to python 2.1
 
-1.8
-===
+Release 1.8
+--------------
 * Add parent name to locations name value in LocationLightSerializer
 * Update frozenfixtures
 * Update base_name param in urls confs
 
-1.7
-===
+Release 1.7
+--------------
 * Add migration
 
-1.6
-===
+Release 1.6
+--------------
 * Update django-mptt requirement to >=0.10
 
-1.5
-=====
+Release 1.5
+--------------
 * Models extend TimeStampedModel
 
-1.4.2
-=====
+Release 1.4.2
+--------------
 * Possible fix for deadlock issue
 * Update requirements, django security alert, and moved to psycopg2-binary
 * Clean up tests
 
-1.4.1
-=====
+Release 1.4.1
+--------------
 * Update managers for Locations
 
-1.4.0
-=====
+Release 1.4.0
+--------------
 * Remap locations functionality
 
-1.3.1
-===
+Release 1.3.1
+--------------
 * fixed cache configuration key
 
-1.3
-===
+Release 1.3
+--------------
 * tweaked serializers
 
-1.2
-===
+Release 1.2
+--------------
 * defer 'geom' field for LocationsLightViewSet and LocationQuerySetView
 
-1.1
-===
+Release 1.1
+--------------
 * allow customization of etag cache key function
 * celery uses `default_app`
 
-1.0
-===
+Release 1.0
+--------------
 * initial release
