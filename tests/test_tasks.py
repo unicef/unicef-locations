@@ -1,8 +1,7 @@
-from unittest import skip
-
 from carto.exceptions import CartoException
 from django.test import TestCase
 
+from unittest import skip
 from unittest.mock import Mock, patch
 
 from unicef_locations import tasks

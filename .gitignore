@@ -14,3 +14,5 @@ __pycache__/
 .tox
 Pipfile
 Pipfile.lock
+.venv/
+.envrc

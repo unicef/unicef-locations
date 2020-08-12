@@ -1,4 +1,5 @@
 from django.db import models
+
 from unicef_locations.models import Location
 
 

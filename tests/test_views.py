@@ -56,17 +56,17 @@ def test_api_location_queries(
     url = reverse('locations:locations-list')
 
     with django_assert_num_queries(10):
-        response = django_app.get(url, user=admin_user)
+        django_app.get(url, user=admin_user)
 
     query_count = 3
     with django_assert_num_queries(query_count):
-        response = django_app.get(url, user=admin_user)
+        django_app.get(url, user=admin_user)
 
     # add another location with reference to parent
     # and ensure no extra queries
     LocationFactory(parent=location)
     with django_assert_num_queries(query_count):
-        response = django_app.get(url, user=admin_user)
+        django_app.get(url, user=admin_user)
 
 
 def test_api_location_values(django_app, admin_user, locations3):
