@@ -1,6 +1,7 @@
 Release 1.10 (in development)
 --------------
 * Added support to django 3.1
+* Added support to python 3.9
 
 
 Release 1.9
