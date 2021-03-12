@@ -1,4 +1,5 @@
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.urls import re_path
 from rest_framework import routers
 
 from . import views
@@ -12,11 +13,11 @@ api.register(r'locations-light', views.LocationsLightViewSet, basename='location
 api.register(r'locations-types', views.LocationTypesViewSet, basename='locationtypes')
 
 urlpatterns = [
-    url(r'', include(api.urls)),
-    url(
+    re_path(r'', include(api.urls)),
+    re_path(
         r'^locations/pcode/(?P<p_code>\w+)/$', views.LocationsViewSet.as_view({'get': 'retrieve'}),
         name='locations_detail_pcode'
     ),
-    url(r'^cartodbtables/$', views.CartoDBTablesView.as_view(), name='cartodbtables'),
-    url(r'^autocomplete/$', views.LocationQuerySetView.as_view(), name='locations_autocomplete'),
+    re_path(r'^cartodbtables/$', views.CartoDBTablesView.as_view(), name='cartodbtables'),
+    re_path(r'^autocomplete/$', views.LocationQuerySetView.as_view(), name='locations_autocomplete'),
 ]
