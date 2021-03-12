@@ -29,7 +29,7 @@ def test_api_location_light_list(
     url = reverse('locations:locations-light-list')
     with django_assert_num_queries(10):
         res = django_app.get(url, user=admin_user)
-    assert sorted(res.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
+    assert sorted(res.json[0].keys()) == ['gateway', 'id', 'name', 'p_code', 'parent']
 
 
 def test_api_location_heavy_list(
@@ -148,7 +148,7 @@ def test_api_location_autocomplete(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user, params={"q": "Loc"})
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
+    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code', 'parent']
     assert "Loc" in response.json[0]["name"]
 
 
@@ -158,7 +158,7 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user)
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
+    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code', 'parent']
     assert "Loc" in response.json[0]["name"]
 
 

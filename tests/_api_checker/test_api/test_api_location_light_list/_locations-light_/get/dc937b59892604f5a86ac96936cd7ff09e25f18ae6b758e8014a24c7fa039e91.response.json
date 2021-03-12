@@ -7,7 +7,7 @@
         ],
         "etag": [
             "ETag",
-            "\"7e5069fb0c0e4f27a7691b85f47f7bd9\""
+            "\"04a111a61c5544b7b0b6b47ae9b30569\""
         ],
         "cache-control": [
             "Cache-Control",
@@ -23,11 +23,19 @@
         ],
         "x-frame-options": [
             "X-Frame-Options",
-            "SAMEORIGIN"
+            "DENY"
         ],
         "content-length": [
             "Content-Length",
-            "220"
+            "234"
+        ],
+        "x-content-type-options": [
+            "X-Content-Type-Options",
+            "nosniff"
+        ],
+        "referrer-policy": [
+            "Referrer-Policy",
+            "same-origin"
         ]
     },
     "data": [
@@ -41,7 +49,8 @@
                 "modified": "2019-01-11T14:07:38.126000Z",
                 "name": "GatewayType 1",
                 "admin_level": 1
-            }
+            },
+            "parent": null
         }
     ],
     "content_type": null

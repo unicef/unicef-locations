@@ -48,6 +48,7 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
         'p_code',
         'geom',
         'point',
+        'parent'
     ]
     list_display = (
         'name',
@@ -61,6 +62,7 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
         'parent',
     )
     search_fields = ('name', 'p_code',)
+    raw_id_fields = ('parent', )
 
     def get_queryset(self, request):    # pragma: no-cover
         qs = Location.objects.all_locations()

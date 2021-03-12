@@ -7,7 +7,7 @@
         ],
         "etag": [
             "ETag",
-            "\"7e06fac42020419cb2dbc64ea777b2ba\""
+            "\"634899a22c224c408319c85edea35fd5\""
         ],
         "cache-control": [
             "Cache-Control",
@@ -23,11 +23,19 @@
         ],
         "x-frame-options": [
             "X-Frame-Options",
-            "SAMEORIGIN"
+            "DENY"
         ],
         "content-length": [
             "Content-Length",
             "272"
+        ],
+        "x-content-type-options": [
+            "X-Content-Type-Options",
+            "nosniff"
+        ],
+        "referrer-policy": [
+            "Referrer-Policy",
+            "same-origin"
         ]
     },
     "data": [
@@ -42,8 +50,8 @@
                 "name": "GatewayType 1",
                 "admin_level": 1
             },
-            "geo_point": "SRID=4326;POINT (20 20)",
-            "parent": null
+            "parent": null,
+            "geo_point": "SRID=4326;POINT (20 20)"
         }
     ],
     "content_type": null
