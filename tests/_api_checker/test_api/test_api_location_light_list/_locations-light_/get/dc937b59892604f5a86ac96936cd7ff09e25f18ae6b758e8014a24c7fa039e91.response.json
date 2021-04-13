@@ -1,57 +1,30 @@
 {
     "status_code": 200,
     "headers": {
-        "content-type": [
-            "Content-Type",
-            "application/json"
-        ],
-        "etag": [
-            "ETag",
-            "\"04a111a61c5544b7b0b6b47ae9b30569\""
-        ],
-        "cache-control": [
-            "Cache-Control",
-            "private, must-revalidate"
-        ],
-        "vary": [
-            "Vary",
-            "Accept, Cookie"
-        ],
-        "allow": [
-            "Allow",
-            "GET, HEAD, OPTIONS"
-        ],
-        "x-frame-options": [
-            "X-Frame-Options",
-            "DENY"
-        ],
-        "content-length": [
-            "Content-Length",
-            "234"
-        ],
-        "x-content-type-options": [
-            "X-Content-Type-Options",
-            "nosniff"
-        ],
-        "referrer-policy": [
-            "Referrer-Policy",
-            "same-origin"
-        ]
+        "Content-Type": "application/json",
+        "ETag": "\"4adf854bac6744c5b23b7a60a2d54939\"",
+        "Cache-Control": "private, must-revalidate",
+        "Vary": "Accept, Cookie",
+        "Allow": "GET, HEAD, OPTIONS",
+        "X-Frame-Options": "DENY",
+        "Content-Length": "237",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "same-origin"
     },
     "data": [
         {
-            "id": "1151",
-            "name": "Location 0 [GatewayType 1 - PCODE0]",
-            "p_code": "PCODE0",
+            "id": "3124",
+            "name": "Location 7 [GatewayType 11 - PCODE7]",
+            "p_code": "PCODE7",
             "gateway": {
-                "id": 1604,
-                "created": "2019-01-11T14:07:38.125000Z",
-                "modified": "2019-01-11T14:07:38.126000Z",
-                "name": "GatewayType 1",
-                "admin_level": 1
+                "id": 4286,
+                "created": "2021-04-26T11:55:28.680000Z",
+                "modified": "2021-04-26T11:55:28.680000Z",
+                "name": "GatewayType 11",
+                "admin_level": 11
             },
             "parent": null
         }
     ],
-    "content_type": null
+    "content_type": "application/json"
 }

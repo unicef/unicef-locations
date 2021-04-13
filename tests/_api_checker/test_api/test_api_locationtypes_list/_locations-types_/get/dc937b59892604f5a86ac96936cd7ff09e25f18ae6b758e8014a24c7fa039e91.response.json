@@ -1,43 +1,22 @@
 {
     "status_code": 200,
     "headers": {
-        "content-type": [
-            "Content-Type",
-            "application/json"
-        ],
-        "vary": [
-            "Vary",
-            "Accept, Cookie"
-        ],
-        "allow": [
-            "Allow",
-            "GET, POST, HEAD, OPTIONS"
-        ],
-        "x-frame-options": [
-            "X-Frame-Options",
-            "DENY"
-        ],
-        "content-length": [
-            "Content-Length",
-            "133"
-        ],
-        "x-content-type-options": [
-            "X-Content-Type-Options",
-            "nosniff"
-        ],
-        "referrer-policy": [
-            "Referrer-Policy",
-            "same-origin"
-        ]
+        "Content-Type": "application/json",
+        "Vary": "Accept, Cookie",
+        "Allow": "GET, POST, HEAD, OPTIONS",
+        "X-Frame-Options": "DENY",
+        "Content-Length": "135",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "same-origin"
     },
     "data": [
         {
-            "id": 1603,
-            "created": "2019-01-11T14:07:36.810000Z",
-            "modified": "2019-01-11T14:07:36.810000Z",
-            "name": "GatewayType 0",
-            "admin_level": 0
+            "id": 4285,
+            "created": "2021-04-26T11:55:28.517000Z",
+            "modified": "2021-04-26T11:55:28.517000Z",
+            "name": "GatewayType 10",
+            "admin_level": 10
         }
     ],
-    "content_type": null
+    "content_type": "application/json"
 }

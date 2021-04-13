@@ -2,12 +2,12 @@
     "gateway2": {
         "master": {
             "model": "locations.gatewaytype",
-            "pk": 1603,
+            "pk": 4285,
             "fields": {
-                "created": "2019-01-11T14:07:36.810Z",
-                "modified": "2019-01-11T14:07:36.810Z",
-                "name": "GatewayType 0",
-                "admin_level": 0
+                "created": "2021-04-26T11:55:28.517Z",
+                "modified": "2021-04-26T11:55:28.517Z",
+                "name": "GatewayType 10",
+                "admin_level": 10
             }
         },
         "deps": []

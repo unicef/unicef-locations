@@ -1,58 +1,31 @@
 {
     "status_code": 200,
     "headers": {
-        "content-type": [
-            "Content-Type",
-            "application/json"
-        ],
-        "etag": [
-            "ETag",
-            "\"634899a22c224c408319c85edea35fd5\""
-        ],
-        "cache-control": [
-            "Cache-Control",
-            "private, must-revalidate"
-        ],
-        "vary": [
-            "Vary",
-            "Accept, Cookie"
-        ],
-        "allow": [
-            "Allow",
-            "GET, POST, HEAD, OPTIONS"
-        ],
-        "x-frame-options": [
-            "X-Frame-Options",
-            "DENY"
-        ],
-        "content-length": [
-            "Content-Length",
-            "272"
-        ],
-        "x-content-type-options": [
-            "X-Content-Type-Options",
-            "nosniff"
-        ],
-        "referrer-policy": [
-            "Referrer-Policy",
-            "same-origin"
-        ]
+        "Content-Type": "application/json",
+        "ETag": "\"545ecc1aa28a481890c6307d02802a14\"",
+        "Cache-Control": "private, must-revalidate",
+        "Vary": "Accept, Cookie",
+        "Allow": "GET, POST, HEAD, OPTIONS",
+        "X-Frame-Options": "DENY",
+        "Content-Length": "275",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "same-origin"
     },
     "data": [
         {
-            "id": "1151",
-            "name": "Location 0 [GatewayType 1 - PCODE0]",
-            "p_code": "PCODE0",
+            "id": "3124",
+            "name": "Location 7 [GatewayType 11 - PCODE7]",
+            "p_code": "PCODE7",
             "gateway": {
-                "id": 1604,
-                "created": "2019-01-11T14:07:38.125000Z",
-                "modified": "2019-01-11T14:07:38.126000Z",
-                "name": "GatewayType 1",
-                "admin_level": 1
+                "id": 4286,
+                "created": "2021-04-26T11:55:28.680000Z",
+                "modified": "2021-04-26T11:55:28.680000Z",
+                "name": "GatewayType 11",
+                "admin_level": 11
             },
             "parent": null,
             "geo_point": "SRID=4326;POINT (20 20)"
         }
     ],
-    "content_type": null
+    "content_type": "application/json"
 }

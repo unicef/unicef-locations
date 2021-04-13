@@ -1,3 +1,4 @@
+import django
 from django.urls import reverse
 from drf_api_checker.pytest import contract, default_fixture_name, frozenfixture
 
@@ -6,6 +7,7 @@ import pytest
 from tests.api_checker import LastModifiedRecorder
 
 pytestmark = pytest.mark.django_db
+django32_or_above = pytest.mark.skipif(django.VERSION < (3, 2), reason="requires Django greater than 3.2")
 
 
 @frozenfixture(fixture_name=default_fixture_name)
@@ -20,16 +22,19 @@ def location2(db, request):
     return LocationFactory(parent=None)
 
 
+@django32_or_above
 @contract(recorder_class=LastModifiedRecorder)
 def test_api_locationtypes_list(django_app, admin_user, gateway2):
     return reverse('locations:locationtypes-list')
 
 
+@django32_or_above
 @contract(recorder_class=LastModifiedRecorder)
 def test_api_location_light_list(django_app, admin_user, location2):
     return reverse('locations:locations-light-list')
 
 
+@django32_or_above
 @contract(recorder_class=LastModifiedRecorder)
 def test_api_location_list(django_app, admin_user, location2):
     return reverse('locations:locations-list')
