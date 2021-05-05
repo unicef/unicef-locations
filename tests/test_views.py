@@ -1,5 +1,7 @@
 # from django.core.cache import cache
+from django import VERSION as dj_version
 from django.core.cache import cache
+from django.http import HttpResponse
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.request import Request
@@ -172,7 +174,10 @@ def test_cache_key_configuration():
 
         @etag_cached('prefix')
         def test(self):
-            return {}
+            if dj_version >= (3, 2):
+                return HttpResponse()
+            else:
+                return {}
 
     Dummy().test()
     assert func.call_count == 1

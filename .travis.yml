@@ -17,15 +17,16 @@ services:
 
 
 addons:
-  postgresql: "9.6"
+  postgresql: "10"
   apt:
     packages:
-      - postgresql-9.6-postgis-2.5
+      - postgresql-10-postgis-2.5
 
 env:
   - DJANGO=2.2
   - DJANGO=3.0
   - DJANGO=3.1
+  - DJANGO=3.2
 
 install:
   - pip install tox codecov

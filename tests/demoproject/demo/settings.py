@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'mptt',
     'leaflet',
     'demo.sample',
-    # 'locations',
     'unicef_locations',
 ]
 
