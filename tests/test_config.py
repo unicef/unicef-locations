@@ -1,5 +1,6 @@
-import pytest
 from django.core.exceptions import ImproperlyConfigured
+
+import pytest
 
 from unicef_locations.cache import get_cache_key
 from unicef_locations.config import AppSettings

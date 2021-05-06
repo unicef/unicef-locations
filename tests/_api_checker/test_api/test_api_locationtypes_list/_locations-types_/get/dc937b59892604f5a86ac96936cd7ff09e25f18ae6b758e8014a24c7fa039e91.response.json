@@ -1,0 +1,22 @@
+{
+    "status_code": 200,
+    "headers": {
+        "Content-Type": "application/json",
+        "Vary": "Accept, Cookie",
+        "Allow": "GET, POST, HEAD, OPTIONS",
+        "X-Frame-Options": "DENY",
+        "Content-Length": "135",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "same-origin"
+    },
+    "data": [
+        {
+            "id": 4285,
+            "created": "2021-04-26T11:55:28.517000Z",
+            "modified": "2021-04-26T11:55:28.517000Z",
+            "name": "GatewayType 10",
+            "admin_level": 10
+        }
+    ],
+    "content_type": "application/json"
+}

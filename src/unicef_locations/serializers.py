@@ -51,6 +51,7 @@ class LocationLightSerializer(serializers.ModelSerializer):
             'name',
             'p_code',
             'gateway',
+            'parent'
         )
 
 
@@ -60,7 +61,7 @@ class LocationSerializer(LocationLightSerializer):
 
     class Meta(LocationLightSerializer.Meta):
         model = Location
-        fields = LocationLightSerializer.Meta.fields + ('geo_point', 'parent')
+        fields = LocationLightSerializer.Meta.fields + ('geo_point', )
 
 
 class LocationExportSerializer(serializers.ModelSerializer):

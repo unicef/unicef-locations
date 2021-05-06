@@ -1,5 +1,7 @@
 # from django.core.cache import cache
+from django import VERSION as dj_version
 from django.core.cache import cache
+from django.http import HttpResponse
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.request import Request
@@ -29,7 +31,7 @@ def test_api_location_light_list(
     url = reverse('locations:locations-light-list')
     with django_assert_num_queries(10):
         res = django_app.get(url, user=admin_user)
-    assert sorted(res.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
+    assert sorted(res.json[0].keys()) == ['gateway', 'id', 'name', 'p_code', 'parent']
 
 
 def test_api_location_heavy_list(
@@ -56,17 +58,17 @@ def test_api_location_queries(
     url = reverse('locations:locations-list')
 
     with django_assert_num_queries(10):
-        response = django_app.get(url, user=admin_user)
+        django_app.get(url, user=admin_user)
 
     query_count = 3
     with django_assert_num_queries(query_count):
-        response = django_app.get(url, user=admin_user)
+        django_app.get(url, user=admin_user)
 
     # add another location with reference to parent
     # and ensure no extra queries
     LocationFactory(parent=location)
     with django_assert_num_queries(query_count):
-        response = django_app.get(url, user=admin_user)
+        django_app.get(url, user=admin_user)
 
 
 def test_api_location_values(django_app, admin_user, locations3):
@@ -148,7 +150,7 @@ def test_api_location_autocomplete(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user, params={"q": "Loc"})
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
+    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code', 'parent']
     assert "Loc" in response.json[0]["name"]
 
 
@@ -158,7 +160,7 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user)
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code']
+    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'p_code', 'parent']
     assert "Loc" in response.json[0]["name"]
 
 
@@ -172,7 +174,10 @@ def test_cache_key_configuration():
 
         @etag_cached('prefix')
         def test(self):
-            return {}
+            if dj_version >= (3, 2):
+                return HttpResponse()
+            else:
+                return {}
 
     Dummy().test()
     assert func.call_count == 1

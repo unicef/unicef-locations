@@ -1,0 +1,30 @@
+{
+    "status_code": 200,
+    "headers": {
+        "Content-Type": "application/json",
+        "ETag": "\"4adf854bac6744c5b23b7a60a2d54939\"",
+        "Cache-Control": "private, must-revalidate",
+        "Vary": "Accept, Cookie",
+        "Allow": "GET, HEAD, OPTIONS",
+        "X-Frame-Options": "DENY",
+        "Content-Length": "237",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "same-origin"
+    },
+    "data": [
+        {
+            "id": "3124",
+            "name": "Location 7 [GatewayType 11 - PCODE7]",
+            "p_code": "PCODE7",
+            "gateway": {
+                "id": 4286,
+                "created": "2021-04-26T11:55:28.680000Z",
+                "modified": "2021-04-26T11:55:28.680000Z",
+                "name": "GatewayType 11",
+                "admin_level": 11
+            },
+            "parent": null
+        }
+    ],
+    "content_type": "application/json"
+}
