@@ -32,17 +32,15 @@ class GatewayType(TimeStampedModel):
 
 
 class LocationsManager(TreeManager):
+
     def get_queryset(self):
-        return super(LocationsManager, self).get_queryset().filter(is_active=True)\
-            .order_by('name').select_related('gateway', 'parent')
+        return super().get_queryset().select_related('gateway', 'parent')
+
+    def active(self):
+        return self.get_queryset().filter(is_active=True)
 
     def archived_locations(self):
-        return super(LocationsManager, self).get_queryset().filter(is_active=False)\
-            .order_by('name').select_related('gateway', 'parent')
-
-    def all_locations(self):
-        return super(LocationsManager, self).get_queryset()\
-            .order_by('name').select_related('gateway', 'parent')
+        return self.get_queryset().filter(is_active=False)
 
 
 class Location(TimeStampedModel, MPTTModel):
@@ -123,9 +121,9 @@ class Location(TimeStampedModel, MPTTModel):
 
 
 class LocationRemapHistory(TimeStampedModel):
-    '''
+    """
     Location Remap History records for the related objects(interventions, travels, activities, actions)
-    '''
+    """
     old_location = models.ForeignKey(
         Location,
         verbose_name=_("Old Location"),

@@ -65,7 +65,7 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
     raw_id_fields = ('parent', )
 
     def get_queryset(self, request):    # pragma: no-cover
-        qs = Location.objects.all_locations()
+        qs = Location.objects.all()
 
         ordering = self.get_ordering(request)
         if ordering:
@@ -75,7 +75,7 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         self.readonly_fields = [] if request.user.is_superuser else ['p_code', 'geom', 'point', 'gateway']
 
-        return super(LocationAdmin, self).get_form(request, obj, **kwargs)
+        return super().get_form(request, obj, **kwargs)
 
 
 class CartoDBTableAdmin(admin.ModelAdmin):

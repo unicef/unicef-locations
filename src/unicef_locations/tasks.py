@@ -39,7 +39,7 @@ def update_sites_from_cartodb(carto_table_pk):  # noqa: ignore=C901
         # validations
         # get the list of the existing Pcodes and previous Pcodes from the database
         database_pcodes = []
-        for row in Location.objects.all_locations().filter(gateway=carto_table.location_type).values('p_code'):
+        for row in Location.objects.filter(gateway=carto_table.location_type).values('p_code'):
             database_pcodes.append(row['p_code'])
 
         # get the list of the new Pcodes from the Carto data
@@ -59,7 +59,7 @@ def update_sites_from_cartodb(carto_table_pk):  # noqa: ignore=C901
         # wrap Location tree updates in a transaction, to prevent an invalid tree state due to errors
         with transaction.atomic():
             # should write lock the locations table until the tree is rebuilt
-            Location.objects.all_locations().select_for_update().only('id')
+            Location.objects.select_for_update().only('id')
 
             # disable tree 'generation' during single row updates, rebuild the tree after.
             # this should prevent errors happening (probably)due to invalid intermediary tree state
