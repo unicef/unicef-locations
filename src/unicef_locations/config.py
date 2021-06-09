@@ -26,7 +26,7 @@ class AppSettings:
             setattr(settings, name_with_prefix, raw_value)
             setting_changed.send(self.__class__, setting=name_with_prefix, value=raw_value, enter=True)
             return value
-        return super(AppSettings, self).__getattr__(name)
+        return super().__getattr__(name)
 
     def _set_attr(self, prefix_name, value):
         name = prefix_name[len(self.prefix) + 1:]

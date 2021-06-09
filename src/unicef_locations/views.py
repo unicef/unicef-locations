@@ -40,7 +40,7 @@ class LocationsViewSet(mixins.RetrieveModelMixin,
 
     @etag_cached('locations')
     def list(self, request, *args, **kwargs):
-        return super(LocationsViewSet, self).list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     def get_object(self):
         if "p_code" in self.kwargs:
@@ -48,7 +48,7 @@ class LocationsViewSet(mixins.RetrieveModelMixin,
             self.check_object_permissions(self.request, obj)
             return obj
         else:
-            return super(LocationsViewSet, self).get_object()
+            return super().get_object()
 
     def get_queryset(self):
         queryset = Location.objects.all()
@@ -72,7 +72,7 @@ class LocationsLightViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     @etag_cached('locations')
     def list(self, request, *args, **kwargs):
-        return super(LocationsLightViewSet, self).list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
 
 class LocationQuerySetView(ListAPIView):
