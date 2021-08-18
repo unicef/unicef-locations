@@ -63,9 +63,6 @@ def etag_cached(cache_key: str, public_cache=False):
             patch_cache_control(response, private=True, must_revalidate=True)
             return response
 
-        # def invalidate():
-        #     cache.delete(key)
-        # wrapper.invalidate = invalidate
         return wrapper
 
     return decorator
