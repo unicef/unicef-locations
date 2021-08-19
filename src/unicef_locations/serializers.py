@@ -26,7 +26,7 @@ class GatewayTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GatewayType
-        fields = '__all__'
+        fields = ('name', 'admin_level')
 
 
 class LocationLightSerializer(serializers.ModelSerializer):

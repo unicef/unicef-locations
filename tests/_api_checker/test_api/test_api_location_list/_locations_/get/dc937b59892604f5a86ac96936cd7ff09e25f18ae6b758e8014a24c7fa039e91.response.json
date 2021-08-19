@@ -2,12 +2,12 @@
     "status_code": 200,
     "headers": {
         "Content-Type": "application/json",
-        "ETag": "\"545ecc1aa28a481890c6307d02802a14\"",
+        "ETag": "\"816bdf619890479896013a2e3fc0f04b\"",
         "Cache-Control": "private, must-revalidate",
         "Vary": "Accept, Cookie",
         "Allow": "GET, POST, HEAD, OPTIONS",
         "X-Frame-Options": "DENY",
-        "Content-Length": "275",
+        "Content-Length": "184",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "same-origin"
     },
@@ -17,9 +17,6 @@
             "name": "Location 7 [GatewayType 11 - PCODE7]",
             "p_code": "PCODE7",
             "gateway": {
-                "id": 4286,
-                "created": "2021-04-26T11:55:28.680000Z",
-                "modified": "2021-04-26T11:55:28.680000Z",
                 "name": "GatewayType 11",
                 "admin_level": 11
             },
