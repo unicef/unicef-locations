@@ -35,6 +35,7 @@ setup(
     include_package_data=True,
     install_requires=(
         'django-autocomplete-light',
+        'django-admin-extra-urls',
         'django-mptt',
         'django-model-utils',
         'django-leaflet',

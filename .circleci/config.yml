@@ -1,0 +1,85 @@
+version: 2
+
+parameters:
+  base-tag:
+    type: string
+    default: "latest"
+
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.9
+      - image: circleci/postgres:12-alpine-postgis
+        environment:
+          POSTGRES_USER: postgres
+          PGUSER: postgres
+          POSTGRES_DB: etools_datamart
+          POSTGRES_PASSWORD: postgres
+    steps:
+      - checkout
+      - run: sudo apt-get install libgdal-dev libgeos-dev libproj-dev libudunits2-dev libv8-dev
+      - restore_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "setup.py" }}
+      - run:
+          command: |
+            pip install tox
+            tox
+      - save_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "setup.py" }}
+          paths:
+            - ".venv"
+            - "~/.cache/pip"
+      - run:
+          name: Running tests
+          command: |
+            pip install tox
+            tox
+      - store_artifacts:
+          path: test-reports/
+          destination: python_app
+  release:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - run: sudo apt-get install libgdal-dev libgeos-dev libproj-dev libudunits2-dev libv8-dev
+      - restore_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "setup.py" }}
+      - save_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "setup.py" }}
+          paths:
+            - ".venv"
+            - "~/.cache/pip"
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = $PYPI_USERNAME" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: create packages
+          command: |
+            python setup.py sdist bdist_wheel
+      - run:
+          name: upload to pypi
+          command: |
+            pip install twine
+            twine upload dist/*
+
+
+workflows:
+  version: 2
+  build_and_release:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - release:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
