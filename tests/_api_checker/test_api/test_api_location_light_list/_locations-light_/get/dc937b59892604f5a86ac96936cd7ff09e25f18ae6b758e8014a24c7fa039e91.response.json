@@ -7,14 +7,14 @@
         "Vary": "Accept, Cookie",
         "Allow": "GET, HEAD, OPTIONS",
         "X-Frame-Options": "DENY",
-        "Content-Length": "146",
+        "Content-Length": "145",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "same-origin"
     },
     "data": [
         {
             "id": "3124",
-            "name": "Location 7 [GatewayType 11 - PCODE7]",
+            "name": "Location 7 (GatewayType 11: PCODE7)",
             "p_code": "PCODE7",
             "gateway": {
                 "name": "GatewayType 11",

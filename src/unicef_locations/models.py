@@ -95,12 +95,11 @@ class Location(TimeStampedModel, MPTTModel):
     objects = LocationsManager()
 
     def __str__(self):
-        # TODO: Make generic
-        return u'{} ({} {}: {})'.format(
+        return u'{} ({}: {}){}'.format(
             self.name,
             self.gateway.name,
-            'CERD' if self.gateway.name == 'School' else 'PCode',
-            self.p_code if self.p_code else ''
+            self.p_code if self.p_code else '',
+            '' if self.is_active else ' [Archived]'
         )
 
     @property
