@@ -95,11 +95,11 @@ class Location(TimeStampedModel, MPTTModel):
     objects = LocationsManager()
 
     def __str__(self):
-        return u'{} ({}: {}){}'.format(
+        return u'{}{} ({}: {})'.format(
             self.name,
+            '' if self.is_active else ' [Archived]',
             self.gateway.name,
             self.p_code if self.p_code else '',
-            '' if self.is_active else ' [Archived]'
         )
 
     @property

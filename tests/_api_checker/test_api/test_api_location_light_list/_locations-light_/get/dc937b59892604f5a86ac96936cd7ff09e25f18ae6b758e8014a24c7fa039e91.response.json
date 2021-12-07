@@ -2,12 +2,12 @@
     "status_code": 200,
     "headers": {
         "Content-Type": "application/json",
-        "ETag": "\"ffd08b2288794ee8b8c119a3bed9fbc1\"",
+        "ETag": "\"36cc48fe378e4aa1ae576566aa54c516\"",
         "Cache-Control": "private, must-revalidate",
         "Vary": "Accept, Cookie",
         "Allow": "GET, HEAD, OPTIONS",
         "X-Frame-Options": "DENY",
-        "Content-Length": "145",
+        "Content-Length": "198",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "same-origin"
     },
@@ -20,7 +20,8 @@
                 "name": "GatewayType 11",
                 "admin_level": 11
             },
-            "parent": null
+            "parent": null,
+            "name_display": "Location 7 (GatewayType 11: PCODE7)"
         }
     ],
     "content_type": "application/json"
