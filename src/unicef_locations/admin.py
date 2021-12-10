@@ -52,14 +52,7 @@ class ActiveLocationsFilter(basic_admin.SimpleListFilter):
 class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
     save_as = True
     form = AutoSizeTextForm
-    fields = [
-        'name',
-        'gateway',
-        'p_code',
-        'geom',
-        'point',
-        'parent'
-    ]
+
     list_display = (
         'name',
         'gateway',

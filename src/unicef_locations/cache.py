@@ -27,7 +27,10 @@ def invalidate_cache():
 
 
 def get_cache_key(request: Request):
-    url = str(request._request.get_raw_uri())
+    if hasattr(request._request, 'get_full_path'):
+        url = str(request._request.get_full_path())
+    else:
+        url = str(request._request.get_raw_uri())
     return 'locations-etag-%s-%s' % (get_cache_version(), slugify(url))
 
 

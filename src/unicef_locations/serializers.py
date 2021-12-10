@@ -32,17 +32,9 @@ class GatewayTypeSerializer(serializers.ModelSerializer):
 class LocationLightSerializer(serializers.ModelSerializer):
 
     id = serializers.CharField(read_only=True)
+    name_display = serializers.CharField(source='__str__')
     name = serializers.SerializerMethodField()
     gateway = GatewayTypeSerializer()
-
-    @staticmethod
-    def get_name(obj):
-        return '{} [{} - {}]{}'.format(
-            obj.name,
-            obj.gateway.name,
-            obj.p_code,
-            " -- {}".format(obj.parent.name) if obj.parent else "",
-        )
 
     class Meta:
         model = Location
@@ -51,7 +43,15 @@ class LocationLightSerializer(serializers.ModelSerializer):
             'name',
             'p_code',
             'gateway',
-            'parent'
+            'parent',
+            'name_display'
+        )
+
+    @staticmethod
+    def get_name(obj):
+        return '{}{}'.format(
+            str(obj),
+            " -- {}".format(obj.parent.name) if obj.parent else "",
         )
 
 
@@ -65,6 +65,7 @@ class LocationSerializer(LocationLightSerializer):
 
 
 class LocationExportSerializer(serializers.ModelSerializer):
+    name_display = serializers.CharField(source='__str__')
     location_type = serializers.CharField(source='gateway.name')
     geo_point = serializers.StringRelatedField()
     point = serializers.StringRelatedField()
@@ -75,6 +76,7 @@ class LocationExportSerializer(serializers.ModelSerializer):
 
 
 class LocationExportFlatSerializer(serializers.ModelSerializer):
+    name_display = serializers.CharField(source='__str__')
     location_type = serializers.CharField(source='gateway.name')
     geom = serializers.SerializerMethodField()
     point = serializers.StringRelatedField()
@@ -88,6 +90,7 @@ class LocationExportFlatSerializer(serializers.ModelSerializer):
 
 
 class LocationRemapHistorySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='__str__')
 
     class Meta:
         model = LocationRemapHistory

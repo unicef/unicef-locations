@@ -21,12 +21,12 @@ class TestStrUnicode(SimpleTestCase):
         # Test with nonascii gateway name
         gateway_type = GatewayTypeFactory.build(name=u'xyz')
         location = LocationFactory.build(gateway=gateway_type, name=u'R\xe4dda Barnen', p_code='abc')
-        self.assertEqual(str(location), u'R\xe4dda Barnen (xyz PCode: abc)')
+        self.assertEqual(str(location), u'R\xe4dda Barnen (xyz: abc)')
 
         # Test with str gateway name
         gateway_type = GatewayTypeFactory.build(name='xyz')
         location = LocationFactory.build(gateway=gateway_type, name=u'R\xe4dda Barnen', p_code='abc')
-        self.assertEqual(str(location), u'R\xe4dda Barnen (xyz PCode: abc)')
+        self.assertEqual(str(location), u'R\xe4dda Barnen (xyz: abc)')
 
     def test_carto_db_table(self):
         carto_db_table = CartoDBTableFactory.build(table_name=u'R\xe4dda Barnen')
