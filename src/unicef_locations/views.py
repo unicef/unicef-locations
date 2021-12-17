@@ -4,8 +4,8 @@ from rest_framework import mixins, viewsets
 from rest_framework.generics import ListAPIView
 
 from .cache import etag_cached
-from .models import CartoDBTable, GatewayType, Location
-from .serializers import CartoDBTableSerializer, GatewayTypeSerializer, LocationLightSerializer, LocationSerializer
+from .models import CartoDBTable, Location
+from .serializers import CartoDBTableSerializer, LocationLightSerializer, LocationSerializer
 
 
 class CartoDBTablesView(ListAPIView):
@@ -14,17 +14,6 @@ class CartoDBTablesView(ListAPIView):
     """
     queryset = CartoDBTable.objects.all()
     serializer_class = CartoDBTableSerializer
-
-
-class LocationTypesViewSet(mixins.RetrieveModelMixin,
-                           mixins.ListModelMixin,
-                           mixins.CreateModelMixin,
-                           viewsets.GenericViewSet):
-    """
-    Returns a list off all Location types
-    """
-    queryset = GatewayType.objects.all()
-    serializer_class = GatewayTypeSerializer
 
 
 class LocationsViewSet(mixins.RetrieveModelMixin,

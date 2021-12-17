@@ -14,12 +14,6 @@ def locations3(db):
 
 
 @pytest.fixture()
-def gateway():
-    from unicef_locations.tests.factories import GatewayTypeFactory
-    return GatewayTypeFactory()
-
-
-@pytest.fixture()
 def cartodbtable():
     from unicef_locations.tests.factories import CartoDBTableFactory
     return CartoDBTableFactory()

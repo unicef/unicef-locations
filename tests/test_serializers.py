@@ -2,7 +2,6 @@ import pytest
 
 from unicef_locations.serializers import (
     CartoDBTableSerializer,
-    GatewayTypeSerializer,
     LocationExportFlatSerializer,
     LocationExportSerializer,
     LocationLightSerializer,
@@ -29,11 +28,6 @@ def test_LocationLightSerializer(location):
 
 def test_LocationSerializer(location):
     ser = LocationSerializer(instance=location)
-    assert ser.data
-
-
-def test_GatewayTypeSerializer(gateway):
-    ser = GatewayTypeSerializer(instance=gateway)
     assert ser.data
 
 

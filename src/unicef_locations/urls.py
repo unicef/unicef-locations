@@ -10,7 +10,6 @@ api = routers.SimpleRouter()
 
 api.register(r'locations', views.LocationsViewSet, basename='locations')
 api.register(r'locations-light', views.LocationsLightViewSet, basename='locations-light')
-api.register(r'locations-types', views.LocationTypesViewSet, basename='locationtypes')
 
 urlpatterns = [
     re_path(r'', include(api.urls)),

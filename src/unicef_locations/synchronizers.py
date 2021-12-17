@@ -38,7 +38,8 @@ class LocationSynchronizer:
             if all([name, pcode, geom]):
                 geom_key = 'point' if 'Point' in row['the_geom'] else 'geom'
                 default_dict = {
-                    'gateway': self.carto.location_type,
+                    'admin_level': self.carto.admin_level,
+                    'admin_level_name': self.carto.admin_level_name,
                     'name': name,
                     geom_key: geom,
                 }
@@ -65,7 +66,7 @@ class LocationSynchronizer:
                         updated += 1
 
                 except Location.MultipleObjectsReturned:
-                    logger.warning(f"Multiple locations found for: {self.carto.location_type}, {name} ({pcode})")
+                    logger.warning(f"Multiple locations found for: {self.carto.admin_level}, {name} ({pcode})")
                     error += 1
 
             else:
@@ -168,7 +169,7 @@ class LocationSynchronizer:
         - deactivate if all children are inactive (doesn't exist an active child)
         """
         logging.info('Clean upper level')
-        qs = Location.objects.filter(gateway__admin_level=self.carto.location_type.admin_level - 1, is_active=False)
+        qs = Location.objects.filter(admin_level=self.carto.admin_level - 1, is_active=False)
         for location in qs:
             collector = Collector(using='default')
             collector.collect([location])

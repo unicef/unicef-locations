@@ -14,12 +14,6 @@ from unicef_locations.tests.factories import LocationFactory
 from unicef_locations.views import LocationsViewSet
 
 
-def test_api_locationtypes_list(django_app, admin_user):
-    url = reverse('locations:locationtypes-list')
-    res = django_app.get(url, user=admin_user)
-    assert res.status_code == 200
-
-
 def test_api_location_light_list(
         django_app,
         admin_user,
@@ -29,7 +23,8 @@ def test_api_location_light_list(
     url = reverse('locations:locations-light-list')
     with django_assert_num_queries(10):
         res = django_app.get(url, user=admin_user)
-    assert sorted(res.json[0].keys()) == ['gateway', 'id', 'name', 'name_display', 'p_code', 'parent']
+    assert sorted(res.json[0].keys()) == ['admin_level', 'admin_level_name', 'id', 'name', 'name_display',
+                                          'p_code', 'parent']
 
 
 def test_api_location_heavy_list(
@@ -43,7 +38,7 @@ def test_api_location_heavy_list(
     with django_assert_num_queries(10):
         response = django_app.get(url, user=admin_user)
     assert sorted(response.json[0].keys()) == [
-        'gateway', 'geo_point', 'id', 'name', 'name_display', 'p_code', 'parent'
+        'admin_level', 'admin_level_name', 'geo_point', 'id', 'name', 'name_display', 'p_code', 'parent'
     ]
 
 
@@ -80,9 +75,8 @@ def test_api_location_heavy_detail(django_app, admin_user, locations3):
     l1, l2, l3 = locations3
     url = reverse('locations:locations-detail', args=[l1.id])
     response = django_app.get(url, user=admin_user)
-    assert sorted(response.json.keys()), ['geo_point', 'id', 'location_type',
-                                          'location_type_admin_level', 'name',
-                                          'p_code', 'parent']
+    assert sorted(response.json.keys()), ['geo_point', 'id', 'admin_level', 'admin_level_name',
+                                          'name', 'p_code', 'parent']
     assert "Location" in response.json["name"]
 
 
@@ -90,9 +84,8 @@ def test_api_location_heavy_detail_pcode(django_app, admin_user, locations3):
     l1, l2, l3 = locations3
     url = reverse('locations:locations_detail_pcode', args=[l1.p_code])
     response = django_app.get(url, user=admin_user)
-    assert sorted(response.json.keys()), ['geo_point', 'id', 'location_type',
-                                          'location_type_admin_level', 'name',
-                                          'p_code', 'parent']
+    assert sorted(response.json.keys()), ['geo_point', 'id', 'admin_level', 'admin_level_name', 'name', 'p_code',
+                                          'parent']
     assert "Location" in response.json["name"]
 
 
@@ -148,7 +141,8 @@ def test_api_location_autocomplete(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user, params={"q": "Loc"})
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'name_display', 'p_code', 'parent']
+    assert sorted(response.json[0].keys()) == ['admin_level', 'admin_level_name', 'id', 'name', 'name_display',
+                                               'p_code', 'parent']
     assert "Loc" in response.json[0]["name"]
 
 
@@ -158,7 +152,8 @@ def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
     response = django_app.get(url, user=admin_user)
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['gateway', 'id', 'name', 'name_display', 'p_code', 'parent']
+    assert sorted(response.json[0].keys()) == ['admin_level', 'admin_level_name', 'id', 'name', 'name_display',
+                                               'p_code', 'parent']
     assert "Loc" in response.json[0]["name"]
 
 

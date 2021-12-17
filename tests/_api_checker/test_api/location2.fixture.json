@@ -2,10 +2,11 @@
     "location2": {
         "master": {
             "model": "locations.location",
-            "pk": 3124,
+            "pk": 54,
             "fields": {
                 "name": "Location 7",
-                "gateway": 4286,
+                "admin_level": 5002,
+                "admin_level_name": "",
                 "latitude": null,
                 "longitude": null,
                 "p_code": "PCODE7",
@@ -13,25 +14,14 @@
                 "geom": null,
                 "point": "SRID=4326;POINT (20 20)",
                 "is_active": true,
-                "created": "2021-04-26T11:55:28.681Z",
-                "modified": "2021-04-26T11:55:28.681Z",
+                "created": "2022-02-04T17:40:01.528Z",
+                "modified": "2022-02-04T17:40:01.528Z",
                 "lft": 1,
                 "rght": 2,
                 "tree_id": 1,
                 "level": 0
             }
         },
-        "deps": [
-            {
-                "model": "locations.gatewaytype",
-                "pk": 4286,
-                "fields": {
-                    "created": "2021-04-26T11:55:28.680Z",
-                    "modified": "2021-04-26T11:55:28.680Z",
-                    "name": "GatewayType 11",
-                    "admin_level": 11
-                }
-            }
-        ]
+        "deps": []
     }
 }

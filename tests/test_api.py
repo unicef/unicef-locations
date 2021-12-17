@@ -9,20 +9,9 @@ pytestmark = pytest.mark.django_db
 
 
 @frozenfixture(fixture_name=default_fixture_name)
-def gateway2(db, request):
-    from unicef_locations.tests.factories import GatewayTypeFactory
-    return GatewayTypeFactory()
-
-
-@frozenfixture(fixture_name=default_fixture_name)
 def location2(db, request):
     from unicef_locations.tests.factories import LocationFactory
     return LocationFactory(parent=None)
-
-
-@contract(recorder_class=LastModifiedRecorder)
-def test_api_locationtypes_list(django_app, admin_user, gateway2):
-    return reverse('locations:locationtypes-list')
 
 
 @contract(recorder_class=LastModifiedRecorder)

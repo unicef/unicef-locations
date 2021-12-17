@@ -4,14 +4,12 @@ from django.test import TestCase
 from unittest.mock import Mock, patch
 
 from unicef_locations import forms
-from unicef_locations.tests.factories import GatewayTypeFactory
 
 
 class TestCartoDBTableForm(TestCase):
     def setUp(self):
         super().setUp()
         self.mock_sql = Mock()
-        gateway = GatewayTypeFactory()
         self.data = {
             "api_key": "123",
             "domain": "example.com",
@@ -20,7 +18,8 @@ class TestCartoDBTableForm(TestCase):
             "pcode_col": "pcode",
             "parent_code_col": "parent",
             "remap_table_name": "test_remap",
-            "location_type": gateway.pk,
+            "admin_level": 1,
+            "admin_level_name": "country"
         }
 
     def _test_clean(self, form):
