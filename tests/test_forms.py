@@ -9,7 +9,7 @@ from unicef_locations.tests.factories import GatewayTypeFactory
 
 class TestCartoDBTableForm(TestCase):
     def setUp(self):
-        super(TestCartoDBTableForm, self).setUp()
+        super().setUp()
         self.mock_sql = Mock()
         gateway = GatewayTypeFactory()
         self.data = {
