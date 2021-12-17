@@ -1,7 +1,6 @@
 import uuid
 from functools import wraps
 
-from django import VERSION as dj_version
 from django.core.cache import cache
 from django.utils.cache import patch_cache_control
 from django.utils.text import slugify
@@ -55,10 +54,7 @@ def etag_cached(cache_key: str, public_cache=False):
                 response = Response(status=status.HTTP_304_NOT_MODIFIED)
             else:
                 response = func(self, *args, **kwargs)
-                if dj_version < (3, 2):
-                    response["ETag"] = local_etag
-                else:
-                    response.headers["ETag"] = local_etag
+                response.headers["ETag"] = local_etag
 
             if not cache_etag:
                 cache.set(key, local_etag)
