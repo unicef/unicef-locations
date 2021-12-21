@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('locations', '0004_pcode_remap_related'),
+        ('unicef_locations', '0004_pcode_remap_related'),
     ]
 
     operations = [

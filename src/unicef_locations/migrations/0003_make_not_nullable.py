@@ -8,7 +8,7 @@ from unicef_locations.libs import get_random_color
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('locations', '0002_fix_null_values'),
+        ('unicef_locations', '0002_fix_null_values'),
     ]
 
     operations = [

@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('locations', '0003_make_not_nullable'),
+        ('unicef_locations', '0003_make_not_nullable'),
     ]
 
     operations = [
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50)),
-                ('country', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='locations.Location')),
+                ('country', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='unicef_locations.Location')),
             ],
         ),
     ]

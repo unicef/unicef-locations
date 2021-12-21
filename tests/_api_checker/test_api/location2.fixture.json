@@ -1,7 +1,7 @@
 {
     "location2": {
         "master": {
-            "model": "locations.location",
+            "model": "unicef_locations.location",
             "pk": 3124,
             "fields": {
                 "name": "Location 7",
@@ -23,7 +23,7 @@
         },
         "deps": [
             {
-                "model": "locations.gatewaytype",
+                "model": "unicef_locations.gatewaytype",
                 "pk": 4286,
                 "fields": {
                     "created": "2021-04-26T11:55:28.680Z",

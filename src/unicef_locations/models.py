@@ -116,7 +116,6 @@ class Location(TimeStampedModel, MPTTModel):
     class Meta:
         unique_together = ('name', 'gateway', 'p_code')
         ordering = ['name']
-        app_label = 'locations'
 
 
 class LocationRemapHistory(TimeStampedModel):
@@ -185,6 +184,3 @@ class CartoDBTable(TimeStampedModel, MPTTModel):
 
     def __str__(self):
         return self.table_name
-
-    class Meta:
-        app_label = 'locations'

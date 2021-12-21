@@ -75,11 +75,11 @@ class Migration(migrations.Migration):
                 ('tree_id', models.PositiveIntegerField(db_index=True, editable=False)),
                 ('level', models.PositiveIntegerField(db_index=True, editable=False)),
                 ('gateway', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
-                                              to='locations.GatewayType', verbose_name='Location Type')),
+                                              to='unicef_locations.GatewayType', verbose_name='Location Type')),
                 ('parent', mptt.fields.TreeForeignKey(blank=True, null=True,
                                                       on_delete=django.db.models.deletion.CASCADE,
                                                       related_name='children',
-                                                      to='locations.Location', verbose_name='Parent')),
+                                                      to='unicef_locations.Location', verbose_name='Parent')),
             ],
             options={
                 'ordering': ['name'],
@@ -89,7 +89,7 @@ class Migration(migrations.Migration):
             model_name='cartodbtable',
             name='location_type',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
-                                    to='locations.GatewayType', verbose_name='Location Type'),
+                                    to='unicef_locations.GatewayType', verbose_name='Location Type'),
         ),
         migrations.AddField(
             model_name='cartodbtable',
@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
             field=mptt.fields.TreeForeignKey(blank=True, null=True,
                                              on_delete=django.db.models.deletion.CASCADE,
                                              related_name='children',
-                                             to='locations.CartoDBTable', verbose_name='Parent'),
+                                             to='unicef_locations.CartoDBTable', verbose_name='Parent'),
         ),
         migrations.AlterUniqueTogether(
             name='location',

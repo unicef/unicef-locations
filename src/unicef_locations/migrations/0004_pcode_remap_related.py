@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('locations', '0003_make_not_nullable'),
+        ('unicef_locations', '0003_make_not_nullable'),
         ('contenttypes', '0001_initial'),
     ]
 
@@ -31,9 +31,9 @@ class Migration(migrations.Migration):
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False,
                                                                 verbose_name='created')),
                 ('new_location', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+',
-                                                   to='locations.Location', verbose_name='New Location')),
+                                                   to='unicef_locations.Location', verbose_name='New Location')),
                 ('old_location', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+',
-                                                   to='locations.Location', verbose_name='Old Location')),
+                                                   to='unicef_locations.Location', verbose_name='Old Location')),
             ],
         ),
     ]

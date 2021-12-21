@@ -48,7 +48,7 @@ setup(
         'test': (
             'coverage',
             'django-fsm',
-            'drf-api-checker',
+            'drf-api-checker>=0.12',
             'django-webtest',
             'factory-boy',
             'faker',
