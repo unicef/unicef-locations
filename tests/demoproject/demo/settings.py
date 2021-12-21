@@ -75,7 +75,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'demo.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 # DJANGO: CACHE
 CACHES = {
@@ -86,7 +85,6 @@ CACHES = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        # "ENGINE": "django.db.backends.postgresql",
         'NAME': 'unicef_locations',
         'HOST': '127.0.0.1',
         'USER': 'postgres',
@@ -133,4 +131,4 @@ MEDIA_ROOT = '/tmp/'
 CELERY_ALWAYS_EAGER = True
 
 UNICEF_LOCATIONS_GET_CACHE_KEY = 'unicef_locations.cache.get_cache_key'
-UNICEF_LOCATIONS_MODEL = 'locations.Location'
+UNICEF_LOCATIONS_MODEL = 'unicef_locations.Location'

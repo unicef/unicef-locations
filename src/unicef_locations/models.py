@@ -119,9 +119,7 @@ class AbstractLocation(TimeStampedModel, MPTTModel):
 
 
 class Location(AbstractLocation):
-
-    class Meta(AbstractLocation.Meta):
-        app_label = 'locations'
+    pass
 
 
 @receiver(post_delete, sender=settings.UNICEF_LOCATIONS_MODEL)
@@ -158,6 +156,3 @@ class CartoDBTable(TimeStampedModel, MPTTModel):
 
     def __str__(self):
         return self.table_name
-
-    class Meta:
-        app_label = 'locations'
