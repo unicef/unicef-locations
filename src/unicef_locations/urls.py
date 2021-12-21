@@ -4,7 +4,7 @@ from rest_framework import routers
 
 from . import views
 
-app_name = 'locations'
+app_name = 'unicef_locations'
 
 api = routers.SimpleRouter()
 

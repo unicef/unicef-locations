@@ -16,12 +16,12 @@ def location2(db, request):
 
 @contract(recorder_class=LastModifiedRecorder)
 def test_api_location_light_list(django_app, admin_user, location2):
-    return reverse('locations:locations-light-list')
+    return reverse('unicef_locations:locations-light-list')
 
 
 @contract(recorder_class=LastModifiedRecorder)
 def test_api_location_list(django_app, admin_user, location2):
-    return reverse('locations:locations-list')
+    return reverse('unicef_locations:locations-list')
 
     #
     # url = reverse('locations-light-list')
@@ -108,7 +108,7 @@ def test_api_location_list(django_app, admin_user, location2):
 #
 #
 # def test_api_location_autocomplete(django_app, admin_user, locations3):
-#     url = reverse('locations:locations_autocomplete')
+#     url = reverse('unicef_locations:locations_autocomplete')
 #
 #     response = django_app.get(url, user=admin_user, params={"q": "Loc"})
 #
@@ -118,7 +118,7 @@ def test_api_location_list(django_app, admin_user, location2):
 #
 #
 # def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
-#     url = reverse('locations:locations_autocomplete')
+#     url = reverse('unicef_locations:locations_autocomplete')
 #
 #     response = django_app.get(url, user=admin_user)
 #
