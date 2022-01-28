@@ -14,10 +14,10 @@ from leaflet.admin import LeafletGeoAdmin
 from mptt.admin import MPTTModelAdmin
 
 from unicef_locations.auth import LocationsCartoNoAuthClient
-from unicef_locations.utils import get_remapping
+from unicef_locations.utils import get_location_model, get_remapping
 
 from .forms import CartoDBTableForm
-from .models import CartoDBTable, GatewayType, Location
+from .models import CartoDBTable, GatewayType
 from .tasks import import_locations
 
 
@@ -68,7 +68,8 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
     raw_id_fields = ('parent', )
 
     def get_queryset(self, request):    # pragma: no-cover
-        qs = Location.objects.all()
+
+        qs = get_location_model().objects.all()
 
         ordering = self.get_ordering(request)
         if ordering:
@@ -118,6 +119,5 @@ class CartoDBTableAdmin(ExtraUrlMixin, admin.ModelAdmin):
         return HttpResponse(template.render(context, request))
 
 
-admin.site.register(Location, LocationAdmin)
 admin.site.register(GatewayType)
 admin.site.register(CartoDBTable, CartoDBTableAdmin)

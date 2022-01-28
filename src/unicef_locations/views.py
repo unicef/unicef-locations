@@ -3,8 +3,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import mixins, viewsets
 from rest_framework.generics import ListAPIView
 
+from unicef_locations.utils import get_location_model
+
 from .cache import etag_cached
-from .models import CartoDBTable, GatewayType, Location
+from .models import CartoDBTable, GatewayType
 from .serializers import CartoDBTableSerializer, GatewayTypeSerializer, LocationLightSerializer, LocationSerializer
 
 
@@ -35,7 +37,7 @@ class LocationsViewSet(mixins.RetrieveModelMixin,
     """
     CRUD for Locations
     """
-    queryset = Location.objects.all()
+    queryset = get_location_model().objects.all()
     serializer_class = LocationSerializer
 
     @etag_cached('locations')
@@ -51,7 +53,7 @@ class LocationsViewSet(mixins.RetrieveModelMixin,
             return super().get_object()
 
     def get_queryset(self):
-        queryset = Location.objects.all()
+        queryset = get_location_model().objects.all()
         if "values" in self.request.query_params.keys():
             # Used for ghost data - filter in all(), and return straight away.
             try:
@@ -67,7 +69,7 @@ class LocationsLightViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     Returns a list of all Locations with restricted field set.
     """
-    queryset = Location.objects.defer('geom', )
+    queryset = get_location_model().objects.defer('geom', )
     serializer_class = LocationLightSerializer
 
     @etag_cached('locations')
@@ -76,7 +78,7 @@ class LocationsLightViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 class LocationQuerySetView(ListAPIView):
-    model = Location
+    model = get_location_model()
     serializer_class = LocationLightSerializer
 
     def get_queryset(self):

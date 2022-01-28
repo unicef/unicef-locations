@@ -1,7 +1,7 @@
 {
     "location2": {
         "master": {
-            "model": "unicef_locations.location",
+            "model": "locations.location",
             "pk": 3124,
             "fields": {
                 "name": "Location 7",

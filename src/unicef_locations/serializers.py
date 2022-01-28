@@ -1,6 +1,9 @@
 from rest_framework import serializers
 
-from .models import CartoDBTable, GatewayType, Location, LocationRemapHistory
+from unicef_locations.locations.models import LocationRemapHistory
+from unicef_locations.utils import get_location_model
+
+from .models import CartoDBTable, GatewayType
 
 
 class CartoDBTableSerializer(serializers.ModelSerializer):
@@ -37,7 +40,7 @@ class LocationLightSerializer(serializers.ModelSerializer):
     gateway = GatewayTypeSerializer()
 
     class Meta:
-        model = Location
+        model = get_location_model()
         fields = (
             'id',
             'name',
@@ -60,7 +63,7 @@ class LocationSerializer(LocationLightSerializer):
     geo_point = serializers.StringRelatedField()
 
     class Meta(LocationLightSerializer.Meta):
-        model = Location
+        model = get_location_model()
         fields = LocationLightSerializer.Meta.fields + ('geo_point', )
 
 
@@ -71,7 +74,7 @@ class LocationExportSerializer(serializers.ModelSerializer):
     point = serializers.StringRelatedField()
 
     class Meta:
-        model = Location
+        model = get_location_model()
         fields = "__all__"
 
 
@@ -82,7 +85,7 @@ class LocationExportFlatSerializer(serializers.ModelSerializer):
     point = serializers.StringRelatedField()
 
     class Meta:
-        model = Location
+        model = get_location_model()
         fields = "__all__"
 
     def get_geom(self, obj):

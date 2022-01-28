@@ -3,6 +3,8 @@ from django.contrib.gis.geos import GEOSGeometry
 import factory
 
 from unicef_locations import models
+from unicef_locations.locations.models import LocationRemapHistory
+from unicef_locations.utils import get_location_model
 
 
 class GatewayTypeFactory(factory.django.DjangoModelFactory):
@@ -15,7 +17,7 @@ class GatewayTypeFactory(factory.django.DjangoModelFactory):
 
 class LocationFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Location
+        model = get_location_model()
 
     name = factory.Sequence(lambda n: 'Location {}'.format(n))
     gateway = factory.SubFactory(GatewayTypeFactory)
@@ -36,7 +38,7 @@ class CartoDBTableFactory(factory.django.DjangoModelFactory):
 
 class LocationRemapHistoryFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.LocationRemapHistory
+        model = LocationRemapHistory
 
     old_location = factory.SubFactory(LocationFactory)
     new_location = factory.SubFactory(LocationFactory)

@@ -9,14 +9,16 @@ from django.db.models.deletion import Collector
 
 from unicef_locations.auth import LocationsCartoNoAuthClient
 from unicef_locations.exceptions import InvalidRemap
-from unicef_locations.models import CartoDBTable, Location
-from unicef_locations.utils import get_remapping
+from unicef_locations.models import CartoDBTable
+from unicef_locations.utils import get_location_model, get_remapping
 
 logger = logging.getLogger(__name__)
 
 
 class LocationSynchronizer:
     """Component to update locations"""
+
+    model = get_location_model()
 
     def __init__(self, pk) -> None:
         self.carto = CartoDBTable.objects.get(pk=pk)
@@ -30,6 +32,7 @@ class LocationSynchronizer:
         logging.info('Create/Update new locations')
         rows = self.get_cartodb_locations()
         new, updated, skipped, error = 0, 0, 0, 0
+
         for row in rows:
             pcode = row[self.carto.pcode_col]
             name = row[self.carto.name_col]
@@ -46,16 +49,16 @@ class LocationSynchronizer:
                 parent_pcode = row[self.carto.parent_code_col] if self.carto.parent_code_col in row else None
                 if parent_pcode:
                     try:
-                        parent = Location.objects.get(p_code=parent_pcode, is_active=True)
+                        parent = self.model.objects.get(p_code=parent_pcode, is_active=True)
                         default_dict['parent'] = parent
-                    except (Location.DoesNotExist, Location.MultipleObjectsReturned):
+                    except (self.model.DoesNotExist, self.model.MultipleObjectsReturned):
                         skipped += 1
                         logger.info(f"Skipping row pcode {pcode}")
                         continue
 
                 try:
-                    location, created = Location.objects.get_or_create(p_code=pcode, is_active=True,
-                                                                       defaults=default_dict)
+                    location, created = self.model.objects.get_or_create(p_code=pcode, is_active=True,
+                                                                         defaults=default_dict)
                     if created:
                         new += 1
                     else:
@@ -64,7 +67,7 @@ class LocationSynchronizer:
                         location.save()
                         updated += 1
 
-                except Location.MultipleObjectsReturned:
+                except self.model.MultipleObjectsReturned:
                     logger.warning(f"Multiple locations found for: {self.carto.location_type}, {name} ({pcode})")
                     error += 1
 
@@ -134,7 +137,7 @@ class LocationSynchronizer:
         - delete non referenced locations
         """
         logging.info('Clean Obsolate Locations')
-        for location in Location.objects.filter(p_code__in=to_deactivate):
+        for location in self.model.objects.filter(p_code__in=to_deactivate):
             collector = Collector(using='default')
             collector.collect([location])
             if collector.dependencies or location.get_children():
@@ -154,8 +157,8 @@ class LocationSynchronizer:
         for old, new in old2new.items():
             if old != new:
                 try:
-                    old_location = Location.objects.get(p_code=old, is_active=True)
-                except Location.DoesNotExist:
+                    old_location = self.model.objects.get(p_code=old, is_active=True)
+                except self.model.DoesNotExist:
                     raise InvalidRemap(f'Old location {old} does not exist or is not active')
                 old_location.p_code = new
                 old_location.save()
@@ -168,7 +171,7 @@ class LocationSynchronizer:
         - deactivate if all children are inactive (doesn't exist an active child)
         """
         logging.info('Clean upper level')
-        qs = Location.objects.filter(gateway__admin_level=self.carto.location_type.admin_level - 1, is_active=False)
+        qs = self.model.objects.filter(gateway__admin_level=self.carto.location_type.admin_level - 1, is_active=False)
         for location in qs:
             collector = Collector(using='default')
             collector.collect([location])

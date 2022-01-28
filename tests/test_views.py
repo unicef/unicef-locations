@@ -9,8 +9,8 @@ from unittest import mock
 
 from unicef_locations.cache import etag_cached
 from unicef_locations.config import conf
-from unicef_locations.models import Location
 from unicef_locations.tests.factories import LocationFactory
+from unicef_locations.utils import get_location_model
 from unicef_locations.views import LocationsViewSet
 
 
@@ -135,7 +135,7 @@ def test_location_delete_etag(django_app, admin_user, locations3):
     request = factory.get(url)
     LocationsViewSet.as_view({'get': 'list'})(request)
     etag_before = cache.get(conf.GET_CACHE_KEY(Request(request)))
-    Location.objects.all().delete()
+    get_location_model().objects.all().delete()
 
     LocationsViewSet.as_view({'get': 'list'})(request)
     etag_after = cache.get(conf.GET_CACHE_KEY(Request(request)))

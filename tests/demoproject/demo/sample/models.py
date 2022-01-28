@@ -1,6 +1,6 @@
 from django.db import models
 
-from unicef_locations.models import Location
+from unicef_locations.locations.models import Location
 
 
 class DemoModel(models.Model):
