@@ -6,6 +6,7 @@ from carto.exceptions import CartoException
 from carto.sql import SQLClient
 from django.db import transaction
 from django.db.models.deletion import Collector
+from django.db.utils import IntegrityError
 
 from unicef_locations.auth import LocationsCartoNoAuthClient
 from unicef_locations.exceptions import InvalidRemap
@@ -68,9 +69,14 @@ class LocationSynchronizer:
                         updated += 1
 
                 except self.model.MultipleObjectsReturned:
-                    logger.warning(f"Multiple locations found for: {self.carto.location_type}, {name} ({pcode})")
-                    error += 1
+                    message = f"Multiple locations found for: {self.carto.location_type}, {name} ({pcode})"
+                    logger.warning(message)
+                    raise CartoException(message)
 
+                except IntegrityError:
+                    message = f"Duplicate Creation {name} {pcode} {self.carto.location_type.name}"
+                    logger.exception(message)
+                    raise CartoException(message)
             else:
                 skipped += 1
                 logger.info(f"Skipping row pcode {pcode}")
@@ -92,9 +98,9 @@ class LocationSynchronizer:
                     logger.warning('Retrying again table page at offset {}'.format(offset))
 
             if 'error' in sites:
-                raise CartoException
+                raise CartoException('Invalid CartoDBTable')
             return sites['rows']
-        raise CartoException
+        raise CartoException('Cannot connect to CartoDB')
 
     def get_cartodb_locations(self, cartodb_id_col='cartodb_id'):
         """
@@ -106,8 +112,9 @@ class LocationSynchronizer:
             max_id = self.sql_client.send(
                 f'select MAX({cartodb_id_col}) from {self.carto.table_name}')['rows'][0]['max']
         except CartoException:  # pragma: no-cover
-            logger.exception(f"Cannot fetch pagination prequisites from CartoDB for table {self.carto.table_name}")
-            raise CartoException
+            message = f"Cannot fetch pagination prequisites from CartoDB for table {self.carto.table_name}"
+            logger.exception(message)
+            raise CartoException(message)
 
         offset, limit = 0, 100
 
@@ -160,6 +167,9 @@ class LocationSynchronizer:
                     old_location = self.model.objects.get(p_code=old, is_active=True)
                 except self.model.DoesNotExist:
                     raise InvalidRemap(f'Old location {old} does not exist or is not active')
+                except self.model.MultipleObjectsReturned:
+                    locs = ', '.join([loc.name for loc in self.model.objects.filter(p_code=old)])
+                    raise InvalidRemap(f'Multiple active Location exist for pcode {old}: {locs}')
                 old_location.p_code = new
                 old_location.save()
                 logger.info(f'Update through remapping {old} -> {new}')
@@ -196,6 +206,6 @@ class LocationSynchronizer:
                 self.clean_upper_level()
                 return new, updated, skipped, error
 
-        except CartoException:
-            message = "CartoDB exception occured"
-            logger.exception(message)
+        except CartoException as e:
+            logger.error(str(e))
+            raise CartoException(str(e))
