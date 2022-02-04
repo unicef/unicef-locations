@@ -8,7 +8,7 @@ parameters:
 jobs:
   build:
     docker:
-      - image: circleci/python:3.9
+      - image: cimg/python:3.9
       - image: circleci/postgres:12-alpine-postgis
         environment:
           POSTGRES_USER: postgres
@@ -17,7 +17,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
     steps:
       - checkout
-      - run: sudo apt-get install libgdal-dev libgeos-dev libproj-dev libudunits2-dev libv8-dev
+      - run: sudo apt-get update && sudo apt-get install -y libmysqlclient-dev libgdal-dev libgeos-dev libproj-dev libudunits2-dev libv8-dev
       - restore_cache:
           key: deps1-{{ .Branch }}-{{ checksum "setup.py" }}
       - run:
@@ -39,10 +39,10 @@ jobs:
           destination: python_app
   release:
     docker:
-      - image: circleci/python:3.9
+      - image: cimg/python:3.9
     steps:
       - checkout
-      - run: sudo apt-get install libgdal-dev libgeos-dev libproj-dev libudunits2-dev libv8-dev
+      - run: sudo apt-get update && sudo apt-get install -y libmysqlclient-dev libgdal-dev libgeos-dev libproj-dev libudunits2-dev libv8-dev
       - restore_cache:
           key: deps1-{{ .Branch }}-{{ checksum "setup.py" }}
       - save_cache:
