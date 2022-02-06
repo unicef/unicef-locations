@@ -102,12 +102,12 @@ def test_location_synchronizer_create_or_update_locations(logger_mock, mock_cart
 
     # test error: multiple location exception
     LocationFactory(p_code='RW01', is_active=True)
-    new, updated, skipped, error = synchronizer.create_or_update_locations()
-    assert error == 1
-    assert new == updated == skipped == 0
-    logger_mock.assert_called_with(
-        f"Multiple locations found for: {cartodbtable.admin_level}, "
-        f"{carto_response[0][cartodbtable.name_col]} ({carto_response[0][cartodbtable.pcode_col]})")
+    with pytest.raises(CartoException):
+        new, updated, skipped, error = synchronizer.create_or_update_locations()
+        assert new == updated == skipped == 0
+        logger_mock.assert_called_with(
+            f"Multiple locations found for: {cartodbtable.admin_level}, "
+            f"{carto_response[0][cartodbtable.name_col]} ({carto_response[0][cartodbtable.pcode_col]})")
 
     # test skipped location
     mock_cartodb_locations.return_value[0][cartodbtable.pcode_col] = ''
