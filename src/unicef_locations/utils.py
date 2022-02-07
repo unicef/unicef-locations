@@ -1,9 +1,17 @@
 from carto.exceptions import CartoException
 from celery.utils.log import get_task_logger
+from django.apps import apps
+from django.conf import settings
 
 from unicef_locations.exceptions import InvalidRemap
 
 logger = get_task_logger(__name__)
+
+
+def get_location_model():
+    get_model = apps.get_model
+
+    return get_model(settings.UNICEF_LOCATIONS_MODEL)
 
 
 def get_remapping(sql_client, carto_table):

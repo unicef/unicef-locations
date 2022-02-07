@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import CartoDBTable, GatewayType, Location, LocationRemapHistory
+from .models import CartoDBTable
+from .utils import get_location_model
 
 
 class CartoDBTableSerializer(serializers.ModelSerializer):
@@ -17,16 +18,8 @@ class CartoDBTableSerializer(serializers.ModelSerializer):
             'display_name',
             'pcode_col',
             'color',
-            'location_type',
             'name_col'
         )
-
-
-class GatewayTypeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = GatewayType
-        fields = ('name', 'admin_level')
 
 
 class LocationLightSerializer(serializers.ModelSerializer):
@@ -34,15 +27,15 @@ class LocationLightSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
     name_display = serializers.CharField(source='__str__')
     name = serializers.SerializerMethodField()
-    gateway = GatewayTypeSerializer()
 
     class Meta:
-        model = Location
+        model = get_location_model()
         fields = (
             'id',
             'name',
             'p_code',
-            'gateway',
+            'admin_level',
+            'admin_level_name',
             'parent',
             'name_display'
         )
@@ -60,38 +53,28 @@ class LocationSerializer(LocationLightSerializer):
     geo_point = serializers.StringRelatedField()
 
     class Meta(LocationLightSerializer.Meta):
-        model = Location
+        model = get_location_model()
         fields = LocationLightSerializer.Meta.fields + ('geo_point', )
 
 
 class LocationExportSerializer(serializers.ModelSerializer):
     name_display = serializers.CharField(source='__str__')
-    location_type = serializers.CharField(source='gateway.name')
     geo_point = serializers.StringRelatedField()
     point = serializers.StringRelatedField()
 
     class Meta:
-        model = Location
+        model = get_location_model()
         fields = "__all__"
 
 
 class LocationExportFlatSerializer(serializers.ModelSerializer):
     name_display = serializers.CharField(source='__str__')
-    location_type = serializers.CharField(source='gateway.name')
     geom = serializers.SerializerMethodField()
     point = serializers.StringRelatedField()
 
     class Meta:
-        model = Location
+        model = get_location_model()
         fields = "__all__"
 
     def get_geom(self, obj):
         return obj.geom.point_on_surface if obj.geom else ""
-
-
-class LocationRemapHistorySerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source='__str__')
-
-    class Meta:
-        model = LocationRemapHistory
-        fields = "__all__"

@@ -39,9 +39,9 @@ INSTALLED_APPS = [
     'dal',
     'mptt',
     'leaflet',
-    'demo.sample',
     'admin_extra_urls',
     'unicef_locations',
+    'demo.sample',
 ]
 
 MIDDLEWARE = [
@@ -87,11 +87,13 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         # "ENGINE": "django.db.backends.postgresql",
-        'NAME': 'demo',
+        'NAME': 'unicef_locations',
         'HOST': '127.0.0.1',
         'USER': 'postgres',
     }
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -131,3 +133,4 @@ MEDIA_ROOT = '/tmp/'
 CELERY_ALWAYS_EAGER = True
 
 UNICEF_LOCATIONS_GET_CACHE_KEY = 'unicef_locations.cache.get_cache_key'
+UNICEF_LOCATIONS_MODEL = 'locations.Location'

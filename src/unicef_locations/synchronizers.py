@@ -6,11 +6,12 @@ from carto.exceptions import CartoException
 from carto.sql import SQLClient
 from django.db import transaction
 from django.db.models.deletion import Collector
+from django.db.utils import IntegrityError
 
 from unicef_locations.auth import LocationsCartoNoAuthClient
 from unicef_locations.exceptions import InvalidRemap
-from unicef_locations.models import CartoDBTable, Location
-from unicef_locations.utils import get_remapping
+from unicef_locations.models import CartoDBTable
+from unicef_locations.utils import get_location_model, get_remapping
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,8 @@ class LocationSynchronizer:
             if all([name, pcode, geom]):
                 geom_key = 'point' if 'Point' in row['the_geom'] else 'geom'
                 default_dict = {
-                    'gateway': self.carto.location_type,
+                    'admin_level': self.carto.admin_level,
+                    'admin_level_name': self.carto.admin_level_name,
                     'name': name,
                     geom_key: geom,
                 }
@@ -46,16 +48,16 @@ class LocationSynchronizer:
                 parent_pcode = row[self.carto.parent_code_col] if self.carto.parent_code_col in row else None
                 if parent_pcode:
                     try:
-                        parent = Location.objects.get(p_code=parent_pcode, is_active=True)
+                        parent = get_location_model().objects.get(p_code=parent_pcode, is_active=True)
                         default_dict['parent'] = parent
-                    except (Location.DoesNotExist, Location.MultipleObjectsReturned):
+                    except (get_location_model().DoesNotExist, get_location_model().MultipleObjectsReturned):
                         skipped += 1
                         logger.info(f"Skipping row pcode {pcode}")
                         continue
 
                 try:
-                    location, created = Location.objects.get_or_create(p_code=pcode, is_active=True,
-                                                                       defaults=default_dict)
+                    location, created = get_location_model().objects.get_or_create(p_code=pcode, is_active=True,
+                                                                                   defaults=default_dict)
                     if created:
                         new += 1
                     else:
@@ -64,10 +66,15 @@ class LocationSynchronizer:
                         location.save()
                         updated += 1
 
-                except Location.MultipleObjectsReturned:
-                    logger.warning(f"Multiple locations found for: {self.carto.location_type}, {name} ({pcode})")
-                    error += 1
+                except get_location_model().MultipleObjectsReturned:
+                    message = f"Multiple locations found for: {self.carto.admin_level}, {name} ({pcode})"
+                    logger.exception(message)
+                    raise CartoException(message)
 
+                except IntegrityError:
+                    message = f"Duplicate Creation {name} {pcode} {self.carto.location_type.name}"
+                    logger.exception(message)
+                    raise CartoException(message)
             else:
                 skipped += 1
                 logger.info(f"Skipping row pcode {pcode}")
@@ -89,9 +96,9 @@ class LocationSynchronizer:
                     logger.warning('Retrying again table page at offset {}'.format(offset))
 
             if 'error' in sites:
-                raise CartoException
+                raise CartoException('Invalid CartoDBTable')
             return sites['rows']
-        raise CartoException
+        raise CartoException('Cannot connect to CartoDB')
 
     def get_cartodb_locations(self, cartodb_id_col='cartodb_id'):
         """
@@ -103,8 +110,9 @@ class LocationSynchronizer:
             max_id = self.sql_client.send(
                 f'select MAX({cartodb_id_col}) from {self.carto.table_name}')['rows'][0]['max']
         except CartoException:  # pragma: no-cover
-            logger.exception(f"Cannot fetch pagination prequisites from CartoDB for table {self.carto.table_name}")
-            raise CartoException
+            message = f"Cannot fetch pagination prerequisites from CartoDB for table {self.carto.table_name}"
+            logger.exception(message)
+            raise CartoException(message)
 
         offset, limit = 0, 100
 
@@ -134,7 +142,7 @@ class LocationSynchronizer:
         - delete non referenced locations
         """
         logging.info('Clean Obsolate Locations')
-        for location in Location.objects.filter(p_code__in=to_deactivate):
+        for location in get_location_model().objects.filter(p_code__in=to_deactivate):
             collector = Collector(using='default')
             collector.collect([location])
             if collector.dependencies or location.get_children():
@@ -154,9 +162,12 @@ class LocationSynchronizer:
         for old, new in old2new.items():
             if old != new:
                 try:
-                    old_location = Location.objects.get(p_code=old, is_active=True)
-                except Location.DoesNotExist:
+                    old_location = get_location_model().objects.get(p_code=old, is_active=True)
+                except get_location_model().DoesNotExist:
                     raise InvalidRemap(f'Old location {old} does not exist or is not active')
+                except get_location_model().MultipleObjectsReturned:
+                    locs = ', '.join([loc.name for loc in self.model.objects.filter(p_code=old)])
+                    raise InvalidRemap(f'Multiple active Location exist for pcode {old}: {locs}')
                 old_location.p_code = new
                 old_location.save()
                 logger.info(f'Update through remapping {old} -> {new}')
@@ -168,7 +179,7 @@ class LocationSynchronizer:
         - deactivate if all children are inactive (doesn't exist an active child)
         """
         logging.info('Clean upper level')
-        qs = Location.objects.filter(gateway__admin_level=self.carto.location_type.admin_level - 1, is_active=False)
+        qs = get_location_model().objects.filter(admin_level=self.carto.admin_level - 1, is_active=False)
         for location in qs:
             collector = Collector(using='default')
             collector.collect([location])
@@ -193,6 +204,6 @@ class LocationSynchronizer:
                 self.clean_upper_level()
                 return new, updated, skipped, error
 
-        except CartoException:
-            message = "CartoDB exception occured"
-            logger.exception(message)
+        except CartoException as e:
+            logger.error(str(e))
+            raise CartoException(str(e))

@@ -30,7 +30,7 @@ def fix_nulls(apps, schema):
 
 class Migration(migrations.Migration):
     dependencies = [
-        (u'locations', u'0001_initial'),
+        ('locations', '0001_initial'),
     ]
 
     operations = [

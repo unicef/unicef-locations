@@ -14,10 +14,10 @@ from leaflet.admin import LeafletGeoAdmin
 from mptt.admin import MPTTModelAdmin
 
 from unicef_locations.auth import LocationsCartoNoAuthClient
-from unicef_locations.utils import get_remapping
+from unicef_locations.utils import get_location_model, get_remapping
 
 from .forms import CartoDBTableForm
-from .models import CartoDBTable, GatewayType, Location
+from .models import CartoDBTable, GatewayType
 from .tasks import import_locations
 
 
@@ -55,12 +55,12 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
 
     list_display = (
         'name',
-        'gateway',
+        'admin_level',
+        'admin_level_name',
         'p_code',
         'is_active',
     )
     list_filter = (
-        'gateway',
         ActiveLocationsFilter,
         'parent',
     )
@@ -68,7 +68,7 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
     raw_id_fields = ('parent', )
 
     def get_queryset(self, request):    # pragma: no-cover
-        qs = Location.objects.all()
+        qs = get_location_model().objects.all()
 
         ordering = self.get_ordering(request)
         if ordering:
@@ -76,7 +76,7 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
         return qs
 
     def get_form(self, request, obj=None, **kwargs):
-        self.readonly_fields = [] if request.user.is_superuser else ['p_code', 'geom', 'point', 'gateway']
+        self.readonly_fields = [] if request.user.is_superuser else ['p_code', 'geom', 'point', 'admin_level']
 
         return super().get_form(request, obj, **kwargs)
 
@@ -86,7 +86,6 @@ class CartoDBTableAdmin(ExtraUrlMixin, admin.ModelAdmin):
     save_as = True
     list_display = (
         'table_name',
-        'location_type',
         'name_col',
         'pcode_col',
         'parent_code_col',
@@ -118,6 +117,6 @@ class CartoDBTableAdmin(ExtraUrlMixin, admin.ModelAdmin):
         return HttpResponse(template.render(context, request))
 
 
-admin.site.register(Location, LocationAdmin)
+admin.site.register(get_location_model(), LocationAdmin)
 admin.site.register(GatewayType)
 admin.site.register(CartoDBTable, CartoDBTableAdmin)
