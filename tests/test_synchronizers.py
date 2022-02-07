@@ -82,38 +82,34 @@ def test_location_synchronizer_query_with_retries_exception(mock_send, cartodbta
 
 @patch('unicef_locations.synchronizers.LocationSynchronizer.get_cartodb_locations')
 @patch('logging.Logger.warning')
-def test_location_synchronizer_create_or_update_locations(logger_mock, mock_cartodb_locations, cartodbtable):
+def test_location_synchronizer_create_or_update_locations(logger_mock, mock_cartodb_locations,
+                                                          cartodbtable, carto_response):
     LocationFactory(p_code='RW', is_active=True)
     cartodbtable.parent_code_col = 'parent_code_col'
     cartodbtable.save(update_fields=['parent_code_col'])
     synchronizer = LocationSynchronizer(pk=cartodbtable.pk)
-    mock_cartodb_locations.return_value = [
-        {
-            'the_geom': '{"type":"MultiPolygon",'
-                        '"coordinates":[[['
-                        '[28.8912701692831,-2.43352336201351],[28.8912892169238,-2.43353354233907],'
-                        '[28.8918478389067,-2.43521500746656],[28.8912701692831,-2.43352336201351]'
-                        ']]]}',
-            cartodbtable.name_col: 'Rwanda',
-            cartodbtable.pcode_col: 'RW01',
-            'parent_code_col': 'RW'
-        }
-    ]
+    mock_cartodb_locations.return_value = carto_response
+
+    # test new location
     new, updated, skipped, error = synchronizer.create_or_update_locations()
     assert new == 1
     assert skipped == updated == error == 0
 
+    # test updated location
     new, updated, skipped, error = synchronizer.create_or_update_locations()
     assert updated == 1
     assert new == skipped == error == 0
 
+    # test error: multiple location exception
     LocationFactory(p_code='RW01', is_active=True)
-    with pytest.raises(CartoException):
-        synchronizer.create_or_update_locations()
-        logger_mock.assert_called_with(
-            f"Multiple locations found for: {cartodbtable.admin_level}, "
-            f"{cartodbtable.name_col} ({cartodbtable.pcode_col})")
+    new, updated, skipped, error = synchronizer.create_or_update_locations()
+    assert error == 1
+    assert new == updated == skipped == 0
+    logger_mock.assert_called_with(
+        f"Multiple locations found for: {cartodbtable.admin_level}, "
+        f"{carto_response[0][cartodbtable.name_col]} ({carto_response[0][cartodbtable.pcode_col]})")
 
+    # test skipped location
     mock_cartodb_locations.return_value[0][cartodbtable.pcode_col] = ''
     new, updated, skipped, error = synchronizer.create_or_update_locations()
     assert skipped == 1
@@ -151,3 +147,29 @@ def test_location_synchronizer_clean_upper_level(logger_mock, cartodbtable):
     expected_calls = [
         call(f"Deleting parent {location_2}")]
     logger_mock.assert_has_calls(expected_calls)
+
+
+@patch('unicef_locations.synchronizers.LocationSynchronizer.get_cartodb_locations')
+@patch('logging.Logger.info')
+def test_location_synchronizer_sync(logger_mock, mock_cartodb_locations,
+                                    cartodbtable, carto_response):
+    synchronizer = LocationSynchronizer(pk=cartodbtable.pk)
+    location_1 = LocationFactory(p_code='RW', is_active=True)
+    location_2 = LocationFactory(
+        parent=location_1, p_code='RW01', is_active=False, admin_level=cartodbtable.admin_level - 1)
+    mock_cartodb_locations.return_value = carto_response
+
+    # test new and deleted-leaf location
+    new, updated, skipped, error = synchronizer.sync()
+    assert new == 1
+    assert skipped == updated == error == 0
+    location_1.refresh_from_db()
+    assert location_1.is_active
+    expected_calls = [
+        call(f"Deleting parent {location_2}")]
+    logger_mock.assert_has_calls(expected_calls)
+
+    # test updated location
+    new, updated, skipped, error = synchronizer.sync()
+    assert updated == 1
+    assert new == skipped == error == 0
