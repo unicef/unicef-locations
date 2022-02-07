@@ -1,5 +1,10 @@
 Release 3.2
 -----------
+* denormalize gateway type
+* swappable location model
+* abstract location model
+* remove location remap history
+* improve logging
 
 
 Release 3.1
