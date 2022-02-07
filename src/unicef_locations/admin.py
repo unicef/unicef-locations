@@ -55,12 +55,12 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
 
     list_display = (
         'name',
-        'gateway',
+        'admin_level',
+        'admin_level_name',
         'p_code',
         'is_active',
     )
     list_filter = (
-        'gateway',
         ActiveLocationsFilter,
         'parent',
     )
@@ -76,7 +76,7 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
         return qs
 
     def get_form(self, request, obj=None, **kwargs):
-        self.readonly_fields = [] if request.user.is_superuser else ['p_code', 'geom', 'point', 'gateway']
+        self.readonly_fields = [] if request.user.is_superuser else ['p_code', 'geom', 'point', 'admin_level']
 
         return super().get_form(request, obj, **kwargs)
 
@@ -86,7 +86,6 @@ class CartoDBTableAdmin(ExtraUrlMixin, admin.ModelAdmin):
     save_as = True
     list_display = (
         'table_name',
-        'location_type',
         'name_col',
         'pcode_col',
         'parent_code_col',

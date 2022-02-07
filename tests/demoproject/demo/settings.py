@@ -87,7 +87,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         # "ENGINE": "django.db.backends.postgresql",
-        'NAME': 'demo',
+        'NAME': 'unicef_locations',
         'HOST': '127.0.0.1',
         'USER': 'postgres',
     }

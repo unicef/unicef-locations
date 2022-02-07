@@ -34,7 +34,7 @@ class GatewayType(TimeStampedModel):
 class LocationsManager(TreeManager):
 
     def get_queryset(self):
-        return super().get_queryset().select_related('gateway', 'parent')
+        return super().get_queryset().select_related('parent')
 
     def active(self):
         return self.get_queryset().filter(is_active=True)
@@ -43,19 +43,17 @@ class LocationsManager(TreeManager):
         return self.get_queryset().filter(is_active=False)
 
 
-class Location(TimeStampedModel, MPTTModel):
+class AbstractLocation(TimeStampedModel, MPTTModel):
     """
     Represents Location, either a point or geospatial object,
     pcode should be unique
-
-    Relates to :model:`locations.GatewayType`
     """
 
     name = models.CharField(verbose_name=_("Name"), max_length=254)
-    gateway = models.ForeignKey(
-        GatewayType, verbose_name=_('Location Type'),
-        on_delete=models.CASCADE,
-    )
+
+    admin_level = models.SmallIntegerField(verbose_name=_('Admin Level'))
+    admin_level_name = models.CharField(max_length=64, verbose_name=_('Admin Level Name'))
+
     latitude = models.FloatField(
         verbose_name=_("Latitude"),
         null=True,
@@ -95,10 +93,10 @@ class Location(TimeStampedModel, MPTTModel):
     objects = LocationsManager()
 
     def __str__(self):
-        return u'{}{} ({}: {})'.format(
+        return '{}{} ({}: {})'.format(
             self.name,
             '' if self.is_active else ' [Archived]',
-            self.gateway.name,
+            self.admin_level_name,
             self.p_code if self.p_code else '',
         )
 
@@ -114,37 +112,15 @@ class Location(TimeStampedModel, MPTTModel):
         )
 
     class Meta:
-        unique_together = ('name', 'gateway', 'p_code')
+        abstract = True
+        unique_together = ('name', 'p_code')
         ordering = ['name']
+
+
+class Location(AbstractLocation):
+
+    class Meta(AbstractLocation.Meta):
         app_label = 'locations'
-
-
-class LocationRemapHistory(TimeStampedModel):
-    """
-    Location Remap History records for the related objects(interventions, travels, activities, actions)
-    """
-    old_location = models.ForeignKey(
-        Location,
-        verbose_name=_("Old Location"),
-        on_delete=models.CASCADE,
-        related_name="+"
-    )
-    new_location = models.ForeignKey(
-        Location,
-        verbose_name=_("New Location"),
-        on_delete=models.CASCADE,
-        related_name="+"
-    )
-    comments = models.TextField(
-        verbose_name=_('Comments'),
-        blank=True,
-        null=True
-    )
-    created = AutoCreatedField(_('created'))
-
-    class Meta:
-        verbose_name = _('Remap history')
-        verbose_name_plural = _('Location remap history')
 
 
 @receiver(post_delete, sender=Location)
@@ -159,18 +135,14 @@ def invalidate_locations_etag(sender, instance, **kwargs):
 class CartoDBTable(TimeStampedModel, MPTTModel):
     """
     Represents a table in CartoDB, it is used to import locations
-
-    Relates to :model:`locations.GatewayType`
     """
 
     domain = models.CharField(max_length=254, verbose_name=_('Domain'))
     api_key = models.CharField(max_length=254, verbose_name=_('API Key'))
     table_name = models.CharField(max_length=254, verbose_name=_('Table Name'))
     display_name = models.CharField(max_length=254, default='', blank=True, verbose_name=_('Display Name'))
-    location_type = models.ForeignKey(
-        GatewayType, verbose_name=_('Location Type'),
-        on_delete=models.CASCADE,
-    )
+    admin_level = models.SmallIntegerField(verbose_name=_('Admin Level'))
+    admin_level_name = models.CharField(max_length=64, verbose_name=_('Admin Level Name'))
     name_col = models.CharField(max_length=254, default='name', verbose_name=_('Name Column'))
     pcode_col = models.CharField(max_length=254, default='pcode', verbose_name=_('Pcode Column'))
     # Cartodb table name used to remap old pcodes to new pcodes
