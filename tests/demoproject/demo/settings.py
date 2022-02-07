@@ -39,9 +39,9 @@ INSTALLED_APPS = [
     'dal',
     'mptt',
     'leaflet',
-    'demo.sample',
     'admin_extra_urls',
     'unicef_locations',
+    'demo.sample',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +133,4 @@ MEDIA_ROOT = '/tmp/'
 CELERY_ALWAYS_EAGER = True
 
 UNICEF_LOCATIONS_GET_CACHE_KEY = 'unicef_locations.cache.get_cache_key'
+UNICEF_LOCATIONS_MODEL = 'locations.Location'
