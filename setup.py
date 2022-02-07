@@ -39,7 +39,7 @@ setup(
         'django-mptt',
         'django-model-utils',
         'django-leaflet',
-        'djangorestframework',
+        'djangorestframework>=3.12',
         'carto',
         'celery',
         'unicef-djangolib',
@@ -48,7 +48,7 @@ setup(
         'test': (
             'coverage',
             'django-fsm',
-            'drf-api-checker',
+            'drf-api-checker>=0.12',
             'django-webtest',
             'factory-boy',
             'faker',
