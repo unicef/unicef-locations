@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import CartoDBTable, Location
+from .models import CartoDBTable
+from .utils import get_location_model
 
 
 class CartoDBTableSerializer(serializers.ModelSerializer):
@@ -28,7 +29,7 @@ class LocationLightSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
 
     class Meta:
-        model = Location
+        model = get_location_model()
         fields = (
             'id',
             'name',
@@ -52,7 +53,7 @@ class LocationSerializer(LocationLightSerializer):
     geo_point = serializers.StringRelatedField()
 
     class Meta(LocationLightSerializer.Meta):
-        model = Location
+        model = get_location_model()
         fields = LocationLightSerializer.Meta.fields + ('geo_point', )
 
 
@@ -62,7 +63,7 @@ class LocationExportSerializer(serializers.ModelSerializer):
     point = serializers.StringRelatedField()
 
     class Meta:
-        model = Location
+        model = get_location_model()
         fields = "__all__"
 
 
@@ -72,7 +73,7 @@ class LocationExportFlatSerializer(serializers.ModelSerializer):
     point = serializers.StringRelatedField()
 
     class Meta:
-        model = Location
+        model = get_location_model()
         fields = "__all__"
 
     def get_geom(self, obj):

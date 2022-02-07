@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models.signals import post_delete, post_save
 from django.dispatch.dispatcher import receiver
@@ -123,8 +124,8 @@ class Location(AbstractLocation):
         app_label = 'locations'
 
 
-@receiver(post_delete, sender=Location)
-@receiver(post_save, sender=Location)
+@receiver(post_delete, sender=settings.UNICEF_LOCATIONS_MODEL)
+@receiver(post_save, sender=settings.UNICEF_LOCATIONS_MODEL)
 def invalidate_locations_etag(sender, instance, **kwargs):
     """
     Invalidate the locations etag in the cache on every change.
