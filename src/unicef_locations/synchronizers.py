@@ -104,7 +104,7 @@ class LocationSynchronizer:
             max_id = self.sql_client.send(
                 f'select MAX({cartodb_id_col}) from {self.carto.table_name}')['rows'][0]['max']
         except CartoException:  # pragma: no-cover
-            logger.exception(f"Cannot fetch pagination prequisites from CartoDB for table {self.carto.table_name}")
+            logger.exception(f"Cannot fetch pagination prerequisites from CartoDB for table {self.carto.table_name}")
             raise CartoException
 
         offset, limit = 0, 100
