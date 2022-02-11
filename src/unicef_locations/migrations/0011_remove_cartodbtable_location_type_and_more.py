@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='location',
-            unique_together={('name', 'p_code')},
+            unique_together={('name', 'p_code', 'admin_level')},
         ),
         migrations.RemoveField(
             model_name='location',
