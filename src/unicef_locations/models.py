@@ -114,7 +114,7 @@ class AbstractLocation(TimeStampedModel, MPTTModel):
 
     class Meta:
         abstract = True
-        unique_together = ('name', 'p_code')
+        unique_together = ('name', 'p_code', 'admin_level')
         ordering = ['name']
 
 

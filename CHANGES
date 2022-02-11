@@ -1,3 +1,8 @@
+Release 3.2.3
+-------------
+* Location: fix locations migrations
+
+
 Release 3.2.2
 -------------
 * Location: admin level and admin level name nullable
