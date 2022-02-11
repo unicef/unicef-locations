@@ -52,8 +52,8 @@ class AbstractLocation(TimeStampedModel, MPTTModel):
 
     name = models.CharField(verbose_name=_("Name"), max_length=254)
 
-    admin_level = models.SmallIntegerField(verbose_name=_('Admin Level'))
-    admin_level_name = models.CharField(max_length=64, verbose_name=_('Admin Level Name'))
+    admin_level = models.SmallIntegerField(verbose_name=_('Admin Level'), null=True, blank=True)
+    admin_level_name = models.CharField(max_length=64, verbose_name=_('Admin Level Name'), null=True, blank=True)
 
     latitude = models.FloatField(
         verbose_name=_("Latitude"),
