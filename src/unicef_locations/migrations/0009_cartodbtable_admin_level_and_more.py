@@ -25,13 +25,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='location',
             name='admin_level',
-            field=models.SmallIntegerField(default=-1, verbose_name='Admin Level'),
+            field=models.SmallIntegerField(default=-1, verbose_name='Admin Level', blank=True, null=True),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='location',
             name='admin_level_name',
-            field=models.CharField(default=-1, max_length=64, verbose_name='Admin Level Name'),
+            field=models.CharField(default=-1, max_length=64, verbose_name='Admin Level Name', blank=True, null=True),
             preserve_default=False,
         ),
         migrations.DeleteModel(
