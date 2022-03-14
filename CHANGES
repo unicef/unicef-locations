@@ -1,3 +1,9 @@
+Release 4.0
+-------------
+* abstract Location model
+* reset migrations
+
+
 Release 3.2.3
 -------------
 * Location: fix locations migrations

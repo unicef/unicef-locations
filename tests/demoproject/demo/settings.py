@@ -75,7 +75,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'demo.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 # DJANGO: CACHE
 CACHES = {
@@ -86,7 +85,6 @@ CACHES = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        # "ENGINE": "django.db.backends.postgresql",
         'NAME': 'unicef_locations',
         'HOST': '127.0.0.1',
         'USER': 'postgres',
@@ -96,8 +94,6 @@ DATABASES = {
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Password validation
-# https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -125,12 +121,10 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
-
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = '/tmp/'
 CELERY_ALWAYS_EAGER = True
 
 UNICEF_LOCATIONS_GET_CACHE_KEY = 'unicef_locations.cache.get_cache_key'
-UNICEF_LOCATIONS_MODEL = 'locations.Location'
+UNICEF_LOCATIONS_MODEL = 'sample.Location'

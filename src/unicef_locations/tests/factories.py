@@ -4,13 +4,14 @@ from faker import Faker
 import factory
 
 from unicef_locations import models
+from unicef_locations.utils import get_location_model
 
 faker = Faker()
 
 
 class LocationFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Location
+        model = get_location_model()
 
     name = factory.Sequence(lambda n: 'Location {}'.format(n))
     point = GEOSGeometry("POINT(20 20)")
