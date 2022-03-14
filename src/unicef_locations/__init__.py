@@ -1,2 +1,2 @@
 NAME = "unicef-locations"
-VERSION = __version__ = "3.2.3"
+VERSION = __version__ = "4.0"
