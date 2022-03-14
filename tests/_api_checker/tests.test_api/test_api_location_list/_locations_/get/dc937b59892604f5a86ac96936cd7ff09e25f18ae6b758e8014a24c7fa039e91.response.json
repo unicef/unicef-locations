@@ -2,25 +2,25 @@
     "status_code": 200,
     "headers": {
         "Content-Type": "application/json",
-        "ETag": "\"a16fa112ea2e41f79bfd71d300ce858d\"",
+        "ETag": "\"933e40a3445548ffa3c4f8c484da3a6d\"",
         "Cache-Control": "private, must-revalidate",
         "Vary": "Accept, Cookie",
         "Allow": "GET, POST, HEAD, OPTIONS",
         "X-Frame-Options": "DENY",
-        "Content-Length": "194",
+        "Content-Length": "203",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "same-origin",
         "Cross-Origin-Opener-Policy": "same-origin"
     },
     "data": [
         {
-            "id": "54",
-            "name": "Location 7 (: PCODE7)",
+            "id": "8",
+            "name": "Location 7 (None: PCODE7)",
             "p_code": "PCODE7",
-            "admin_level": 5002,
-            "admin_level_name": "",
+            "admin_level": 1568,
+            "admin_level_name": null,
             "parent": null,
-            "name_display": "Location 7 (: PCODE7)",
+            "name_display": "Location 7 (None: PCODE7)",
             "geo_point": "SRID=4326;POINT (20 20)"
         }
     ],

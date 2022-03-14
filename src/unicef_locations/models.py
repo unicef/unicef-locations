@@ -118,12 +118,6 @@ class AbstractLocation(TimeStampedModel, MPTTModel):
         ordering = ['name']
 
 
-class Location(AbstractLocation):
-
-    class Meta(AbstractLocation.Meta):
-        app_label = 'locations'
-
-
 @receiver(post_delete, sender=settings.UNICEF_LOCATIONS_MODEL)
 @receiver(post_save, sender=settings.UNICEF_LOCATIONS_MODEL)
 def invalidate_locations_etag(sender, instance, **kwargs):
@@ -158,6 +152,3 @@ class CartoDBTable(TimeStampedModel, MPTTModel):
 
     def __str__(self):
         return self.table_name
-
-    class Meta:
-        app_label = 'locations'

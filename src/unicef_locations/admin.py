@@ -117,6 +117,5 @@ class CartoDBTableAdmin(ExtraUrlMixin, admin.ModelAdmin):
         return HttpResponse(template.render(context, request))
 
 
-admin.site.register(get_location_model(), LocationAdmin)
 admin.site.register(GatewayType)
 admin.site.register(CartoDBTable, CartoDBTableAdmin)

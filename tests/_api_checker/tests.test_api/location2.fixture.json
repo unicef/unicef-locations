@@ -1,12 +1,12 @@
 {
     "location2": {
         "master": {
-            "model": "locations.location",
-            "pk": 54,
+            "model": "sample.location",
+            "pk": 8,
             "fields": {
                 "name": "Location 7",
-                "admin_level": 5002,
-                "admin_level_name": "",
+                "admin_level": 1568,
+                "admin_level_name": null,
                 "latitude": null,
                 "longitude": null,
                 "p_code": "PCODE7",
@@ -14,8 +14,8 @@
                 "geom": null,
                 "point": "SRID=4326;POINT (20 20)",
                 "is_active": true,
-                "created": "2022-02-04T17:40:01.528Z",
-                "modified": "2022-02-04T17:40:01.528Z",
+                "created": "2022-02-28T15:12:18.933Z",
+                "modified": "2022-02-28T15:12:18.933Z",
                 "lft": 1,
                 "rght": 2,
                 "tree_id": 1,

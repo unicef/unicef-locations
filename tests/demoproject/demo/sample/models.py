@@ -1,6 +1,10 @@
 from django.db import models
 
-from unicef_locations.models import Location
+from unicef_locations.models import AbstractLocation
+
+
+class Location(AbstractLocation):
+    pass
 
 
 class DemoModel(models.Model):

@@ -31,6 +31,7 @@ class LocationSynchronizer:
         logging.info('Create/Update new locations')
         rows = self.get_cartodb_locations()
         new, updated, skipped, error = 0, 0, 0, 0
+
         for row in rows:
             pcode = row[self.carto.pcode_col]
             name = row[self.carto.name_col]
@@ -101,9 +102,7 @@ class LocationSynchronizer:
         raise CartoException('Cannot connect to CartoDB')
 
     def get_cartodb_locations(self, cartodb_id_col='cartodb_id'):
-        """
-        returns locations referenced by cartodb_table
-        """
+        """returns locations referenced by cartodb_table"""
         rows = []
         try:
             row_count = self.sql_client.send(f'select count(*) from {self.carto.table_name}')['rows'][0]['count']
