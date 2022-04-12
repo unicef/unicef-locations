@@ -63,8 +63,9 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
     list_filter = (
         ActiveLocationsFilter,
         'parent',
+        'admin_level',
     )
-    search_fields = ('name', 'p_code',)
+    search_fields = ('name', 'p_code', 'admin_level_name',)
     raw_id_fields = ('parent', )
 
     def get_queryset(self, request):    # pragma: no-cover
