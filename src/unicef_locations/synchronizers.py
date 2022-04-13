@@ -73,7 +73,7 @@ class LocationSynchronizer:
                     raise CartoException(message)
 
                 except IntegrityError:
-                    message = f"Duplicate Creation {name} {pcode} {self.carto.location_type.name}"
+                    message = f"Duplicate Creation {name} {pcode} {self.carto.admin_level_name}"
                     logger.exception(message)
                     raise CartoException(message)
             else:
