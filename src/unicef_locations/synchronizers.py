@@ -4,8 +4,8 @@ from datetime import datetime
 
 from carto.exceptions import CartoException
 from carto.sql import SQLClient
+from django.contrib.admin.utils import NestedObjects
 from django.db import transaction
-from django.db.models.deletion import Collector
 from django.db.utils import IntegrityError
 
 from unicef_locations.auth import LocationsCartoNoAuthClient
@@ -142,9 +142,9 @@ class LocationSynchronizer:
         """
         logging.info('Clean Obsolate Locations')
         for location in get_location_model().objects.filter(p_code__in=to_deactivate):
-            collector = Collector(using='default')
+            collector = NestedObjects(using='default')
             collector.collect([location])
-            if collector.dependencies or location.get_children():
+            if location in collector.edges:
                 location.name = f"{location.name} [{datetime.today().strftime('%Y-%m-%d')}]"
                 location.is_active = False
                 location.save()
@@ -180,9 +180,9 @@ class LocationSynchronizer:
         logging.info('Clean upper level')
         qs = get_location_model().objects.filter(admin_level=self.carto.admin_level - 1, is_active=False)
         for location in qs:
-            collector = Collector(using='default')
+            collector = NestedObjects(using='default')
             collector.collect([location])
-            if not collector.dependencies:
+            if location not in collector.edges:
                 if location.is_leaf_node():
                     location.delete()
                     logger.info(f'Deleting parent {location}')

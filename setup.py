@@ -58,7 +58,6 @@ setup(
             'pytest-cov',
             'pytest-django',
             'pytest-echo',
-            'pytest-pythonpath',
             'psycopg2-binary',
             'webtest',
           ),
@@ -70,6 +69,7 @@ setup(
         'Framework :: Django',
         'Framework :: Django :: 3.2',
         'Framework :: Django :: 4.0',
+        'Framework :: Django :: 4.1',
         'Intended Audience :: Developers'],
     scripts=[],
 )

@@ -21,7 +21,7 @@ def test_admin_location_filter(django_app, admin_user, locations3):
 def test_admin_location_edit(django_app, admin_user, location):
     url = reverse('admin:sample_location_change', args=[location.id])
     response = django_app.get(url, user=admin_user)
-    response = response.form.submit()
+    response = response.forms['location_form'].submit()
     assert response
 
 
@@ -34,5 +34,5 @@ def test_admin_cartodbtable(django_app, admin_user, cartodbtable):
 def test_admin_cartodbtable_edit(django_app, admin_user, cartodbtable):
     url = reverse('admin:unicef_locations_cartodbtable_change', args=[cartodbtable.id])
     response = django_app.get(url, user=admin_user)
-    response = response.form.submit()
+    response = response.forms['cartodbtable_form'].submit()
     assert response

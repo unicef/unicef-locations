@@ -7,6 +7,8 @@ from unittest.mock import call, patch
 from unicef_locations.synchronizers import LocationSynchronizer
 from unicef_locations.tests.factories import LocationFactory
 
+from demo.sample.models import DemoModel
+
 pytestmark = pytest.mark.django_db
 
 
@@ -173,3 +175,28 @@ def test_location_synchronizer_sync(logger_mock, mock_cartodb_locations,
     new, updated, skipped, error = synchronizer.sync()
     assert updated == 1
     assert new == skipped == error == 0
+
+
+@patch('unicef_locations.synchronizers.LocationSynchronizer.get_cartodb_locations')
+@patch('logging.Logger.info')
+def test_location_synchronizer_sync_nullable(logger_mock, mock_cartodb_locations, cartodbtable, carto_response):
+    synchronizer = LocationSynchronizer(pk=cartodbtable.pk)
+    location_1 = LocationFactory(p_code='RW', is_active=True)
+    location_2 = LocationFactory(
+        parent=location_1, p_code='RW01', is_active=False, admin_level=cartodbtable.admin_level - 1)
+
+    DemoModel.objects.create(country=location_1, capital=location_2)
+
+    # test new and deleted-leaf location
+    new, updated, skipped, error = synchronizer.sync()
+    assert new == skipped == updated == error == 0
+    location_1.refresh_from_db()
+    assert location_1.is_active
+    location_2.refresh_from_db()
+    assert not location_2.is_active
+    expected_calls = [
+        call('Apply Remap'),
+        call('Create/Update new locations'),
+        call('Clean upper level')
+    ]
+    logger_mock.assert_has_calls(expected_calls)

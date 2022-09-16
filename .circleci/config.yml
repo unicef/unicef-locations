@@ -9,7 +9,7 @@ jobs:
   build:
     docker:
       - image: cimg/python:3.9
-      - image: circleci/postgres:12-alpine-postgis
+      - image: cimg/postgres:12.11-postgis
         environment:
           POSTGRES_USER: postgres
           PGUSER: postgres
