@@ -48,7 +48,9 @@ def etag_cached(cache_key: str, public_cache=False):
             cache_etag = cache.get(key)
             request_etag = self.request.META.get("HTTP_IF_NONE_MATCH", None)
 
-            local_etag = cache_etag if cache_etag else '"{}"'.format(uuid.uuid4().hex)
+            # marking etag as weak using W/, as it doesn't satisfy all of the characteristics of a strong validator
+            # https://www.rfc-editor.org/rfc/rfc7232#section-2.3
+            local_etag = cache_etag if cache_etag else 'W/"{}"'.format(uuid.uuid4().hex)
 
             if cache_etag and request_etag and cache_etag == request_etag:
                 response = Response(status=status.HTTP_304_NOT_MODIFIED)
