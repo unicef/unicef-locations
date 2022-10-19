@@ -1,3 +1,8 @@
+Release 4.2
+-------------
+* Fix locations endpoints etag
+
+
 Release 4.1
 -------------
 * tweak location's collector of related objects
