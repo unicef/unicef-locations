@@ -16,22 +16,6 @@ from .libs import get_random_color
 logger = logging.getLogger(__name__)
 
 
-class GatewayType(TimeStampedModel):
-    """
-    Represents an Admin Type in location-related models.
-    """
-
-    name = models.CharField(max_length=64, unique=True, verbose_name=_('Name'))
-    admin_level = models.PositiveSmallIntegerField(null=True, unique=True, verbose_name=_('Admin Level'))
-
-    class Meta:
-        ordering = ['name']
-        verbose_name = 'Location Type'
-
-    def __str__(self):
-        return self.name
-
-
 class LocationsManager(TreeManager):
 
     def get_queryset(self):

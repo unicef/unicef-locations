@@ -17,7 +17,7 @@ from unicef_locations.auth import LocationsCartoNoAuthClient
 from unicef_locations.utils import get_location_model, get_remapping
 
 from .forms import CartoDBTableForm
-from .models import CartoDBTable, GatewayType
+from .models import CartoDBTable
 from .tasks import import_locations
 
 
@@ -118,5 +118,4 @@ class CartoDBTableAdmin(ExtraUrlMixin, admin.ModelAdmin):
         return HttpResponse(template.render(context, request))
 
 
-admin.site.register(GatewayType)
 admin.site.register(CartoDBTable, CartoDBTableAdmin)
