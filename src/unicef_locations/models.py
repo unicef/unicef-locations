@@ -21,21 +21,20 @@ class GatewayType(TimeStampedModel):
     Represents an Admin Type in location-related models.
     """
 
-    name = models.CharField(max_length=64, unique=True, verbose_name=_('Name'))
-    admin_level = models.PositiveSmallIntegerField(null=True, unique=True, verbose_name=_('Admin Level'))
+    name = models.CharField(max_length=64, unique=True, verbose_name=_("Name"))
+    admin_level = models.PositiveSmallIntegerField(null=True, unique=True, verbose_name=_("Admin Level"))
 
     class Meta:
-        ordering = ['name']
-        verbose_name = 'Location Type'
+        ordering = ["name"]
+        verbose_name = "Location Type"
 
     def __str__(self):
         return self.name
 
 
 class LocationsManager(TreeManager):
-
     def get_queryset(self):
-        return super().get_queryset().select_related('parent')
+        return super().get_queryset().select_related("parent")
 
     def active(self):
         return self.get_queryset().filter(is_active=True)
@@ -52,8 +51,8 @@ class AbstractLocation(TimeStampedModel, MPTTModel):
 
     name = models.CharField(verbose_name=_("Name"), max_length=254)
 
-    admin_level = models.SmallIntegerField(verbose_name=_('Admin Level'), null=True, blank=True)
-    admin_level_name = models.CharField(max_length=64, verbose_name=_('Admin Level Name'), null=True, blank=True)
+    admin_level = models.SmallIntegerField(verbose_name=_("Admin Level"), null=True, blank=True)
+    admin_level_name = models.CharField(max_length=64, verbose_name=_("Admin Level Name"), null=True, blank=True)
 
     latitude = models.FloatField(
         verbose_name=_("Latitude"),
@@ -69,17 +68,17 @@ class AbstractLocation(TimeStampedModel, MPTTModel):
         verbose_name=_("P Code"),
         max_length=32,
         blank=True,
-        default='',
+        default="",
     )
 
     parent = TreeForeignKey(
-        'self',
+        "self",
         verbose_name=_("Parent"),
         null=True,
         blank=True,
-        related_name='children',
+        related_name="children",
         db_index=True,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     geom = models.MultiPolygonField(
         verbose_name=_("Geo Point"),
@@ -88,17 +87,17 @@ class AbstractLocation(TimeStampedModel, MPTTModel):
     )
     point = models.PointField(verbose_name=_("Point"), null=True, blank=True)
     is_active = models.BooleanField(verbose_name=_("Active"), default=True, blank=True)
-    created = AutoCreatedField(_('created'))
-    modified = AutoLastModifiedField(_('modified'))
+    created = AutoCreatedField(_("created"))
+    modified = AutoLastModifiedField(_("modified"))
 
     objects = LocationsManager()
 
     def __str__(self):
-        return '{}{} ({}: {})'.format(
+        return "{}{} ({}: {})".format(
             self.name,
-            '' if self.is_active else ' [Archived]',
+            "" if self.is_active else " [Archived]",
             self.admin_level_name,
-            self.p_code if self.p_code else '',
+            self.p_code if self.p_code else "",
         )
 
     @property
@@ -107,15 +106,12 @@ class AbstractLocation(TimeStampedModel, MPTTModel):
 
     @property
     def point_lat_long(self):
-        return "Lat: {}, Long: {}".format(
-            self.point.y,
-            self.point.x
-        )
+        return "Lat: {}, Long: {}".format(self.point.y, self.point.x)
 
     class Meta:
         abstract = True
-        unique_together = ('name', 'p_code', 'admin_level')
-        ordering = ['name']
+        unique_together = ("name", "p_code", "admin_level")
+        ordering = ["name"]
 
 
 @receiver(post_delete, sender=settings.UNICEF_LOCATIONS_MODEL)
@@ -132,23 +128,27 @@ class CartoDBTable(TimeStampedModel, MPTTModel):
     Represents a table in CartoDB, it is used to import locations
     """
 
-    domain = models.CharField(max_length=254, verbose_name=_('Domain'))
-    api_key = models.CharField(max_length=254, verbose_name=_('API Key'))
-    table_name = models.CharField(max_length=254, verbose_name=_('Table Name'))
-    display_name = models.CharField(max_length=254, default='', blank=True, verbose_name=_('Display Name'))
-    admin_level = models.SmallIntegerField(verbose_name=_('Admin Level'))
-    admin_level_name = models.CharField(max_length=64, verbose_name=_('Admin Level Name'))
-    name_col = models.CharField(max_length=254, default='name', verbose_name=_('Name Column'))
-    pcode_col = models.CharField(max_length=254, default='pcode', verbose_name=_('Pcode Column'))
+    domain = models.CharField(max_length=254, verbose_name=_("Domain"))
+    api_key = models.CharField(max_length=254, verbose_name=_("API Key"))
+    table_name = models.CharField(max_length=254, verbose_name=_("Table Name"))
+    display_name = models.CharField(max_length=254, default="", blank=True, verbose_name=_("Display Name"))
+    admin_level = models.SmallIntegerField(verbose_name=_("Admin Level"))
+    admin_level_name = models.CharField(max_length=64, verbose_name=_("Admin Level Name"))
+    name_col = models.CharField(max_length=254, default="name", verbose_name=_("Name Column"))
+    pcode_col = models.CharField(max_length=254, default="pcode", verbose_name=_("Pcode Column"))
     # Cartodb table name used to remap old pcodes to new pcodes
-    remap_table_name = models.CharField(max_length=254, verbose_name=_('Remap Table Name'), blank=True, null=True)
-    parent_code_col = models.CharField(max_length=254, default='', blank=True, verbose_name=_('Parent Code Column'))
+    remap_table_name = models.CharField(max_length=254, verbose_name=_("Remap Table Name"), blank=True, null=True)
+    parent_code_col = models.CharField(max_length=254, default="", blank=True, verbose_name=_("Parent Code Column"))
     parent = TreeForeignKey(
-        'self', null=True, blank=True, related_name='children', db_index=True,
-        verbose_name=_('Parent'),
+        "self",
+        null=True,
+        blank=True,
+        related_name="children",
+        db_index=True,
+        verbose_name=_("Parent"),
         on_delete=models.CASCADE,
     )
-    color = models.CharField(blank=True, default=get_random_color, max_length=7, verbose_name=_('Color'))
+    color = models.CharField(blank=True, default=get_random_color, max_length=7, verbose_name=_("Color"))
 
     def __str__(self):
         return self.table_name

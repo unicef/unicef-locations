@@ -13,22 +13,26 @@ class CartoDBTablesView(ListAPIView):
     """
     Gets a list of CartoDB tables for the mapping system
     """
+
     queryset = CartoDBTable.objects.all()
     serializer_class = CartoDBTableSerializer
 
 
-class LocationsViewSet(mixins.RetrieveModelMixin,
-                       mixins.ListModelMixin,
-                       mixins.CreateModelMixin,
-                       mixins.UpdateModelMixin,
-                       viewsets.GenericViewSet):
+class LocationsViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     CRUD for Locations
     """
+
     queryset = get_location_model().objects.all()
     serializer_class = LocationSerializer
 
-    @etag_cached('locations')
+    @etag_cached("locations")
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -57,10 +61,13 @@ class LocationsLightViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     Returns a list of all Locations with restricted field set.
     """
-    queryset = get_location_model().objects.defer('geom', )
+
+    queryset = get_location_model().objects.defer(
+        "geom",
+    )
     serializer_class = LocationLightSerializer
 
-    @etag_cached('locations')
+    @etag_cached("locations")
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -70,8 +77,10 @@ class LocationQuerySetView(ListAPIView):
     serializer_class = LocationLightSerializer
 
     def get_queryset(self):
-        q = self.request.query_params.get('q')
-        qs = self.model.objects.defer('geom', )
+        q = self.request.query_params.get("q")
+        qs = self.model.objects.defer(
+            "geom",
+        )
 
         if q:
             qs = qs.filter(name__icontains=q)

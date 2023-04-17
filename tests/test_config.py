@@ -12,7 +12,7 @@ def dummy():
 
 @pytest.fixture()
 def conf():
-    return AppSettings('TEST')
+    return AppSettings("TEST")
 
 
 def test_missing(settings, conf):
@@ -21,7 +21,7 @@ def test_missing(settings, conf):
 
 
 def test_string(settings, conf):
-    settings.TEST_CACHE_VERSION_KEY = 'aaa'
+    settings.TEST_CACHE_VERSION_KEY = "aaa"
     assert conf.CACHE_VERSION_KEY == settings.TEST_CACHE_VERSION_KEY
 
 
@@ -31,7 +31,7 @@ def test_callable(settings, conf):
 
 
 def test_callable_no_importable(settings, conf):
-    settings.TEST_GET_CACHE_KEY = 'aaaa'
+    settings.TEST_GET_CACHE_KEY = "aaaa"
     with pytest.raises(ImproperlyConfigured):
         assert conf.GET_CACHE_KEY
 
@@ -43,5 +43,5 @@ def test_callable_wrong(settings, conf):
 
 
 def test_callable_by_name(settings, conf):
-    settings.TEST_GET_CACHE_KEY = 'unicef_locations.cache.get_cache_key'
+    settings.TEST_GET_CACHE_KEY = "unicef_locations.cache.get_cache_key"
     assert conf.GET_CACHE_KEY == get_cache_key

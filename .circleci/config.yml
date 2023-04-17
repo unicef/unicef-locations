@@ -8,8 +8,8 @@ parameters:
 jobs:
   build:
     docker:
-      - image: cimg/python:3.9
-      - image: cimg/postgres:12.11-postgis
+      - image: cimg/python:3.11
+      - image: cimg/postgres:14.7-postgis
         environment:
           POSTGRES_USER: postgres
           PGUSER: postgres
@@ -39,7 +39,7 @@ jobs:
           destination: python_app
   release:
     docker:
-      - image: cimg/python:3.9
+      - image: cimg/python:3.11
     steps:
       - checkout
       - run: sudo apt-get update && sudo apt-get install -y libmysqlclient-dev libgdal-dev libgeos-dev libproj-dev libudunits2-dev libv8-dev

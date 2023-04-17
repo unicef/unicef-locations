@@ -5,8 +5,8 @@ from django.urls import get_callable
 
 class AppSettings:
     defaults = {
-        'GET_CACHE_KEY': 'unicef_locations.cache.get_cache_key',
-        'CACHE_VERSION_KEY': 'locations-etag-version',
+        "GET_CACHE_KEY": "unicef_locations.cache.get_cache_key",
+        "CACHE_VERSION_KEY": "locations-etag-version",
     }
 
     def __init__(self, prefix):
@@ -20,7 +20,8 @@ class AppSettings:
     def __getattr__(self, name):
         if name in self.defaults.keys():
             from django.conf import settings
-            name_with_prefix = (self.prefix + '_' + name).upper()
+
+            name_with_prefix = (self.prefix + "_" + name).upper()
             raw_value = getattr(settings, name_with_prefix, self.defaults[name])
             value = self._set_attr(name_with_prefix, raw_value)
             setattr(settings, name_with_prefix, raw_value)
@@ -29,8 +30,9 @@ class AppSettings:
         return super().__getattr__(name)
 
     def _set_attr(self, prefix_name, value):
-        name = prefix_name[len(self.prefix) + 1:]
-        if name in ('GET_CACHE_KEY', 'GET_CACHE_VERSION'):
+        fr = len(self.prefix) + 1
+        name = prefix_name[fr:]
+        if name in ("GET_CACHE_KEY", "GET_CACHE_VERSION"):
             try:
                 if isinstance(value, str):
                     func = get_callable(value)
@@ -39,7 +41,8 @@ class AppSettings:
                 else:
                     raise ImproperlyConfigured(
                         f"{value} is not a valid value for `{name}`. "
-                        "It must be a callable or a fullpath to callable. ")
+                        "It must be a callable or a fullpath to callable. "
+                    )
             except Exception as e:
                 raise ImproperlyConfigured(e)
             setattr(self, name, func)
@@ -55,11 +58,12 @@ class AppSettings:
         @see :ref:`django:setting-changed`_
         """
         if setting.startswith(self.prefix):
-            name = setting[len(self.prefix) + 1:]
+            fr = len(self.prefix) + 1
+            name = setting[fr:]
             try:
                 delattr(self, name)
             except AttributeError:
                 pass
 
 
-conf = AppSettings('UNICEF_LOCATIONS')
+conf = AppSettings("UNICEF_LOCATIONS")

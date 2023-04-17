@@ -28,21 +28,21 @@ class LocationSynchronizer:
         Create or update locations based on p-code (only active locations are considerate)
 
         """
-        logging.info('Create/Update new locations')
+        logging.info("Create/Update new locations")
         rows = self.get_cartodb_locations()
         new, updated, skipped, error = 0, 0, 0, 0
 
         for row in rows:
             pcode = row[self.carto.pcode_col]
             name = row[self.carto.name_col]
-            geom = row['the_geom']
+            geom = row["the_geom"]
 
             if all([name, pcode, geom]):
-                geom_key = 'point' if 'Point' in row['the_geom'] else 'geom'
+                geom_key = "point" if "Point" in row["the_geom"] else "geom"
                 default_dict = {
-                    'admin_level': self.carto.admin_level,
-                    'admin_level_name': self.carto.admin_level_name,
-                    'name': name,
+                    "admin_level": self.carto.admin_level,
+                    "admin_level_name": self.carto.admin_level_name,
+                    "name": name,
                     geom_key: geom,
                 }
 
@@ -50,15 +50,16 @@ class LocationSynchronizer:
                 if parent_pcode:
                     try:
                         parent = get_location_model().objects.get(p_code=parent_pcode, is_active=True)
-                        default_dict['parent'] = parent
+                        default_dict["parent"] = parent
                     except (get_location_model().DoesNotExist, get_location_model().MultipleObjectsReturned):
                         skipped += 1
                         logger.info(f"Skipping row pcode {pcode}")
                         continue
 
                 try:
-                    location, created = get_location_model().objects.get_or_create(p_code=pcode, is_active=True,
-                                                                                   defaults=default_dict)
+                    location, created = get_location_model().objects.get_or_create(
+                        p_code=pcode, is_active=True, defaults=default_dict
+                    )
                     if created:
                         new += 1
                     else:
@@ -94,20 +95,21 @@ class LocationSynchronizer:
                 sites = self.sql_client.send(query)
             except CartoException:
                 if retries < max_retries:
-                    logger.warning('Retrying again table page at offset {}'.format(offset))
+                    logger.warning("Retrying again table page at offset {}".format(offset))
 
-            if 'error' in sites:
-                raise CartoException('Invalid CartoDBTable')
-            return sites['rows']
-        raise CartoException('Cannot connect to CartoDB')
+            if "error" in sites:
+                raise CartoException("Invalid CartoDBTable")
+            return sites["rows"]
+        raise CartoException("Cannot connect to CartoDB")
 
-    def get_cartodb_locations(self, cartodb_id_col='cartodb_id'):
+    def get_cartodb_locations(self, cartodb_id_col="cartodb_id"):
         """returns locations referenced by cartodb_table"""
         rows = []
         try:
-            row_count = self.sql_client.send(f'select count(*) from {self.carto.table_name}')['rows'][0]['count']
-            max_id = self.sql_client.send(
-                f'select MAX({cartodb_id_col}) from {self.carto.table_name}')['rows'][0]['max']
+            row_count = self.sql_client.send(f"select count(*) from {self.carto.table_name}")["rows"][0]["count"]
+            max_id = self.sql_client.send(f"select MAX({cartodb_id_col}) from {self.carto.table_name}")["rows"][0][
+                "max"
+            ]
         except CartoException:  # pragma: no-cover
             message = f"Cannot fetch pagination prerequisites from CartoDB for table {self.carto.table_name}"
             logger.exception(message)
@@ -120,13 +122,15 @@ class LocationSynchronizer:
             limit = max_id + 1
             logger.warning("The CartoDB primary key seems off, pagination is not possible")
 
-        parent_qry = f', {self.carto.parent_code_col}' if self.carto.parent_code_col and self.carto.parent else ''
-        base_qry = f'select st_AsGeoJSON(the_geom) as the_geom, {self.carto.name_col}, ' \
-                   f'{self.carto.pcode_col}{parent_qry} from {self.carto.table_name}'
+        parent_qry = f", {self.carto.parent_code_col}" if self.carto.parent_code_col and self.carto.parent else ""
+        base_qry = (
+            f"select st_AsGeoJSON(the_geom) as the_geom, {self.carto.name_col}, "
+            f"{self.carto.pcode_col}{parent_qry} from {self.carto.table_name}"
+        )
 
         while offset <= max_id:
-            logger.info(f'Requesting rows between {offset} and {offset + limit} for {self.carto.table_name}')
-            paged_qry = base_qry + f' WHERE {cartodb_id_col} > {offset} AND {cartodb_id_col} <= {offset + limit}'
+            logger.info(f"Requesting rows between {offset} and {offset + limit} for {self.carto.table_name}")
+            paged_qry = base_qry + f" WHERE {cartodb_id_col} > {offset} AND {cartodb_id_col} <= {offset + limit}"
             time.sleep(0.1)  # do not spam Carto with requests
             new_rows = self.query_with_retries(paged_qry, offset)
             rows += new_rows
@@ -140,36 +144,36 @@ class LocationSynchronizer:
         - deactivate referenced locations
         - delete non referenced locations
         """
-        logging.info('Clean Obsolate Locations')
+        logging.info("Clean Obsolate Locations")
         for location in get_location_model().objects.filter(p_code__in=to_deactivate):
-            collector = NestedObjects(using='default')
+            collector = NestedObjects(using="default")
             collector.collect([location])
             if location in collector.edges:
                 location.name = f"{location.name} [{datetime.today().strftime('%Y-%m-%d')}]"
                 location.is_active = False
                 location.save()
-                logger.info(f'Deactivating {location}')
+                logger.info(f"Deactivating {location}")
             else:
                 location.delete()
-                logger.info(f'Deleting {location}')
+                logger.info(f"Deleting {location}")
 
     def apply_remap(self, old2new):
         """
         Use remap table to swap p-codes
         """
-        logging.info('Apply Remap')
+        logging.info("Apply Remap")
         for old, new in old2new.items():
             if old != new:
                 try:
                     old_location = get_location_model().objects.get(p_code=old, is_active=True)
                 except get_location_model().DoesNotExist:
-                    raise InvalidRemap(f'Old location {old} does not exist or is not active')
+                    raise InvalidRemap(f"Old location {old} does not exist or is not active")
                 except get_location_model().MultipleObjectsReturned:
-                    locs = ', '.join([loc.name for loc in self.model.objects.filter(p_code=old)])
-                    raise InvalidRemap(f'Multiple active Location exist for pcode {old}: {locs}')
+                    locs = ", ".join([loc.name for loc in self.model.objects.filter(p_code=old)])
+                    raise InvalidRemap(f"Multiple active Location exist for pcode {old}: {locs}")
                 old_location.p_code = new
                 old_location.save()
-                logger.info(f'Update through remapping {old} -> {new}')
+                logger.info(f"Update through remapping {old} -> {new}")
 
     def clean_upper_level(self):
         """
@@ -177,15 +181,15 @@ class LocationSynchronizer:
         - delete if is leaf
         - deactivate if all children are inactive (doesn't exist an active child)
         """
-        logging.info('Clean upper level')
+        logging.info("Clean upper level")
         qs = get_location_model().objects.filter(admin_level=self.carto.admin_level - 1, is_active=False)
         for location in qs:
-            collector = NestedObjects(using='default')
+            collector = NestedObjects(using="default")
             collector.collect([location])
             if location not in collector.edges:
                 if location.is_leaf_node():
                     location.delete()
-                    logger.info(f'Deleting parent {location}')
+                    logger.info(f"Deleting parent {location}")
                 # else:
                 #     children = location.get_children()
                 #     if not children.filter(is_active=True).exists():

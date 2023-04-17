@@ -28,22 +28,17 @@ class AutoSizeTextForm(forms.ModelForm):
 
     class Meta:
         widgets = {
-            'name': Textarea(),
-            'description': Textarea(),
+            "name": Textarea(),
+            "description": Textarea(),
         }
 
 
 class ActiveLocationsFilter(basic_admin.SimpleListFilter):
-
-    title = 'Active Status'
-    parameter_name = 'is_active'
+    title = "Active Status"
+    parameter_name = "is_active"
 
     def lookups(self, request, model_admin):
-
-        return [
-            (True, 'Active'),
-            (False, 'Archived')
-        ]
+        return [(True, "Active"), (False, "Archived")]
 
     def queryset(self, request, queryset):
         return queryset.filter(**self.used_parameters)
@@ -54,21 +49,25 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
     form = AutoSizeTextForm
 
     list_display = (
-        'name',
-        'admin_level',
-        'admin_level_name',
-        'p_code',
-        'is_active',
+        "name",
+        "admin_level",
+        "admin_level_name",
+        "p_code",
+        "is_active",
     )
     list_filter = (
         ActiveLocationsFilter,
-        'parent',
-        'admin_level',
+        "parent",
+        "admin_level",
     )
-    search_fields = ('name', 'p_code', 'admin_level_name',)
-    raw_id_fields = ('parent', )
+    search_fields = (
+        "name",
+        "p_code",
+        "admin_level_name",
+    )
+    raw_id_fields = ("parent",)
 
-    def get_queryset(self, request):    # pragma: no-cover
+    def get_queryset(self, request):  # pragma: no-cover
         qs = get_location_model().objects.all()
 
         ordering = self.get_ordering(request)
@@ -77,7 +76,7 @@ class LocationAdmin(LeafletGeoAdmin, MPTTModelAdmin):
         return qs
 
     def get_form(self, request, obj=None, **kwargs):
-        self.readonly_fields = [] if request.user.is_superuser else ['p_code', 'geom', 'point', 'admin_level']
+        self.readonly_fields = [] if request.user.is_superuser else ["p_code", "geom", "point", "admin_level"]
 
         return super().get_form(request, obj, **kwargs)
 
@@ -86,35 +85,32 @@ class CartoDBTableAdmin(ExtraUrlMixin, admin.ModelAdmin):
     form = CartoDBTableForm
     save_as = True
     list_display = (
-        'table_name',
-        'name_col',
-        'pcode_col',
-        'parent_code_col',
-        'import_table',
+        "table_name",
+        "name_col",
+        "pcode_col",
+        "parent_code_col",
+        "import_table",
     )
 
     def import_table(self, obj):
         try:
-            url = reverse(admin_urlname(obj._meta, 'import_sites'), args=[obj.pk])
+            url = reverse(admin_urlname(obj._meta, "import_sites"), args=[obj.pk])
             return format_html(f'<a href="{url}">Import</a>')
         except NoReverseMatch:
-            return '-'
+            return "-"
 
     @button(css_class="btn-warning auto-disable")
     def import_sites(self, request, pk):
         import_locations.delay(pk)
-        messages.info(request, 'Import Scheduled')
+        messages.info(request, "Import Scheduled")
 
     @button(css_class="btn-warning auto-disable")
     def show_remap_table(self, request, pk):
         carto_table = CartoDBTable.objects.get(pk=pk)
         sql_client = SQLClient(LocationsCartoNoAuthClient(base_url=f"https://{carto_table.domain}.carto.com/"))
         old2new, to_deactivate = get_remapping(sql_client, carto_table)
-        template = loader.get_template('admin/location_remap.html')
-        context = {
-            'old2new': old2new,
-            'to_deactivate': to_deactivate
-        }
+        template = loader.get_template("admin/location_remap.html")
+        context = {"old2new": old2new, "to_deactivate": to_deactivate}
         return HttpResponse(template.render(context, request))
 
 

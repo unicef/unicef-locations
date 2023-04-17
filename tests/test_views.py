@@ -15,40 +15,54 @@ from unicef_locations.views import LocationsViewSet
 
 
 def test_api_location_light_list(
-        django_app,
-        admin_user,
-        locations3,
-        django_assert_num_queries,
+    django_app,
+    admin_user,
+    locations3,
+    django_assert_num_queries,
 ):
-    url = reverse('unicef_locations:locations-light-list')
+    url = reverse("unicef_locations:locations-light-list")
     with django_assert_num_queries(10):
         res = django_app.get(url, user=admin_user)
-    assert sorted(res.json[0].keys()) == ['admin_level', 'admin_level_name', 'id', 'name', 'name_display',
-                                          'p_code', 'parent']
+    assert sorted(res.json[0].keys()) == [
+        "admin_level",
+        "admin_level_name",
+        "id",
+        "name",
+        "name_display",
+        "p_code",
+        "parent",
+    ]
 
 
 def test_api_location_heavy_list(
-        django_app,
-        admin_user,
-        location,
-        django_assert_num_queries,
+    django_app,
+    admin_user,
+    location,
+    django_assert_num_queries,
 ):
-    url = reverse('unicef_locations:locations-list')
+    url = reverse("unicef_locations:locations-list")
 
     with django_assert_num_queries(10):
         response = django_app.get(url, user=admin_user)
     assert sorted(response.json[0].keys()) == [
-        'admin_level', 'admin_level_name', 'geo_point', 'id', 'name', 'name_display', 'p_code', 'parent'
+        "admin_level",
+        "admin_level_name",
+        "geo_point",
+        "id",
+        "name",
+        "name_display",
+        "p_code",
+        "parent",
     ]
 
 
 def test_api_location_queries(
-        django_app,
-        admin_user,
-        location,
-        django_assert_num_queries,
+    django_app,
+    admin_user,
+    location,
+    django_assert_num_queries,
 ):
-    url = reverse('unicef_locations:locations-list')
+    url = reverse("unicef_locations:locations-list")
 
     with django_assert_num_queries(10):
         django_app.get(url, user=admin_user)
@@ -67,31 +81,45 @@ def test_api_location_queries(
 def test_api_location_values(django_app, admin_user, locations3):
     l1, l2, l3 = locations3
     params = {"values": "{},{}".format(l1.id, l2.id)}
-    response = django_app.get(reverse('unicef_locations:locations-list'), user=admin_user, params=params)
+    response = django_app.get(reverse("unicef_locations:locations-list"), user=admin_user, params=params)
     assert len(response.json) == 2, response.json
 
 
 def test_api_location_heavy_detail(django_app, admin_user, locations3):
     l1, l2, l3 = locations3
-    url = reverse('unicef_locations:locations-detail', args=[l1.id])
+    url = reverse("unicef_locations:locations-detail", args=[l1.id])
     response = django_app.get(url, user=admin_user)
-    assert sorted(response.json.keys()), ['geo_point', 'id', 'admin_level', 'admin_level_name',
-                                          'name', 'p_code', 'parent']
+    assert sorted(response.json.keys()), [
+        "geo_point",
+        "id",
+        "admin_level",
+        "admin_level_name",
+        "name",
+        "p_code",
+        "parent",
+    ]
     assert "Location" in response.json["name"]
 
 
 def test_api_location_heavy_detail_pcode(django_app, admin_user, locations3):
     l1, l2, l3 = locations3
-    url = reverse('unicef_locations:locations_detail_pcode', args=[l1.p_code])
+    url = reverse("unicef_locations:locations_detail_pcode", args=[l1.p_code])
     response = django_app.get(url, user=admin_user)
-    assert sorted(response.json.keys()), ['geo_point', 'id', 'admin_level', 'admin_level_name', 'name', 'p_code',
-                                          'parent']
+    assert sorted(response.json.keys()), [
+        "geo_point",
+        "id",
+        "admin_level",
+        "admin_level_name",
+        "name",
+        "p_code",
+        "parent",
+    ]
     assert "Location" in response.json["name"]
 
 
 def test_api_location_list_cached(django_app, admin_user, locations3):
     # l1, l2, l3 = locations3
-    url = reverse('unicef_locations:locations-list')
+    url = reverse("unicef_locations:locations-list")
     response = django_app.get(url, user=admin_user)
     assert len(response.json) == len(locations3)
     etag = response["ETag"]
@@ -104,7 +132,7 @@ def test_api_location_list_cached(django_app, admin_user, locations3):
 
 
 def test_api_location_list_modified(django_app, admin_user, locations3):
-    url = reverse('unicef_locations:locations-list')
+    url = reverse("unicef_locations:locations-list")
     response = django_app.get(url, user=admin_user)
     assert len(response.json) == len(locations3)
     etag = response["ETag"]
@@ -115,45 +143,59 @@ def test_api_location_list_modified(django_app, admin_user, locations3):
 
 
 def test_location_assert_etag(django_app, admin_user, locations3):
-    url = reverse('unicef_locations:locations-list')
+    url = reverse("unicef_locations:locations-list")
     factory = APIRequestFactory()
     request = factory.get(url)
-    LocationsViewSet.as_view({'get': 'list'})(request)
+    LocationsViewSet.as_view({"get": "list"})(request)
     assert cache.get(conf.GET_CACHE_KEY(Request(request)))
 
 
 def test_location_delete_etag(django_app, admin_user, locations3):
-    url = reverse('unicef_locations:locations-list')
+    url = reverse("unicef_locations:locations-list")
     factory = APIRequestFactory()
     request = factory.get(url)
-    LocationsViewSet.as_view({'get': 'list'})(request)
+    LocationsViewSet.as_view({"get": "list"})(request)
     etag_before = cache.get(conf.GET_CACHE_KEY(Request(request)))
     get_location_model().objects.all().delete()
 
-    LocationsViewSet.as_view({'get': 'list'})(request)
+    LocationsViewSet.as_view({"get": "list"})(request)
     etag_after = cache.get(conf.GET_CACHE_KEY(Request(request)))
     assert etag_before != etag_after
 
 
 def test_api_location_autocomplete(django_app, admin_user, locations3):
-    url = reverse('unicef_locations:locations_autocomplete')
+    url = reverse("unicef_locations:locations_autocomplete")
 
     response = django_app.get(url, user=admin_user, params={"q": "Loc"})
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['admin_level', 'admin_level_name', 'id', 'name', 'name_display',
-                                               'p_code', 'parent']
+    assert sorted(response.json[0].keys()) == [
+        "admin_level",
+        "admin_level_name",
+        "id",
+        "name",
+        "name_display",
+        "p_code",
+        "parent",
+    ]
     assert "Loc" in response.json[0]["name"]
 
 
 def test_api_location_autocomplete_empty(django_app, admin_user, locations3):
-    url = reverse('unicef_locations:locations_autocomplete')
+    url = reverse("unicef_locations:locations_autocomplete")
 
     response = django_app.get(url, user=admin_user)
 
     assert len(response.json) == len(locations3)
-    assert sorted(response.json[0].keys()) == ['admin_level', 'admin_level_name', 'id', 'name', 'name_display',
-                                               'p_code', 'parent']
+    assert sorted(response.json[0].keys()) == [
+        "admin_level",
+        "admin_level_name",
+        "id",
+        "name",
+        "name_display",
+        "p_code",
+        "parent",
+    ]
     assert "Loc" in response.json[0]["name"]
 
 
@@ -165,7 +207,7 @@ def test_cache_key_configuration():
     class Dummy:
         request = mock.Mock()
 
-        @etag_cached('prefix')
+        @etag_cached("prefix")
         def test(self):
             return HttpResponse()
 

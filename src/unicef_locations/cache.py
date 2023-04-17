@@ -26,11 +26,11 @@ def invalidate_cache():
 
 
 def get_cache_key(request: Request):
-    if hasattr(request._request, 'get_full_path'):
+    if hasattr(request._request, "get_full_path"):
         url = str(request._request.get_full_path())
     else:
         url = str(request._request.get_raw_uri())
-    return 'locations-etag-%s-%s' % (get_cache_version(), slugify(url))
+    return "locations-etag-%s-%s" % (get_cache_version(), slugify(url))
 
 
 def etag_cached(cache_key: str, public_cache=False):

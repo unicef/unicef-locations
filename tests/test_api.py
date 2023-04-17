@@ -11,22 +11,24 @@ pytestmark = pytest.mark.django_db
 @frozenfixture(fixture_name=default_fixture_name)
 def location2(db, request):
     from unicef_locations.tests.factories import LocationFactory
+
     return LocationFactory(parent=None)
 
 
 @contract(recorder_class=LastModifiedRecorder)
 def test_api_location_light_list(django_app, admin_user, location2):
-    return reverse('unicef_locations:locations-light-list')
+    return reverse("unicef_locations:locations-light-list")
 
 
 @contract(recorder_class=LastModifiedRecorder)
 def test_api_location_list(django_app, admin_user, location2):
-    return reverse('unicef_locations:locations-list')
+    return reverse("unicef_locations:locations-list")
 
     #
     # url = reverse('locations-light-list')
     # res = django_app.get(url, user=admin_user)
     # assert sorted(res.json[0].keys()) == ["id", "name", "p_code"]
+
 
 # def test_api_location_heavy_list(django_app, admin_user, location):
 #     url = reverse('locations-list')
