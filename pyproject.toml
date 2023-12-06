@@ -31,6 +31,7 @@ dependencies = [
     "django-mptt",
     "djangorestframework>=3.12",
     "unicef-djangolib",
+    "setuptools"  # temporary for python 3.12
 ]
 
 [project.optional-dependencies]
