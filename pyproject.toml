@@ -1,3 +1,72 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "unicef-locations"
+dynamic = ["version"]
+description = "Locations for eTools"
+readme = "README.rst"
+license = "Apache-2.0 OR MIT"
+authors = [
+    { name = "UNICEF", email = "rapidpro@unicef.org" },
+]
+classifiers = [
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "carto",
+    "celery",
+    "django-admin-extra-urls",
+    "django-autocomplete-light",
+    "django-leaflet",
+    "django-model-utils",
+    "django-mptt",
+    "djangorestframework>=3.12",
+    "unicef-djangolib",
+    "setuptools"  # temporary for python 3.12
+]
+
+[project.optional-dependencies]
+test = [
+    "black",
+    "coverage",
+    "django-fsm",
+    "django-webtest",
+    "drf-api-checker>=0.12",
+    "factory-boy",
+    "faker",
+    "flake8",
+    "isort",
+    "psycopg2-binary",
+    "pytest",
+    "pytest-cov",
+    "pytest-django",
+    "pytest-echo",
+    "webtest",
+]
+
+[project.urls]
+Homepage = "https://github.com/unicef/unicef-locations"
+
+[tool.hatch.version]
+path = "src/unicef_locations/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["/src/unicef_locations"]
+
 [tool.black]
 line-length = 120
 exclude = '''

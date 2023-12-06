@@ -1,3 +1,9 @@
+Release 4.3 (in development)
+-----------
+* added support to Django 5.0
+* added support to python 3.11, 3.12
+
+
 Release 4.2
 -------------
 * Fix locations endpoints etag
